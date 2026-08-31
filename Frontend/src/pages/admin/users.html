@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,8 +8,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Bootstrap CSS (required for grid + components) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
     <!-- Admin CSS stylesheet -->
-    <link rel="stylesheet" href="/frontend/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
 </head>
 <body class="admin-body">
 
@@ -204,17 +207,17 @@
                 <div class="detail-hero">
                     <div class="avatar detail-avatar" id="detailAvatar">U</div>
                     <div>
-                        <h4 id="detailName">—</h4>
-                        <div id="detailRoleWrap">—</div>
+                        <h4 id="detailName">â€”</h4>
+                        <div id="detailRoleWrap">â€”</div>
                     </div>
                 </div>
                 <div class="detail-grid">
-                    <div class="detail-item"><span>User ID</span><strong id="detailId">—</strong></div>
-                    <div class="detail-item"><span>Email</span><strong id="detailEmail">—</strong></div>
-                    <div class="detail-item"><span>Phone</span><strong id="detailPhone">—</strong></div>
+                    <div class="detail-item"><span>User ID</span><strong id="detailId">â€”</strong></div>
+                    <div class="detail-item"><span>Email</span><strong id="detailEmail">â€”</strong></div>
+                    <div class="detail-item"><span>Phone</span><strong id="detailPhone">â€”</strong></div>
                     <div class="detail-item"><span>Balance</span><strong id="detailBalance">0 ETB</strong></div>
-                    <div class="detail-item"><span>Status</span><strong id="detailStatus">—</strong></div>
-                    <div class="detail-item"><span>Joined</span><strong id="detailJoined">—</strong></div>
+                    <div class="detail-item"><span>Status</span><strong id="detailStatus">â€”</strong></div>
+                    <div class="detail-item"><span>Joined</span><strong id="detailJoined">â€”</strong></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -231,7 +234,7 @@
                 <button class="modal-close" data-close-modal="assignRoleModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="form-text" style="margin-bottom:1rem;">Change role for <strong id="assignRoleName">—</strong></p>
+                <p class="form-text" style="margin-bottom:1rem;">Change role for <strong id="assignRoleName">â€”</strong></p>
                 <div class="form-group">
                     <label for="assignRoleSelect" class="form-label">Role</label>
                     <select id="assignRoleSelect" class="form-select">
@@ -251,6 +254,7 @@
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/users.js"></script>
@@ -264,3 +268,5 @@
     </script>
 </body>
 </html>
+
+

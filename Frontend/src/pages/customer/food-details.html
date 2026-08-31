@@ -1,4 +1,4 @@
-
+﻿
 
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +28,7 @@
     <style>
 
         /* =========================================================
-           SMART CAFETERIA — PREMIUM FOOD DETAILS
+           SMART CAFETERIA â€” PREMIUM FOOD DETAILS
            ========================================================= */
 
         .details-page,
@@ -1459,7 +1459,7 @@
                                 src="${item.image}"
                                 alt="${name}"
                             >`
-                            : item.icon || '🍽️'
+                            : item.icon || 'ðŸ½ï¸'
                     }
 
                     <span
@@ -1509,7 +1509,7 @@
                             </div>
 
                             <div class="value price">
-                                ${item.price} ብር
+                                ${item.price} á‰¥áˆ­
                             </div>
 
                         </div>
@@ -1552,8 +1552,8 @@
                             >
                                 ${
                                     item.availability
-                                        ? '✅ Available'
-                                        : '❌ Unavailable'
+                                        ? 'âœ… Available'
+                                        : 'âŒ Unavailable'
                                 }
                             </div>
 
@@ -1570,7 +1570,7 @@
                                 id="qtyMinus"
                                 type="button"
                             >
-                                −
+                                âˆ’
                             </button>
 
                             <span
@@ -1713,7 +1713,7 @@
                         '#16a34a';
 
                     showToast(
-                        `Added ${quantity}x ${name} to cart! 🛒`,
+                        `Added ${quantity}x ${name} to cart! ðŸ›’`,
                         'success'
                     );
 
@@ -1776,7 +1776,7 @@
                                     >
                                         ${
                                             rel.icon
-                                            || '🍽️'
+                                            || 'ðŸ½ï¸'
                                         }
                                     </span>
 
@@ -1792,7 +1792,7 @@
                                     <div
                                         class="r-price"
                                     >
-                                        ${rel.price} ብር
+                                        ${rel.price} á‰¥áˆ­
                                     </div>
 
                                 </div>
@@ -1828,10 +1828,14 @@
 
 
         console.log(
-            `🍽️ Food details page loaded for item ID: ${itemId}`
+            `ðŸ½ï¸ Food details page loaded for item ID: ${itemId}`
         );
 
     </script>
-
+    <script type="module" src="../../js/utils/i18n.js"></script>
 </body>
 </html>
+
+
+
+

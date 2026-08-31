@@ -41,16 +41,33 @@
     var sidebar = document.getElementById('adminSidebar');
     if (!sidebar) return;
 
+    function t(key, fallback) {
+      try {
+        if (window.getText) { var v = window.getText(key); if (v !== key) return v; }
+        if (window.translations) {
+          var lang = localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en';
+          if (window.translations[lang] && window.translations[lang][key]) return window.translations[lang][key];
+        }
+      } catch(e){}
+      return fallback;
+    }
+
     var html = '<nav class="sidebar-nav">';
 
     SIDEBAR_GROUPS.forEach(function(group) {
+      var groupKey = 'admin_' + group.id;
+      var groupLabel = t(groupKey, group.label);
+      // Map group labels for translations
+      var groupLabelMap = { main: t('admin_main','MAIN'), management: t('admin_management','MANAGEMENT'), analytics: t('admin_analytics','ANALYTICS & REPORTS'), system: t('admin_system','SYSTEM') };
       html += '<div class="sidebar-group">';
-      html += '<span class="sidebar-group-title">' + group.label + '</span>';
+      html += '<span class="sidebar-group-title">' + (groupLabelMap[group.id] || groupLabel) + '</span>';
 
       group.pages.forEach(function(pageId) {
         var page = ADMIN_PAGES.find(function(p) { return p.id === pageId; });
         if (!page) return;
 
+        var labelKeyMap = { dashboard: 'admin_dashboard', users: 'admin_users', menu: 'admin_menu', categories: 'admin_categories', orders: 'admin_orders', payments: 'admin_payments', cancellations: 'admin_cancellations', reports: 'admin_reports', activity: 'admin_activity', profile: 'admin_profile', settings: 'admin_settings' };
+        var translatedLabel = t(labelKeyMap[pageId] || pageId, page.label);
         var isActive = pageId === currentPageId;
         html += '<a href="' + page.path + '" class="sidebar-link' + (isActive ? ' active' : '') + '"';
         if (pageId === 'cancellations') {
@@ -58,7 +75,7 @@
         }
         html += '>';
         html += '<i class="fa-solid ' + page.icon + '"></i>';
-        html += '<span>' + page.label + '</span>';
+        html += '<span>' + translatedLabel + '</span>';
         if (pageId === 'cancellations') {
           html += '<span class="sidebar-badge" id="sidebarRefundBadge">0</span>';
         }
@@ -72,7 +89,7 @@
     html += '<div class="sidebar-footer">';
     html += '<a href="../../pages/common/login.html" class="sidebar-link logout-link">';
     html += '<i class="fa-solid fa-right-from-bracket"></i>';
-    html += '<span>Logout</span>';
+    html += '<span>' + t('admin_logout','Logout') + '</span>';
     html += '</a>';
     html += '</div>';
 
@@ -97,14 +114,26 @@
     }
   }
 
+  // Ensure unified i18n is loaded on admin pages (auto-inject if missing)
+  function ensureI18nLoaded() {
+    if (document.querySelector('script[src*="i18n.js"]')) return;
+    var s = document.createElement('script');
+    s.type = 'module';
+    s.src = '../../js/utils/i18n.js';
+    document.head.appendChild(s);
+  }
+
   // Render top navbar
   function renderNavbar() {
     var navbar = document.querySelector('.admin-navbar');
     if (!navbar) return;
 
+    ensureI18nLoaded();
+
     var profile = getStoredProfile();
     var avatarLetter = profile && profile.name ? profile.name.charAt(0).toUpperCase() : 'A';
     var adminName = profile && profile.name ? profile.name : 'Admin User';
+    var currentLang = (function(){ try{ return localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en'; } catch(e){ return 'en'; }})();
 
     navbar.innerHTML = ''
       + '<div class="nav-left">'
@@ -112,6 +141,13 @@
       + '  <a href="dashboard.html" class="brand-logo"><i class="fa-solid fa-utensils"></i><span>Smart Cafeteria <small>Admin</small></span></a>'
       + '</div>'
       + '<div class="nav-right">'
+      + '  <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;margin-right:10px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
+      + '    <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>'
+      + '    <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">'
+      + '      <option value="en"' + (currentLang==='en'?' selected':'') + '>🇬🇧 English</option>'
+      + '      <option value="am"' + (currentLang==='am'?' selected':'') + '>🇪🇹 አማርኛ</option>'
+      + '    </select>'
+      + '  </div>'
       + '  <div class="nav-item dropdown">'
       + '    <button class="btn-icon notification-btn" id="notificationBtn" title="Notifications"><i class="fa-solid fa-bell"></i><span class="badge-dot" id="notifBadge"></span></button>'
       + '  </div>'
@@ -181,6 +217,21 @@
     if (notifBtn) {
       notifBtn.addEventListener('click', function() {
         if (window.AdminToast) window.AdminToast.info('Notifications coming soon');
+      });
+    }
+
+    // Language switcher handler
+    var langSelect = navbar.querySelector('.scos-lang-select');
+    if (langSelect) {
+      langSelect.addEventListener('change', function() {
+        var lang = this.value;
+        try {
+          localStorage.setItem('scos_language', lang);
+          localStorage.setItem('cafeteria_language', lang);
+        } catch(e){}
+        if (window.applyTranslations) window.applyTranslations();
+        if (window.setLanguage) window.setLanguage(lang);
+        else window.location.reload();
       });
     }
   }

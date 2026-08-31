@@ -58,12 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Load Saved Profile Data
         function loadProfileData() {
             const savedData = JSON.parse(localStorage.getItem("userProfile")) || defaultProfile;
+            // Prefer global language setting over profile language for cross-page persistence
+            const globalLang = localStorage.getItem("scos_language") || localStorage.getItem("cafeteria_language") || savedData.language || "en";
 
             // Populate Form Controls
             if (nameInput) nameInput.value = savedData.name || "";
             if (phoneInput) phoneInput.value = savedData.phone || "";
             if (emailInput) emailInput.value = savedData.email || "";
-            if (langSelect) langSelect.value = savedData.language || "en";
+            if (langSelect) langSelect.value = globalLang;
             if (diningTypeSelect) diningTypeSelect.value = savedData.diningType || "dine-in";
             if (tableInput) tableInput.value = savedData.tableNumber || "";
 
@@ -73,6 +75,25 @@ document.addEventListener("DOMContentLoaded", () => {
             if (avatarPreview && savedData.avatar) {
                 avatarPreview.src = savedData.avatar;
             }
+
+            // Sync language select with global i18n immediately
+            if (langSelect) {
+                langSelect.addEventListener("change", function() {
+                  const v = this.value;
+                  try { localStorage.setItem("scos_language", v); localStorage.setItem("cafeteria_language", v); } catch(e){}
+                  if (window.setLanguage) window.setLanguage(v);
+                  if (window.applyTranslations) window.applyTranslations();
+                });
+            }
+            // Listen to external language changes
+            window.addEventListener("language:changed", function(e){
+              const lang = e.detail && e.detail.language;
+              if (lang && langSelect) langSelect.value = lang;
+            });
+            window.addEventListener("languageChanged", function(e){
+              const lang = e.detail && e.detail.language;
+              if (lang && langSelect) langSelect.value = lang;
+            });
         }
 
         // Handle Form Submission
@@ -89,8 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 avatar: avatarPreview ? avatarPreview.src : defaultProfile.avatar
             };
 
-            // Save to LocalStorage
+            // Save to LocalStorage and sync global language
             localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+            try { localStorage.setItem("scos_language", updatedProfile.language); localStorage.setItem("cafeteria_language", updatedProfile.language); } catch(e){}
+            if (window.setLanguage) window.setLanguage(updatedProfile.language);
 
             // Update Sidebar UI Immediately
             if (sidebarName) sidebarName.textContent = updatedProfile.name;

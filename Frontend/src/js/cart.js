@@ -1,5 +1,35 @@
 const CART_KEY = "smart_cafeteria_cart";
 const CHECKOUT_KEY = "checkoutCart";
+function getLang(){ try{ return localStorage.getItem("scos_language")||localStorage.getItem("cafeteria_language")||"en"; }catch(e){return "en";} }
+function tc(key){ const m={ en:{emptyTitle:"Your cart is empty", emptyDesc:"Add some delicious food from the menu.", browse:"Browse Menu", clearConfirm:"Are you sure you want to clear your cart?", emptyAlert:"Your cart is empty."}, am:{emptyTitle:"ካርትዎ ባዶ ነው!", emptyDesc:"ከማውጫው አንዳንድ ጣፋጭ ምግቦችን ይጨምሩ።", browse:"ምግቦችን ይመልከቱ", clearConfirm:"ካርትዎን ማፅዳት ይፈልጋሉ?", emptyAlert:"ካርትዎ ባዶ ነው።"} }; return (m[getLang()]&&m[getLang()][key])||m.en[key]; }
+const DISH_NAME_MAP = {
+  "Pasta with Bread": "ፓስታ በዳቦ",
+  "Pasta with Injera": "ፓስታ በእንጀራ",
+  "Firfir": "ፍርፍር",
+  "Egg": "እንቁላል",
+  "Scrambled Egg": "እንቁላል ፍርፍር",
+  "Omelette": "እንቁላል ስልስ",
+  "Pasta with Vegetables": "ፓስታ በአትክልት",
+  "Shiro Feses": "ሽሮ ፈሰስ",
+  "Tomato Sauce": "ቲማቲም ስልስ",
+  "Cheese with Butter": "አይብ በቅቤ",
+  "Red Stew": "ቀይ ወጥ",
+  "Grilled Meat": "የስጋ ጥብስ",
+  "Egg with Meat": "እንቁላል በስጋ",
+  "Cabbage with Meat": "ጎመን በስጋ",
+  "Vegetables with Meat": "አትክልት በስጋ",
+  "Lentil Stew": "ምስር ኖርማል",
+  "Ful with Bread": "ፉል የጾም በዳቦ",
+  "Fasting Sandwich": "የጾም ሳንዱች",
+  "Mixed Fasting (5 types)": "በየዓይነት (5 ዓይነት)",
+  "Juice": "ጁስ",
+  "Water": "ውሃ",
+  "Soft Drink": "ለስላሳ",
+  "Avocado with Injera": "አቮካዶ በእንጀራ",
+  "Meat Sandwich": "የስጋ ሳንዱች",
+  "Juice": "ጁስ"
+};
+function translateDish(name){ if(getLang()==="am" && DISH_NAME_MAP[name]) return DISH_NAME_MAP[name]; return name; }
 
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -119,12 +149,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         <i class="fa-solid fa-cart-shopping"></i>
                     </div>
 
-                    <h3>Your cart is empty</h3>
+                    <h3>${tc("emptyTitle")}</h3>
 
-                    <p>Add some delicious food from the menu.</p>
+                    <p>${tc("emptyDesc")}</p>
 
                     <a href="menu.html" class="btn btn-primary">
-                        Browse Menu
+                        ${tc("browse")}
                     </a>
 
                 </div>
@@ -140,13 +170,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const quantity = Number(item.quantity) || 1;
             const itemTotal = price * quantity;
 
+            const itemId = escapeHTML(String(item.menuItemId || item.id || ''));
+
             return `
                 <div class="cart-item-card">
 
                     <div class="cart-item-info">
 
                         <div class="cart-item-title">
-                            ${escapeHTML(item.name)}
+                            ${escapeHTML(translateDish(item.name))}
                         </div>
 
                         <div class="cart-item-price">
@@ -163,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <button
                                 type="button"
                                 class="btn-qty decrease-btn"
-                                data-id="${escapeHTML(String(item.id))}"
+                                data-id="${itemId}"
                             >
                                 −
                             </button>
@@ -175,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <button
                                 type="button"
                                 class="btn-qty increase-btn"
-                                data-id="${escapeHTML(String(item.id))}"
+                                data-id="${itemId}"
                             >
                                 +
                             </button>
@@ -191,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <button
                             type="button"
                             class="btn-remove remove-btn"
-                            data-id="${escapeHTML(String(item.id))}"
+                            data-id="${itemId}"
                             title="Remove item"
                         >
                             <i class="fa-solid fa-trash"></i>
@@ -237,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const cart = getCart();
 
             const item = cart.find(function (item) {
-                return String(item.id) === id;
+                return String(item.menuItemId || item.id) === id;
             });
 
             if (item) {
@@ -262,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const cart = getCart();
 
             const item = cart.find(function (item) {
-                return String(item.id) === id;
+                return String(item.menuItemId || item.id) === id;
             });
 
             if (item) {
@@ -275,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     const newCart =
                         cart.filter(function (cartItem) {
-                            return String(cartItem.id) !== id;
+                            return String(cartItem.menuItemId || cartItem.id) !== id;
                         });
 
                     saveCart(newCart);
@@ -300,7 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const newCart =
                 getCart().filter(function (item) {
-                    return String(item.id) !== id;
+                    return String(item.menuItemId || item.id) !== id;
                 });
 
             saveCart(newCart);
@@ -325,7 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const confirmClear = confirm(
-                    "Are you sure you want to clear your cart?"
+                    tc("clearConfirm")
                 );
 
                 if (!confirmClear) {
@@ -359,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (!Array.isArray(cart) || cart.length === 0) {
 
-                    alert("Your cart is empty.");
+                    alert(tc("emptyAlert"));
 
                     return;
                 }
@@ -398,6 +430,9 @@ document.addEventListener("DOMContentLoaded", function () {
         "storage",
         updateCart
     );
+
+    window.addEventListener("language:changed", updateCart);
+    window.addEventListener("languageChanged", updateCart);
 
 
     updateCart();

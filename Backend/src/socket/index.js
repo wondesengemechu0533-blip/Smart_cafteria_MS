@@ -1,21 +1,29 @@
-// socket/index.js
+const jwt = require('jsonwebtoken');
+const { logger } = require('../utils/logger');
+const { initSocket } = require('../utils/socket');
+const { registerOrderHandlers } = require('./order.socket');
+const { registerNotificationHandlers } = require('./notification.socket');
 
-import { Server } from 'socket.io';
-import { logger } from '../utils/logger.js';
-import { initSocket } from '../utils/socket.js';
-import { registerOrderHandlers } from './order.socket.js';
-import { registerNotificationHandlers } from './notification.socket.js';
-
-export const setupSocketIO = (server) => {
-    const io = new Server(server, {
-        cors: {
-            origin: process.env.FRONTEND_URL,
-            methods: ['GET', 'POST']
-        }
-    });
-
+const setupSocketIO = (io) => {
     // Store Socket.io instance
     initSocket(io);
+
+    // JWT middleware to populate socket.user for room-based notifications
+    io.use((socket, next) => {
+        const token = socket.handshake.auth?.token;
+        if (!token) {
+            logger.warn('Socket connection without token');
+            return next();
+        }
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            socket.user = decoded;
+            next();
+        } catch (err) {
+            logger.warn('Socket invalid token', { error: err.message });
+            next();
+        }
+    });
 
     io.on('connection', (socket) => {
         logger.info('Socket client connected', {
@@ -37,3 +45,5 @@ export const setupSocketIO = (server) => {
 
     return io;
 };
+
+module.exports = { setupSocketIO };

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,8 +8,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Bootstrap CSS (required for grid + components) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
     <!-- Admin CSS stylesheet -->
-    <link rel="stylesheet" href="/frontend/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
 </head>
 <body class="admin-body">
 
@@ -17,11 +20,81 @@
     <header class="admin-navbar"></header>
     <div class="admin-container">
         <aside class="admin-sidebar" id="adminSidebar"></aside>
-        <main class="admin-main"></main>
+        <main class="admin-main">
+            <div class="page-header">
+                <div>
+                    <h1>Settings</h1>
+                    <p class="subtitle">Configure system-wide cafeteria settings.</p>
+                </div>
+            </div>
+
+            <div id="settingsAlert" class="alert-banner" style="display:none;"></div>
+
+            <section class="card">
+                <div class="card-header">
+                    <h3 class="section-title"><i class="fa-solid fa-gear"></i> System Settings</h3>
+                </div>
+                <div class="card-body">
+                    <form id="settingsForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="cafeteriaName" class="form-label">Cafeteria Name</label>
+                                <input type="text" id="cafeteriaName" class="form-control" value="Smart Cafeteria">
+                            </div>
+                            <div class="form-group">
+                                <label for="currency" class="form-label">Currency</label>
+                                <select id="currency" class="form-select">
+                                    <option value="ETB">ETB - Ethiopian Birr</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="supportEmail" class="form-label">Support Email</label>
+                                <input type="email" id="supportEmail" class="form-control" placeholder="support@smartcafeteria.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="supportPhone" class="form-label">Support Phone</label>
+                                <input type="text" id="supportPhone" class="form-control" placeholder="+251 911 000 000">
+                            </div>
+                            <div class="form-group">
+                                <label for="maxOrderQuantity" class="form-label">Max Order Quantity</label>
+                                <input type="number" id="maxOrderQuantity" class="form-control" min="1" value="10">
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Order Availability</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="orderAvailability" checked>
+                                    <span class="switch-slider"></span>
+                                    <span class="switch-caption">Customers can place orders</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Maintenance Mode</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="maintenanceMode">
+                                    <span class="switch-slider"></span>
+                                    <span class="switch-caption">Temporarily disable ordering</span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-secondary" id="resetSettingsBtn"><i class="fa-solid fa-rotate-left"></i> Reset to Defaults</button>
+                    <button type="submit" class="btn btn-primary" id="saveSettingsBtn" form="settingsForm"><i class="fa-solid fa-check"></i> Save Settings</button>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/admin-settings.js"></script>
@@ -34,3 +107,5 @@
     </script>
 </body>
 </html>
+
+

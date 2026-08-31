@@ -6,6 +6,7 @@ const {
     submitFeedback,
     getMyFeedback,
     getAllFeedback,
+    getFeedbackById,
     replyToFeedback,
     deleteFeedback,
     getFeedbackStats
@@ -17,6 +18,7 @@ router.get('/my', protect, getMyFeedback);
 
 router.get('/', protect, authorize('admin'), getAllFeedback);
 router.get('/stats', protect, authorize('admin'), getFeedbackStats);
+router.get('/:id', protect, authorize('admin'), getFeedbackById);
 router.patch('/:id/reply', protect, authorize('admin'), replyToFeedback);
 router.delete('/:id', protect, authorize('admin'), deleteFeedback);
 

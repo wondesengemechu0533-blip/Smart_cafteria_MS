@@ -3,7 +3,7 @@ const { validateName, validateEmail, validatePhone, validatePassword } = require
 const validateRegisterInput = (data) => {
     const errors = {};
 
-    const nameErr = validateName(data.fullName, 'Full name', 2, 100);
+    const nameErr = validateName(data.name || data.fullName, 'Full name', 2, 100);
     if (nameErr) errors.fullName = nameErr;
 
     const emailErr = validateEmail(data.email);
@@ -12,7 +12,7 @@ const validateRegisterInput = (data) => {
     const phoneErr = validatePhone(data.phone);
     if (phoneErr) errors.phone = phoneErr;
 
-    const passErr = validatePassword(data.password, 8);
+    const passErr = validatePassword(data.password, 6);
     if (passErr) errors.password = passErr;
 
     if (!data.confirmPassword) {

@@ -150,12 +150,20 @@ exports.getMyFeedback = async (req, res) => {
 */
 exports.getAllFeedback = async (req, res) => {
   try {
-    const { status, rating, date, limit = 50, page = 1 } = req.query;
+    const { status, rating, date, search, limit = 50, page = 1 } = req.query;
 
     // ✅ Build filter
     let filter = {};
     if (status && status !== "all") filter.status = status;
     if (rating) filter.rating = parseInt(rating);
+    if (search && String(search).trim()) {
+      const term = String(search).trim();
+      filter.$or = [
+        { comment: { $regex: term, $options: 'i' } },
+        { category: { $regex: term, $options: 'i' } },
+        { dishName: { $regex: term, $options: 'i' } },
+      ];
+    }
     if (date) filter.createdAt = { $regex: date };
 
     // ✅ Pagination
@@ -163,7 +171,7 @@ exports.getAllFeedback = async (req, res) => {
 
     // ✅ Execute query
     const feedback = await Feedback.find(filter)
-      .populate("userId", "name email phone")
+      .populate("userId", "name email phone role")
       .populate("orderId", "orderId customerName")
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -175,6 +183,8 @@ exports.getAllFeedback = async (req, res) => {
       success: true,
       count: feedback.length,
       total: total,
+      pages: Math.max(Math.ceil(total / parseInt(limit)), 1),
+      page: parseInt(page),
       feedback: feedback.map((fb) => ({
         id: fb._id,
         user: fb.userId
@@ -182,6 +192,7 @@ exports.getAllFeedback = async (req, res) => {
               name: fb.userId.name,
               email: fb.userId.email,
               phone: fb.userId.phone,
+              role: fb.userId.role,
             }
           : null,
         orderId: fb.orderId?.orderId || "N/A",
@@ -205,6 +216,50 @@ exports.getAllFeedback = async (req, res) => {
   }
 };
 
+/* -------------------------------------------------------------------
+ * Get single feedback by ID (Admin only)
+ * ------------------------------------------------------------------- */
+exports.getFeedbackById = async (req, res) => {
+  try {
+    const feedback = await Feedback.findById(req.params.id)
+      .populate("userId", "name email phone role")
+      .populate("orderId", "orderId customerName");
+    if (!feedback) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: "Feedback not found" });
+    }
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      feedback: {
+        id: feedback._id,
+        user: feedback.userId
+          ? {
+              name: feedback.userId.name,
+              email: feedback.userId.email,
+              phone: feedback.userId.phone,
+              role: feedback.userId.role,
+            }
+          : null,
+        orderId: feedback.orderId?.orderId || "N/A",
+        customerName: feedback.orderId?.customerName || "N/A",
+        rating: feedback.rating,
+        comment: feedback.comment,
+        category: feedback.category,
+        dishName: feedback.dishName,
+        status: feedback.status,
+        reply: feedback.reply,
+        createdAt: feedback.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Get Feedback By ID Error:", error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: MESSAGES.SERVER_ERROR,
+    });
+  }
+};
+
 /**
  * @desc    Reply to feedback (Admin only)
  * @route   PATCH /api/feedback/:id/reply
@@ -216,7 +271,7 @@ exports.getAllFeedback = async (req, res) => {
  */
 exports.replyToFeedback = async (req, res) => {
   try {
-    const { reply } = req.body;
+    const { reply, resolved } = req.body;
 
     if (!reply || reply.trim() === "") {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -236,7 +291,13 @@ exports.replyToFeedback = async (req, res) => {
 
     // ✅ Update feedback
     feedback.reply = reply.trim();
-    feedback.status = FEEDBACK_STATUS.APPROVED;
+    if (resolved === true) {
+      feedback.status = FEEDBACK_STATUS.APPROVED;
+    } else if (feedback.status !== FEEDBACK_STATUS.PENDING && feedback.status !== FEEDBACK_STATUS.REJECTED) {
+      feedback.status = FEEDBACK_STATUS.APPROVED;
+    } else {
+      feedback.status = FEEDBACK_STATUS.PENDING;
+    }
     feedback.repliedAt = new Date();
     feedback.repliedBy = req.user.id;
 

@@ -18,8 +18,11 @@ router.post('/login', validateBody(validateLoginInput), login);
 router.post('/reset-password', resetPassword);
 
 router.get('/me', protect, getMe);
+router.get('/profile', protect, getMe);  // Alias for Frontend compatibility
 router.put('/me', protect, validateBody(validateUpdateProfileInput), updateMe);
+router.put('/profile', protect, validateBody(validateUpdateProfileInput), updateMe);  // Alias for Frontend compatibility
 router.put('/password', protect, changePassword);
+router.put('/change-password', protect, changePassword);  // Alias for Frontend compatibility
 router.post('/logout', protect, logout);
 
 module.exports = router;

@@ -143,6 +143,12 @@ error: `Order cannot be accepted (status: ${order.status})`
 order.status = ORDER_STATUS.PREPARING;
 await order.save();
 
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = formatKitchenOrder(order);
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
+
 // ✅ Notify customer
 await Notification.create({
 userId: order.userId,
@@ -209,6 +215,12 @@ order.readyTime = new Date();
 
 await order.save();
 
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = formatKitchenOrder(order);
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
+
 // ✅ Notify customer
 await Notification.create({
 userId: order.userId,
@@ -271,11 +283,39 @@ order.status = ORDER_STATUS.SERVED;
 order.completedTime = new Date();
 await order.save();
 
-res.status(HTTP_STATUS.OK).json({
-success: true,
-message: `Order #${orderId} has been served`,
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = formatKitchenOrder(order);
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
 
-order: formatKitchenOrder(order)
+// ✅ Notify customer
+const notification = await Notification.create({
+    userId: order.userId,
+    title: 'Order Served!',
+    message: `Your order #${orderId} has been served. Please pick it up.`,
+    type: 'status_update',
+    orderId: orderId,
+    link: `/customer/order-tracking.html?id=${orderId}`,
+    isRead: false
+});
+
+// ✅ Send real-time notification to customer
+emitSocketEvent(`user:${order.userId}`, 'notification:new', {
+    id: notification._id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    orderId: notification.orderId,
+    link: notification.link,
+    isRead: notification.isRead,
+    createdAt: notification.createdAt
+});
+
+res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: `Order #${orderId} has been served`,
+    order: formatKitchenOrder(order)
 });
 
 } catch (error) {
@@ -325,6 +365,12 @@ error: `Order cannot be rejected (status: ${order.status})`
 order.status = ORDER_STATUS.CANCELLED;
 order.cancellationReason = reason || 'Rejected by kitchen';
 await order.save();
+
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = formatKitchenOrder(order);
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
 
 // ✅ Notify customer
 await Notification.create({

@@ -26,12 +26,12 @@ const PaymentSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA"],
+      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
       required: true,
     },
     method: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA"],
+      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
       required: true,
     },
     currency: {
@@ -88,17 +88,15 @@ const PaymentSchema = new mongoose.Schema(
 );
 
 // Generate transaction ID before saving
-PaymentSchema.pre("save", function (next) {
+PaymentSchema.pre("save", function () {
   if (!this.transactionId) {
     const prefix = this.provider.toUpperCase();
     this.transactionId = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
   }
-  next();
 });
 
 PaymentSchema.index({ status: 1 });
 PaymentSchema.index({ method: 1 });
-PaymentSchema.index({ transactionId: 1 });
 PaymentSchema.index({ reference: 1 });
 PaymentSchema.index({ providerReference: 1 });
 PaymentSchema.index({ paymentDate: -1 });

@@ -13,10 +13,12 @@ const validateBody = (validatorFunction) => {
         const validationResult = validatorFunction(req.body);
 
         if (!validationResult || !validationResult.isValid) {
+            const errors = validationResult?.errors || {};
+            const firstError = Object.values(errors)[0];
             return res.status(400).json({
                 success: false,
-                message: 'Validation failed',
-                errors: validationResult?.errors || []
+                message: firstError || 'Validation failed',
+                errors
             });
         }
 
@@ -24,4 +26,30 @@ const validateBody = (validatorFunction) => {
     };
 };
 
-module.exports = { validateBody };
+const validateQuery = (validatorFunction) => {
+    return (req, res, next) => {
+
+        if (typeof validatorFunction !== 'function') {
+            return res.status(500).json({
+                success: false,
+                message: 'Validation configuration error'
+            });
+        }
+
+        const validationResult = validatorFunction(req.query);
+
+        if (!validationResult || !validationResult.isValid) {
+            const errors = validationResult?.errors || {};
+            const firstError = Object.values(errors)[0];
+            return res.status(400).json({
+                success: false,
+                message: firstError || 'Validation failed',
+                errors
+            });
+        }
+
+        next();
+    };
+};
+
+module.exports = { validateBody, validateQuery };

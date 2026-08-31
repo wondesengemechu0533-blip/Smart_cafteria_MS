@@ -15,6 +15,16 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
+      // Generate a unique order id as a synchronous default.
+      // (A pre('save') hook cannot be used here because in Mongoose 9
+      //  pre-save middleware runs after validation, so it can never fill
+      //  in a required field that is missing.)
+      default: function () {
+        const seq = OrderSchema.statics.nextOrderSeq
+          ? OrderSchema.statics.nextOrderSeq()
+          : Math.floor(1000 + Math.random() * 9000);
+        return `ET-${seq}${Date.now().toString(36).toUpperCase()}`;
+      },
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -95,7 +105,7 @@ const OrderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA"],
+      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
       required: true,
     },
     paymentStatus: {
@@ -115,7 +125,7 @@ const OrderSchema = new mongoose.Schema(
     payment: {
       method: {
         type: String,
-        enum: ["TELEBIRR", "CHAPA"],
+        enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
       },
       status: {
         type: String,
@@ -188,16 +198,6 @@ const OrderSchema = new mongoose.Schema(
   },
 );
 
-// Generate orderId before saving
-OrderSchema.pre("save", async function (next) {
-  if (!this.orderId) {
-    const count = await mongoose.model("Order").countDocuments();
-    const num = String(count + 1000).padStart(4, "0");
-    this.orderId = `ET-${num}`;
-  }
-  next();
-});
-
 // Get order summary
 OrderSchema.methods.getSummary = function () {
   return {
@@ -223,5 +223,12 @@ OrderSchema.index({ orderStatus: 1 });
 OrderSchema.index({ createdAt: -1 });
 OrderSchema.index({ userId: 1 });
 OrderSchema.index({ paymentStatus: 1 });
+
+// Monotonic sequence for human-friendly ET-XXXX order ids.
+// Falls back to a random value if not initialized (safety net).
+let orderSeqCounter = 1000;
+OrderSchema.statics.nextOrderSeq = function () {
+  return orderSeqCounter++;
+};
 
 module.exports = mongoose.model("Order", OrderSchema);

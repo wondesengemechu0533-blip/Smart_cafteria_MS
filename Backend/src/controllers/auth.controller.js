@@ -10,8 +10,8 @@ const { ROLES, MESSAGES, HTTP_STATUS } = require('../config/constants');
 /**
 * Generate JWT Token
 */
-const generateToken = (id) => {
-return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id, role) => {
+return jwt.sign({ id, role }, process.env.JWT_SECRET, {
 expiresIn: process.env.JWT_EXPIRE || '30d'
 });
 };
@@ -99,6 +99,9 @@ error: 'User with this email or phone already exists'
 }
 
 // ✅ Create user
+// Public registration ALWAYS creates a customer. Any `role` sent by the
+// client is deliberately ignored here so users cannot register as ADMIN,
+// kitchen staff, or any other privileged role.
 const user = await User.create({
 name: name.trim(),
 email: email.toLowerCase(),
@@ -109,7 +112,7 @@ role: ROLES.CUSTOMER // Default role
 
 
 // ✅ Generate token
-const token = generateToken(user._id);
+const token = generateToken(user._id, user.role);
 
 // ✅ Response matches frontend expectations
 res.status(HTTP_STATUS.CREATED).json({
@@ -129,6 +132,30 @@ createdAt: user.createdAt
 
 } catch (error) {
 console.error('❌ Registration Error:', error);
+
+// ✅ Mongoose schema validation -> return the real field errors
+if (error.name === 'ValidationError') {
+const messages = Object.values(error.errors).map((e) => e.message);
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: messages[0] || 'Validation failed',
+errors: messages
+});
+}
+
+// ✅ Duplicate key (unique email/phone) e.g. a race between the check
+// above and the create. Safe to tell the client which field collided.
+if (error.code === 11000) {
+const field = Object.keys(error.keyValue)[0];
+return res.status(HTTP_STATUS.CONFLICT).json({
+success: false,
+error: field === 'email' || field === 'phone'
+? `User with this ${field} already exists`
+: 'User with this information already exists'
+});
+}
+
+// ✅ Unknown error: keep it generic so no internal details leak.
 res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
 success: false,
 error: MESSAGES.SERVER_ERROR
@@ -196,7 +223,7 @@ error: 'Invalid credentials'
 }
 
 // ✅ Generate token
-const token = generateToken(user._id);
+const token = generateToken(user._id, user.role);
 
 // ✅ Audit: record admin sign-in (never logs credentials/token)
 if (user.role === 'ADMIN' || user.role === 'admin') {
@@ -425,13 +452,13 @@ user.password = newPassword;
 await user.save();
 
 // ✅ Generate new token
-const token = generateToken(user._id);
+const token = generateToken(user._id, user.role);
 
 
 res.status(HTTP_STATUS.OK).json({
-success: true,
-token,
-message: 'Password changed successfully'
+    success: true,
+    token,
+    message: 'Password changed successfully'
 });
 
 } catch (error) {

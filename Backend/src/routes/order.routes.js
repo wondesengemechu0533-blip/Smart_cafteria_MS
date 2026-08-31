@@ -15,9 +15,10 @@ const {
 const { validateCreateOrder, validateUpdateOrderStatus, validateCancelOrder } = require('../validators/order.validator');
 
 router.post('/', protect, validateBody(validateCreateOrder), createOrder);
-router.get('/myorders', protect, getMyOrders);
+router.get('/my-orders', protect, getMyOrders);
 router.get('/:id', protect, getOrderById);
 router.patch('/:id/cancel', protect, validateBody(validateCancelOrder), cancelOrder);
+router.post('/:id/cancel', protect, validateBody(validateCancelOrder), cancelOrder);
 
 router.get('/', protect, authorize('admin'), getAllOrders);
 router.get('/stats', protect, authorize('admin'), getOrderStats);

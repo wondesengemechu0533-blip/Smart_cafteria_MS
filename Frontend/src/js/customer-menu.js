@@ -2,24 +2,34 @@
  * Smart Cafeteria Ordering System
  * File: Frontend/src/js/customer-menu.js
  *
- * Loads menu items from the live backend (GET /api/v1/menu) and
- * renders them into the student menu page. Keeps the existing
- * .food-card DOM contract so menu.js (category/search/sort and
- * add-to-cart delegation) keeps working across admin availability
- * toggles.
+ * Loads menu items from the backend API (/api/v1/menu) and renders
+ * them into the customer menu page. Falls back to static data if
+ * the backend is unavailable.
  */
+
+import api from "./api.js";
 
 const CUSTOMER_MENU = {
 
-    API_BASE: "http://localhost:5000/api/v1",
+    STATIC_FALLBACK_ITEMS: [],
+
+    async loadStaticFallback() {
+        try {
+            const { COMPLETE_MENU_ITEMS } = await import("../js/static-menu-data.js");
+            this.STATIC_FALLBACK_ITEMS = COMPLETE_MENU_ITEMS || [];
+        } catch (e) {
+            this.STATIC_FALLBACK_ITEMS = [];
+        }
+    },
+
     CART_KEY: "smart_cafeteria_cart",
 
     // Database category values mapped onto the static filter pills
     CATEGORY_ALIASES: {
-        "mains": "mains",
-        "main-meals": "mains",
-        "lunch": "mains",
-        "dinner": "mains",
+        "mains": "main-meals",
+        "main-meals": "main-meals",
+        "lunch": "main-meals",
+        "dinner": "main-meals",
         "breakfast": "breakfast",
         "fasting": "fasting",
         "beverages": "beverages",
@@ -75,14 +85,28 @@ document.addEventListener("DOMContentLoaded", function () {
         if (
             value.startsWith("http://") ||
             value.startsWith("https://") ||
-            value.startsWith("data:") ||
-            value.startsWith("/") === false
+            value.startsWith("data:")
         ) {
             return value;
         }
 
-        // Relative paths point to the backend static uploads
-        return CUSTOMER_MENU.API_BASE.replace("/api/v1", "") + value;
+        // Backend upload paths (e.g., "/uploads/menu/...") - serve from backend
+        if (value.startsWith("/uploads/")) {
+            return "http://localhost:5000" + value;
+        }
+
+        // Local folder images: map "/assets/..." to "/public/assets/..."
+        // so they always load from the frontend folder (no backend needed).
+        if (value.startsWith("/assets/")) {
+            return "/public" + value;
+        }
+
+        // Relative paths ("assets/..." or plain paths) also point to the folder
+        if (value.startsWith("/") === false) {
+            return "/public/" + value.replace(/^\.?\//, "");
+        }
+
+        return value;
     }
 
 
@@ -100,6 +124,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return item.availability === false ||
             item.isAvailable === false;
+    }
+
+    function getLang() {
+        try { return localStorage.getItem("scos_language") || localStorage.getItem("cafeteria_language") || "en"; } catch(e){ return "en"; }
+    }
+    function t(key) {
+        const L = {
+            en: { available: "Available", notAvailable: "Not Available", unavailable: "Unavailable", add: "Add", viewDetails: "View Details", browse: "Browse" },
+            am: { available: "ይገኛል", notAvailable: "አይገኝም", unavailable: "አይገኝም", add: "ጨምር", viewDetails: "ዝርዝር ይመልከቱ", browse: "ምግቦችን ይመልከቱ" }
+        };
+        const lang = getLang();
+        return (L[lang] && L[lang][key]) || (L.en[key] || key);
     }
 
 
@@ -132,14 +168,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const id =
                 escapeHTML(item.id);
 
-            const nameEn =
-                escapeHTML(item.name?.en || "");
-
-            const nameAm =
-                escapeHTML(item.name?.am || "");
+            const lang = getLang();
+            const name =
+                escapeHTML(item.name?.[lang] || item.name?.en || item.name?.am || "");
 
             const description =
-                escapeHTML(item.description?.en || "");
+                escapeHTML(item.description?.[lang] || item.description?.en || "");
 
             const price =
                 Number(item.price) || 0;
@@ -150,10 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const image =
                 escapeHTML(resolveImage(item.image));
 
-            const displayTitle =
-                nameAm && nameAm !== nameEn
-                    ? `${nameEn} /${nameAm}`
-                    : nameEn;
+            const displayTitle = name;
 
             const unavailable =
                 isUnavailable(item);
@@ -168,12 +199,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     ? `
                     <span class="status-stock out-of-stock">
                         <i class="fa-solid fa-circle-xmark"></i>
-                        Not Available
+                        ${t("notAvailable")}
                     </span>`
                     : `
                     <span class="status-stock in-stock">
                         <i class="fa-solid fa-circle-check"></i>
-                        Available
+                        ${t("available")}
                     </span>`;
 
             const addButtonHTML =
@@ -188,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             title="Currently unavailable">
 
                             <i class="fa-solid fa-circle-minus"></i>
-                            Unavailable
+                            ${t("unavailable")}
 
                         </button>`
                     : `
@@ -196,12 +227,12 @@ document.addEventListener("DOMContentLoaded", function () {
                             type="button"
                             class="btn btn-primary add-to-cart-btn"
                             data-id="${id}"
-                            data-name="${nameEn}"
+                            data-name="${name}"
                             data-price="${price}"
                             data-image="${image}">
 
                             <i class="fa-solid fa-plus"></i>
-                            Add
+                            ${t("add")}
 
                         </button>`;
 
@@ -214,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     <img
                         src="${image || CUSTOMER_MENU.PLACEHOLDER_IMAGE}"
-                        alt="${nameEn}"
+                        alt="${name}"
                         loading="lazy"
                         onerror="this.onerror=null;this.src='${CUSTOMER_MENU.PLACEHOLDER_IMAGE}'"
                     >
@@ -352,107 +383,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // DATA LOADING
     // =========================================================
 
-    async function fetchMenu() {
-
-        const limit = 50;
-        let page = 1;
-
-        const items = [];
-        const seen = new Set();
-
-
-        while (true) {
-
-            const controller =
-                new AbortController();
-
-            const timeout =
-                setTimeout(function () {
-                    controller.abort();
-                }, 10000);
-
-            let response;
-
-            try {
-
-                response =
-                    await fetch(
-                        `${CUSTOMER_MENU.API_BASE}/menu?limit=${limit}&page=${page}`,
-                        { signal: controller.signal }
-                    );
-
-            } finally {
-
-                clearTimeout(timeout);
-            }
-
-
-            if (!response.ok) {
-                throw new Error(
-                    "Menu request failed: " + response.status
-                );
-            }
-
-
-            const json =
-                await response.json();
-
-            const batch =
-                Array.isArray(json.items)
-                    ? json.items
-                    : [];
-
-
-            batch.forEach(function (item) {
-
-                if (item.id && !seen.has(item.id)) {
-
-                    seen.add(item.id);
-                    items.push(item);
-                }
-            });
-
-
-            const total =
-                Number(json.total) ||
-                items.length;
-
-            const totalPages =
-                Math.ceil(total / limit);
-
-
-            if (
-                page >= totalPages ||
-                items.length >= total ||
-                batch.length === 0
-            ) {
-                break;
-            }
-
-
-            page++;
-        }
-
-
-        return items;
-    }
-
-
     async function loadMenu() {
 
         showLoading();
 
+        // Try to fetch from backend API first
         try {
+            const response = await api.get("/menu?limit=100");
+            const items = response?.items || response || [];
+            if (items.length > 0) {
+                renderMenu(items);
+                return;
+            }
+        } catch (apiError) {
+            console.warn("Backend API unavailable, trying static fallback:", apiError.message);
+        }
 
-            const items =
-                await fetchMenu();
-
-            renderMenu(items);
-
+        // Fallback to static data
+        try {
+            if (CUSTOMER_MENU.STATIC_FALLBACK_ITEMS.length === 0) {
+                await CUSTOMER_MENU.loadStaticFallback();
+            }
+            renderMenu(CUSTOMER_MENU.STATIC_FALLBACK_ITEMS);
         } catch (error) {
-
             console.error("Failed to load menu:", error);
-
             renderError();
         }
     }
@@ -477,9 +431,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =========================================================
-    // INITIAL LOAD
+    // INITIAL LOAD + LANGUAGE LISTENER
     // =========================================================
 
-    loadMenu();
+    // Load static fallback data first (async)
+    CUSTOMER_MENU.loadStaticFallback().then(() => {
+        loadMenu();
+    });
+
+    window.addEventListener("language:changed", loadMenu);
+    window.addEventListener("languageChanged", loadMenu);
+    // Also re-apply cart badge translation after render
+    window.addEventListener("language:changed", () => { if (window.applyTranslations) window.applyTranslations(); });
 
 });

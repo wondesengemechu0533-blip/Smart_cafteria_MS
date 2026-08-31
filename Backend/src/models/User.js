@@ -92,9 +92,8 @@ UserSchema.pre("save", async function () {
 });
 
 // Update updatedAt on save
-UserSchema.pre("findOneAndUpdate", function (next) {
+UserSchema.pre("findOneAndUpdate", function () {
   this.set({ updatedAt: new Date() });
-  next();
 });
 
 // Match password method
@@ -117,7 +116,6 @@ UserSchema.methods.getPublicProfile = function () {
   };
 };
 
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ status: 1 });
 

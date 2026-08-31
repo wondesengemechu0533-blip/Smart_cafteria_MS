@@ -47,7 +47,7 @@ error: 'Customer name and phone are required'
 if (!Object.values(PAYMENT_METHODS).includes(normalizedPaymentMethod)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
-error: 'Payment method must be TELEBIRR or CHAPA'
+error: 'Payment method must be TELEBIRR, CHAPA, or CBE_BIRR'
 });
 }
 
@@ -140,13 +140,16 @@ orderDate: new Date().toLocaleString(),
 notes: notes || ''
 });
 
-// ✅ Create notification for kitchen (if needed)
-// In production, this would notify kitchen staff
+// ✅ Emit socket event for new order (kitchen dashboard real-time updates)
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = order.getSummary();
+emitSocketEvent('kitchen', 'order:new', orderSummary);
+emitSocketEvent(`order:${order.orderId}`, 'order:created', orderSummary);
 
 res.status(HTTP_STATUS.CREATED).json({
 success: true,
 message: MESSAGES.ORDER_PLACED,
-order: order.getSummary()
+order: orderSummary
 });
 
 } catch (error) {
@@ -341,6 +344,12 @@ order.completedTime = new Date();
 
 await order.save();
 
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = order.getSummary();
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${order.orderId}`, 'order:status', orderSummary);
+
 // ✅ Create notification for customer
 if (status === 'ready' || status === 'preparing') {
 await Notification.create({
@@ -359,7 +368,7 @@ isRead: false
 res.status(HTTP_STATUS.OK).json({
 success: true,
 message: `Order status updated to ${status}`,
-order: order.getSummary()
+order: orderSummary
 });
 
 } catch (error) {
@@ -413,6 +422,12 @@ error: `Order cannot be cancelled (status: ${order.status})`
 order.status = 'cancelled';
 order.cancellationReason = reason || 'Cancelled by customer';
 await order.save();
+
+// ✅ Emit socket event for order status update
+const { emitSocketEvent } = require('../utils/socket');
+const orderSummary = order.getSummary();
+emitSocketEvent('kitchen', 'order:status', orderSummary);
+emitSocketEvent(`order:${order.orderId}`, 'order:status', orderSummary);
 
 res.status(HTTP_STATUS.OK).json({
 success: true,

@@ -28,6 +28,34 @@ exports.simulatePayment = async (req, res) => {
       });
     }
 
+    // If user wants a checkout URL for simulation (for development), return one
+    const returnUrl = req.body.returnUrl;
+    if (req.body.simulationMode === 'checkout') {
+      const txRef = `SIM-${orderId}-${Date.now()}`;
+      const payment = await Payment.create({
+        orderId: order._id,
+        userId: req.user.id,
+        amount: order.totalAmount,
+        method,
+        provider: method,
+        status: PAYMENT_STATUS.PENDING,
+        phone: phone || '',
+        reference: reference || txRef,
+        paymentDate: new Date()
+      });
+
+      // Create a simulated checkout URL that will complete payment
+      const checkoutUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/public/simulation-payment.html?orderId=${encodeURIComponent(orderId)}&paymentId=${payment._id}&method=${method}&txRef=${txRef}`;
+
+      return res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: 'Simulation payment initialized',
+        data: { paymentId: payment._id, checkoutUrl, transactionReference: txRef },
+        checkoutUrl,
+        transactionReference: txRef
+      });
+    }
+
     if (order.userId && order.userId.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
@@ -263,7 +291,7 @@ exports.validatePayment = async (req, res) => {
   try {
     const { method, phone } = req.body;
     const errors = {};
-    const validMethods = ['TELEBIRR', 'CHAPA', 'telebirr', 'chapa', 'cash', 'CBE Birr'];
+    const validMethods = ['TELEBIRR', 'CHAPA', 'CBE_BIRR', 'telebirr', 'chapa', 'cbe_birr'];
     if (!method) {
       errors.method = 'Payment method is required';
     } else if (!validMethods.includes(method)) {

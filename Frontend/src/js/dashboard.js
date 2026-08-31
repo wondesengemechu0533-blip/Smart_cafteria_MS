@@ -73,7 +73,7 @@
     if (d.menu) {
       setText("statTotalMenu", d.menu.total || 0);
       setText("statAvailableMenu", d.menu.available || 0);
-      setText("statUnavailableMenu", d.menu.unavailable || 0);
+      setText("statOutOfStockMenu", d.menu.unavailable || 0);
     }
 
     // Orders
@@ -100,6 +100,15 @@
       if (todayEl) todayEl.innerHTML = money(d.revenue.today) + " <small>ETB</small>";
       var totalEl = document.getElementById("statTotalRevenue");
       if (totalEl) totalEl.innerHTML = money(d.revenue.total) + " <small>ETB</small>";
+    }
+
+    // Feedback
+    if (d.feedback) {
+      setText("statTotalFeedback", d.feedback.totalFeedback || 0);
+      setText("statPendingFeedback", d.feedback.pending || 0);
+      setText("statResolvedFeedback", d.feedback.approved || 0);
+      var avgEl = document.getElementById("statAvgRating");
+      if (avgEl) avgEl.textContent = (d.feedback.averageRating || 0).toFixed(1);
     }
 
     // Cancellations badge
@@ -270,6 +279,53 @@
         scales: {
           y: { beginAtZero: true, position: "left", title: { display: true, text: "Revenue (ETB)" } },
           y1: { beginAtZero: true, position: "right", title: { display: true, text: "Orders" }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+    charts.push(chart);
+  }
+
+  function renderFeedbackRatingChart(feedback) {
+    var canvas = document.getElementById("feedbackRatingChart");
+    if (!canvas || typeof Chart === "undefined") return;
+
+    var dist = feedback && feedback.ratingDistribution;
+    if (!dist) return;
+
+    var labels = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
+    var keys = ["1", "2", "3", "4", "5"];
+    var colors = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#22c55e"];
+    var data = keys.map(function (k) { return dist[k] || 0; });
+
+    var chart = new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Number of Ratings",
+          data: data,
+          backgroundColor: colors.map(function(c) { return c + "CC"; }),
+          borderColor: colors,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                var percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                return context.label + ": " + context.raw + " (" + percentage + "%)";
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "Count" } }
         }
       }
     });
@@ -577,23 +633,33 @@
       updatedEl.textContent = "Last updated: " + now.toLocaleTimeString("en-US");
     }
 
-    // Parallel: dashboard stats + recent orders + recent payments
+    // Parallel: dashboard stats + recent orders + recent payments + feedback stats
     try {
       var results = await Promise.all([
         window.AdminAPI.get("/admin/dashboard"),
         window.AdminAPI.get("/admin/dashboard/recent-orders", { limit: 6 }),
-        window.AdminAPI.get("/admin/dashboard/recent-payments", { limit: 6 })
+        window.AdminAPI.get("/admin/dashboard/recent-payments", { limit: 6 }),
+        window.AdminAPI.get("/feedback/stats")
       ]);
 
       var stats = results[0] && results[0].data;
       var ordersResponse = results[1] || {};
       var paymentsResponse = results[2] || {};
+      var feedbackResponse = results[3] || {};
+
+      // Add feedback stats to main stats object for rendering
+      if (stats && feedbackResponse.data) {
+        stats.feedback = feedbackResponse.data;
+      }
 
       destroyCharts();
       renderStats(stats);
       if (stats) {
         renderOrderStatusChart(stats.orders);
         renderRevenueChart(stats.chart);
+        if (stats.feedback) {
+          renderFeedbackRatingChart(stats.feedback);
+        }
       }
       renderRecentOrders(ordersResponse.orders);
       renderRecentPayments(paymentsResponse.payments);

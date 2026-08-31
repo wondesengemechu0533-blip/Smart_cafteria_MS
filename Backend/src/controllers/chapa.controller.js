@@ -19,7 +19,7 @@ const completePayment = async (txRef) => {
     payment.paidAt = isPaid ? new Date() : null;
     await payment.save();
 
-    await Order.findByIdAndUpdate(payment.orderId, {
+    const order = await Order.findByIdAndUpdate(payment.orderId, {
         paymentStatus: isPaid ? PAYMENT_STATUS.PAID : PAYMENT_STATUS.FAILED,
         transactionId: isPaid ? payment.transactionId : null,
         payment: {
@@ -31,7 +31,17 @@ const completePayment = async (txRef) => {
             currency: payment.currency,
             paidAt: payment.paidAt
         }
-    });
+    }, { new: true });
+
+    // ✅ Emit socket event for payment completion (notifies kitchen of paid orders)
+    if (isPaid && order) {
+        const { emitSocketEvent } = require('../utils/socket');
+        const orderSummary = order.getSummary();
+        orderSummary.paymentStatus = PAYMENT_STATUS.PAID;
+        emitSocketEvent('kitchen', 'order:payment', orderSummary);
+        emitSocketEvent(`order:${order.orderId}`, 'order:payment', orderSummary);
+    }
+
     return payment;
 };
 

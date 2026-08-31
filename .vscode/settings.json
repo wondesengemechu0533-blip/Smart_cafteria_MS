@@ -1,3 +1,7 @@
 {
-    "liveServer.settings.port": 5501
+    "liveServer.settings.port": 5501,
+    "liveServer.settings.root": "/Frontend",
+    "liveServer.settings.CustomBrowser": "chrome",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "liveServer.settings.wait": 100
 }

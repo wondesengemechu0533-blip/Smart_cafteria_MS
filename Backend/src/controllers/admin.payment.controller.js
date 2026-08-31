@@ -101,9 +101,28 @@ exports.getAllPayments = async (req, res) => {
     }
 
     if (date) {
-      const day = new Date(`${date}T00:00:00.000Z`);
-      const nextDay = new Date(day.getTime() + 86400000);
-      conditions.push({ paymentDate: { $gte: day, $lt: nextDay } });
+      const now = new Date();
+      const parseDay = (d) => {
+        const parsed = new Date(`${d}T00:00:00.000Z`);
+        return isNaN(parsed.getTime()) ? null : parsed;
+      };
+
+      let range = null;
+      if (date === 'today') {
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        range = { $gte: start, $lt: new Date(start.getTime() + 86400000) };
+      } else if (/^\d+d$/.test(date)) {
+        const days = parseInt(date, 10);
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        start.setDate(start.getDate() - (days - 1));
+        range = { $gte: start, $lt: new Date(start.getTime() + days * 86400000) };
+      } else {
+        const day = parseDay(date);
+        if (day) {
+          range = { $gte: day, $lt: new Date(day.getTime() + 86400000) };
+        }
+      }
+      if (range) conditions.push({ paymentDate: range });
     }
 
     if (search && String(search).trim()) {

@@ -3,67 +3,56 @@ document.addEventListener("DOMContentLoaded", () => {
     const markAllReadBtn = document.getElementById("mark-all-read-btn");
     const clearAllBtn = document.getElementById("clear-notifications-btn");
 
-    // Sample default notifications if none exist in localStorage
-    const defaultNotifications = [
-        {
-            id: "notif-1",
-            title: "Order #TE-1042 Prepared!",
-            message: "Your Kitfo and Macchiato order is ready for pick-up at Table 04.",
-            timestamp: "10 mins ago",
-            type: "order", // 'order', 'promo', 'system'
-            read: false
-        },
-        {
-            id: "notif-2",
-            title: "Special Offer Today!",
-            message: "Enjoy a 15% discount on all coffee and pastries between 2:00 PM - 4:00 PM.",
-            timestamp: "2 hours ago",
-            type: "promo",
-            read: false
-        },
-        {
-            id: "notif-3",
-            title: "Profile Updated",
-            message: "Your primary phone number was successfully updated.",
-            timestamp: "1 day ago",
-            type: "system",
-            read: true
+    // Load notifications from backend API
+    async function getNotifications() {
+        try {
+            const token = localStorage.getItem("auth_token");
+            if (!token) {
+                renderEmpty("Please log in to view notifications.");
+                return [];
+            }
+            const response = await fetch("http://localhost:5000/api/v1/notifications", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.notifications) {
+                return data.notifications;
+            }
+            return [];
+        } catch (err) {
+            console.error("Failed to load notifications:", err);
+            renderEmpty("Failed to load notifications.");
+            return [];
         }
-    ];
-
-    // 1. Get Notifications from LocalStorage
-    function getNotifications() {
-        const saved = localStorage.getItem("userNotifications");
-        if (!saved) {
-            localStorage.setItem("userNotifications", JSON.stringify(defaultNotifications));
-            return defaultNotifications;
-        }
-        return JSON.parse(saved);
     }
 
-    // 2. Render Notifications to UI
-    function renderNotifications() {
-        const list = getNotifications();
+    function renderEmpty(message) {
+        notificationsContainer.innerHTML = `
+            <div class="empty-state-card">
+                <i class="fa-regular fa-bell-slash empty-icon"></i>
+                <h3>No Notifications</h3>
+                <p>${message}</p>
+            </div>
+        `;
+    }
 
-        if (list.length === 0) {
-            notificationsContainer.innerHTML = `
-                <div class="empty-state-card">
-                    <i class="fa-regular fa-bell-slash empty-icon"></i>
-                    <h3>No Notifications</h3>
-                    <p>You have no recent alerts or order updates right now.</p>
-                </div>
-            `;
+    // Render notifications
+    async function renderNotifications() {
+        const list = await getNotifications();
+
+        if (!list || list.length === 0) {
+            renderEmpty("You have no recent alerts or order updates right now.");
             return;
         }
 
         let html = "";
         list.forEach(item => {
-            const unreadClass = item.read ? "" : "unread";
-            
-            // Set Icon based on notification type
+            const unreadClass = item.isRead ? "" : "unread";
+
+            // Icon based on notification type
             let iconClass = "fa-bell";
             let iconBg = "icon-system";
-            if (item.type === "order") {
+            if (item.type === "order" || item.type === "status_update" || item.type === "ready") {
                 iconClass = "fa-utensils";
                 iconBg = "icon-order";
             } else if (item.type === "promo") {
@@ -79,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="notification-body">
                         <div class="notification-title-row">
                             <h4>${item.title}</h4>
-                            <span class="notification-time">${item.timestamp}</span>
+                            <span class="notification-time">${item.timeAgo || ''}</span>
                         </div>
                         <p>${item.message}</p>
                     </div>
@@ -94,19 +83,16 @@ document.addEventListener("DOMContentLoaded", () => {
         attachEventListeners();
     }
 
-    // 3. Action Event Listeners
+    // Attach event listeners
     function attachEventListeners() {
-        // Mark individual item as read when clicked
         document.querySelectorAll(".notification-item").forEach(item => {
             item.addEventListener("click", (e) => {
-                if (e.target.closest(".delete-notif-btn")) return; // Skip if deleting
-
+                if (e.target.closest(".delete-notif-btn")) return;
                 const id = item.getAttribute("data-id");
                 markAsRead(id);
             });
         });
 
-        // Delete single notification
         document.querySelectorAll(".delete-notif-btn").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -116,42 +102,72 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Helper: Mark single notification read
-    function markAsRead(id) {
-        let list = getNotifications();
-        list = list.map(item => item.id === id ? { ...item, read: true } : item);
-        localStorage.setItem("userNotifications", JSON.stringify(list));
-        renderNotifications();
-    }
-
-    // Helper: Delete single notification
-    function deleteNotification(id) {
-        let list = getNotifications();
-        list = list.filter(item => item.id !== id);
-        localStorage.setItem("userNotifications", JSON.stringify(list));
-        renderNotifications();
-    }
-
-    // Mark All as Read Button
-    if (markAllReadBtn) {
-        markAllReadBtn.addEventListener("click", () => {
-            let list = getNotifications();
-            list = list.map(item => ({ ...item, read: true }));
-            localStorage.setItem("userNotifications", JSON.stringify(list));
+    async function markAsRead(id) {
+        try {
+            const token = localStorage.getItem("auth_token");
+            await fetch(`http://localhost:5000/api/v1/notifications/${id}/read`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` }
+            });
             renderNotifications();
-        });
+        } catch (err) {
+            console.error("Failed to mark as read:", err);
+        }
     }
 
-    // Clear All Notifications Button
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to clear all notifications?")) {
-                localStorage.setItem("userNotifications", JSON.stringify([]));
+    async function deleteNotification(id) {
+        try {
+            const token = localStorage.getItem("auth_token");
+            await fetch(`http://localhost:5000/api/v1/notifications/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            renderNotifications();
+        } catch (err) {
+            console.error("Failed to delete notification:", err);
+        }
+    }
+
+    // Mark All as Read
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener("click", async () => {
+            try {
+                const token = localStorage.getItem("auth_token");
+                await fetch("http://localhost:5000/api/v1/notifications/read-all", {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${token}` }
+                });
                 renderNotifications();
+            } catch (err) {
+                console.error("Failed to mark all as read:", err);
             }
         });
     }
 
-    // Initial Load
+    // Clear All - not supported by backend, so mark all as read instead
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener("click", () => {
+            if (confirm("Are you sure you want to clear all notifications?")) {
+                markAllReadBtn?.click();
+            }
+        });
+    }
+
+    // Real-time notification via Socket.IO
+    function setupRealtimeListener() {
+        const token = localStorage.getItem("auth_token");
+        if (!token || typeof io === "undefined") return;
+
+        const socket = io("http://localhost:5000", {
+            auth: { token },
+            transports: ["websocket", "polling"]
+        });
+
+        socket.on("notification:new", (notification) => {
+            renderNotifications();
+        });
+    }
+
     renderNotifications();
+    setupRealtimeListener();
 });

@@ -14,7 +14,19 @@ const ORDER_STATUS = {
 	CANCELLED: 'cancelled'
 };
 
-const PAYMENT_METHODS = { TELEBIRR: 'TELEBIRR', CHAPA: 'CHAPA' };
+const PAYMENT_METHODS = { TELEBIRR: 'TELEBIRR', CHAPA: 'CHAPA', CBE_BIRR: 'CBE_BIRR' };
+
+// Role values mirror the User schema enum (src/models/User.js) so that
+// auth.controller.js and any other module can use a single source of truth.
+const ROLES = {
+    CUSTOMER: 'customer',
+    KITCHEN: 'kitchen',
+    ADMIN: 'admin',
+    STUDENT: 'STUDENT',
+    STAFF: 'STAFF',
+    ADMIN_UPPER: 'ADMIN',
+    KITCHEN_STAFF: 'KITCHEN_STAFF'
+};
 const HTTP_STATUS = {
     OK: 200,
     CREATED: 201,
@@ -43,6 +55,7 @@ module.exports = {
     PAYMENT_STATUS,
     ORDER_STATUS,
     PAYMENT_METHODS,
+    ROLES,
     HTTP_STATUS,
     MESSAGES,
     FEEDBACK_STATUS,

@@ -263,18 +263,19 @@
         .input-box {
             position: relative;
         }
-        .input-box i {
+        .input-box > i {
             position: absolute;
             left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--light-gray);
             font-size: 11px;
+            pointer-events: none;
         }
         .form-group input {
             width: 100%;
             height: 34px;
-            padding: 0 10px 0 32px;
+            padding: 0 34px 0 32px;
             border: 1px solid var(--border);
             border-radius: 7px;
             outline: none;
@@ -288,6 +289,33 @@
             border-color: var(--primary);
             background: var(--white);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+        }
+        .toggle-password {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--light-gray);
+            font-size: 12px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s ease;
+        }
+        .toggle-password i {
+            position: static;
+            transform: none;
+            top: auto;
+            left: auto;
+        }
+        .toggle-password:hover {
+            color: var(--primary);
         }
         .register-btn {
             width: 100%;
@@ -427,6 +455,9 @@
                             <div class="input-box">
                                 <input type="password" id="regPassword" placeholder="At least 6 characters" required>
                                 <i class="fa-solid fa-lock"></i>
+                                <button type="button" class="toggle-password" data-target="regPassword" aria-label="Show password">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -436,6 +467,9 @@
                             <div class="input-box">
                                 <input type="password" id="confirmPassword" placeholder="Repeat password" required>
                                 <i class="fa-solid fa-lock"></i>
+                                <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Show password">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -461,6 +495,24 @@
         const regError = document.getElementById("registerError");
         const regSuccess = document.getElementById("registerSuccess");
         const regSubmitBtn = document.getElementById("regSubmitBtn");
+
+        document.querySelectorAll(".toggle-password").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const target = document.getElementById(btn.dataset.target);
+                const icon = btn.querySelector("i");
+                if (target.type === "password") {
+                    target.type = "text";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                    btn.setAttribute("aria-label", "Hide password");
+                } else {
+                    target.type = "password";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                    btn.setAttribute("aria-label", "Show password");
+                }
+            });
+        });
 
         regForm.addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -520,7 +572,7 @@
                 const data = await response.json();
 
                 if (!response.ok || !data.success) {
-                    showRegError(data.message || "Registration failed. Please try again.");
+                    showRegError(data.message || data.error || "Registration failed. Please try again.");
                     regSubmitBtn.disabled = false;
                     regSubmitBtn.innerHTML = originalBtnHtml;
                     return;

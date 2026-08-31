@@ -13,13 +13,13 @@ class NotificationService {
 
     async getUnread() {
         return api.get(
-            "/notifications?read=false"
+            "/notifications?unread=true"
         );
     }
 
     async getUnreadCount() {
         return api.get(
-            "/notifications/unread-count"
+            "/notifications/unread"
         );
     }
 

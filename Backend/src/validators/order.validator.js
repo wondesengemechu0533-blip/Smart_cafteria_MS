@@ -3,7 +3,9 @@ const {
     validateObjectId,
     validateOrderStatus,
     validateQuantity,
-    validateEnum
+    validateEnum,
+    validateName,
+    validatePhone
 } = require('./common.validator');
 
 const validateCreateOrder = (data) => {
@@ -13,7 +15,8 @@ const validateCreateOrder = (data) => {
         errors.items = 'Cart cannot be empty';
     } else {
         data.items.forEach((item, index) => {
-            if (!item.itemId || String(item.itemId).trim() === '') {
+            const itemId = item.itemId || item.id;
+            if (!itemId || String(itemId).trim() === '') {
                 errors[`items.${index}.itemId`] = 'Menu item ID is required';
             }
             const quantity = Number(item.quantity);
@@ -40,7 +43,7 @@ const validateCreateOrder = (data) => {
         }
     }
 
-    const methodErr = validateEnum(data.paymentMethod, ['CHAPA', 'TELEBIRR'], 'Payment method');
+    const methodErr = validateEnum(data.paymentMethod, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
     if (methodErr) errors.paymentMethod = methodErr;
 
     if (data.totalAmount !== undefined) {

@@ -1,10 +1,12 @@
 require('dotenv').config();
 
 const path = require('path');
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { Server } = require('socket.io');
 const connectDatabase = require('./src/config/database');
 const paymentRoutes = require('./src/routes/payment.routes');
 const orderRoutes = require('./src/routes/order.routes');
@@ -17,26 +19,46 @@ const feedbackRoutes = require('./src/routes/feedback.routes');
 const cancellationRoutes = require('./src/routes/cancellation.routes');
 const notificationRoutes = require('./src/routes/notification.routes');
 const adminRoutes = require('./src/routes/admin.routes');
+const adminCategoryRoutes = require('./src/routes/admin.category.routes');
 const adminMenuRoutes = require('./src/routes/admin.menu.routes');
 const adminOrderRoutes = require('./src/routes/admin.order.routes');
 const adminPaymentRoutes = require('./src/routes/admin.payments.routes');
 const adminReportRoutes = require('./src/routes/admin.reports.routes');
 const publicSettingsRoutes = require('./src/routes/public.settings.routes');
+const authRoutes = require('./src/routes/auth.routes');
 const { ensureDefaultSettings } = require('./src/utils/settings');
-const authController = require('./src/controllers/auth-v2.controller');
-const { protect } = require('./src/middleware/auth');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
+const { setupSocketIO } = require('./src/socket');
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
+
+const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5500,http://127.0.0.1:5500,http://localhost:5501,http://127.0.0.1:5501,http://localhost:5000,http://127.0.0.1:5000")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
+    }
+});
+
+setupSocketIO(io);
 
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || true,
-    credentials: true
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 
 const apiLimiter = rateLimit({
@@ -59,15 +81,13 @@ app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/assets', express.static(path.join(__dirname, '../Frontend/public/assets')));
 
 app.get('/health', (req, res) => res.json({ success: true, service: 'smart-cafeteria-backend' }));
 
 app.use('/api/v1', apiLimiter);
 
-app.post('/api/v1/auth/register', authLimiter, authController.register);
-app.post('/api/v1/auth/login', authLimiter, authController.login);
-app.get('/api/v1/auth/me', protect, authController.getMe);
-app.post('/api/v1/auth/logout', protect, authController.logout);
+app.use('/api/v1/auth', authRoutes);
 
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/orders', orderRoutes);
@@ -81,6 +101,7 @@ app.use('/api/v1/feedback', feedbackRoutes);
 app.use('/api/v1/cancellations', cancellationRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/admin/categories', adminCategoryRoutes);
 app.use('/api/v1/admin/menu', adminMenuRoutes);
 app.use('/api/v1/admin/orders', adminOrderRoutes);
 app.use('/api/v1/admin/payments', adminPaymentRoutes);
@@ -91,14 +112,47 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 const start = async () => {
-    await connectDatabase();
-    await ensureDefaultSettings();
-    app.listen(port, () => console.log(`Backend listening on port ${port}`));
+    try {
+        console.log('\n🚀 Starting Smart Cafeteria Backend...');
+        console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+        
+        console.log('🔌 Connecting to MongoDB...');
+        await connectDatabase();
+        
+        console.log('⚙️  Initializing settings...');
+        await ensureDefaultSettings();
+
+        // The backend MUST always run on the configured PORT (default 5000)
+        // because the frontend API client is hardcoded to it. Do NOT fall
+        // back to a different port, otherwise the frontend and Chapa
+        // callback URL break silently.
+        return new Promise((resolve, reject) => {
+            server.once('error', (err) => {
+                if (err.code === 'EADDRINUSE') {
+                    console.error(`\n✗ Port ${port} is already in use.`);
+                    console.error(`  The frontend expects the backend on http://localhost:${port}.`);
+                    console.error(`  Please free port ${port} (e.g. close the other process) and restart.\n`);
+                }
+                reject(err);
+            });
+            server.once('listening', () => {
+                console.log(`✓ Backend listening on port ${port}`);
+                console.log(`✓ Health check: http://localhost:${port}/health`);
+                console.log(`✓ API base: http://localhost:${port}/api/v1`);
+                console.log('✓ Backend ready in < 1 second!\n');
+                resolve();
+            });
+            server.listen(port);
+        });
+    } catch (error) {
+        console.error('\n✗ Backend startup failed:', error.message);
+        process.exitCode = 1;
+        throw error;
+    }
 };
 
 if (require.main === module) {
     start().catch((error) => {
-        console.error('Backend startup failed:', error.message);
         process.exitCode = 1;
     });
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,8 +8,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Bootstrap CSS (required for grid + components) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
     <!-- Admin CSS stylesheet -->
-    <link rel="stylesheet" href="/frontend/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -24,7 +27,7 @@
             <div class="page-header">
                 <div>
                     <h1>Dashboard Overview</h1>
-                    <p class="subtitle">Real-time statistics from MongoDB — updated live from the database.</p>
+                    <p class="subtitle">Real-time statistics from MongoDB â€” updated live from the database.</p>
                     <small class="subtitle" id="lastUpdated"></small>
                 </div>
                 <div class="page-actions">
@@ -210,6 +213,54 @@
                 </div>
             </div>
 
+            <!-- FEEDBACK STATS -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card" data-nav="feedback.html">
+                        <div class="metric-icon purple">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Total Feedback</span>
+                            <h2 class="metric-value" id="statTotalFeedback">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card" data-nav="feedback.html">
+                        <div class="metric-icon info">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Pending</span>
+                            <h2 class="metric-value" id="statPendingFeedback">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card" data-nav="feedback.html">
+                        <div class="metric-icon success">
+                            <i class="fa-solid fa-check-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Resolved</span>
+                            <h2 class="metric-value" id="statResolvedFeedback">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="metric-card" data-nav="feedback.html">
+                        <div class="metric-icon warning">
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Avg Rating</span>
+                            <h2 class="metric-value" id="statAvgRating">0.0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4 mb-4">
                 <div class="col-xl-3 col-md-6">
                     <div class="metric-card" data-nav="orders.html">
@@ -352,6 +403,14 @@
                         <canvas id="revenueChart"></canvas>
                     </div>
                 </div>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title"><i class="fa-solid fa-star"></i> Feedback Rating Distribution</h3>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="feedbackRatingChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- RECENT TABLES -->
@@ -424,6 +483,7 @@
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/dashboard.js"></script>
@@ -436,3 +496,6 @@
     </script>
 </body>
 </html>
+
+
+

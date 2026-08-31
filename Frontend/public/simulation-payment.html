@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulated Payment - Smart Cafeteria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/src/css/style.css">
+    <style>
+        .payment-simulation {
+            max-width: 500px;
+            margin: 80px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .payment-simulation h2 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .payment-simulation .order-info {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .payment-simulation .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        .payment-simulation .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+        .payment-simulation .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+        }
+        .payment-simulation .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="payment-simulation">
+        <h2><i class="fa-solid fa-credit-card"></i> Simulated Payment (Development)</h2>
+        <p style="color: #6b7280; margin-bottom: 20px;">This is a development payment simulator. Choose an option to test the payment flow.</p>
+        
+        <div class="order-info">
+            <p><strong>Order ID:</strong> <span id="displayOrderId">-</span></p>
+            <p><strong>Payment Method:</strong> <span id="displayMethod">-</span></p>
+            <p class="amount"><strong>Amount:</strong> <span id="displayAmount">-</span> ETB</p>
+        </div>
+
+        <button class="btn btn-success" id="btnSuccess" onclick="completePayment(true)">
+            <i class="fa-solid fa-check"></i> Simulate Successful Payment
+        </button>
+        
+        <button class="btn btn-danger" id="btnFail" onclick="completePayment(false)">
+            <i class="fa-solid fa-times"></i> Simulate Failed Payment
+        </button>
+
+        <div id="loading" class="hidden" style="margin-top: 20px;">
+            <div class="loading-spinner"></div>
+            <p>Processing payment...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/v1';
+
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('orderId');
+        const paymentId = params.get('paymentId');
+        const method = params.get('method');
+        const txRef = params.get('txRef');
+
+        document.getElementById('displayOrderId').textContent = orderId || 'Unknown';
+        document.getElementById('displayMethod').textContent = method || 'Unknown';
+
+        async function loadOrderAmount() {
+            if (!orderId) return;
+            try {
+                const token = localStorage.getItem('auth_token');
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                const response = await fetch(`${API_BASE}/orders/${orderId}`, { headers });
+                const data = await response.json();
+                if (data.success && data.order) {
+                    document.getElementById('displayAmount').textContent = data.order.totalAmount;
+                }
+            } catch (e) {
+                console.error('Failed to load order amount:', e);
+            }
+        }
+        loadOrderAmount();
+
+        async function completePayment(success) {
+            const btnSuccess = document.getElementById('btnSuccess');
+            const btnFail = document.getElementById('btnFail');
+            const loading = document.getElementById('loading');
+            
+            btnSuccess.classList.add('hidden');
+            btnFail.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/payments/simulate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify({
+                        orderId,
+                        method,
+                        phone: '',
+                        reference: txRef
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = `/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(orderId)}&payment=success`;
+                } else {
+                    alert('Payment simulation failed: ' + (data.message || 'Unknown error'));
+                    window.location.href = `/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(orderId)}&payment=failed`;
+                }
+            } catch (error) {
+                console.error('Payment simulation error:', error);
+                alert('Error processing payment simulation');
+                window.location.href = `/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(orderId)}&payment=error`;
+            }
+        }
+    </script>
+</body>
+</html>

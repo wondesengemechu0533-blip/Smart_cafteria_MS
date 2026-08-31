@@ -601,20 +601,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 categoryName = "Breakfast";
                 break;
 
+            case "main-meals":
             case "mains":
                 categoryName = "Lunch & Dinner";
                 break;
 
-            case "coffee":
-                categoryName = "Coffee & Tea";
+            case "fasting":
+                categoryName = "Fasting Meals";
                 break;
 
-            case "pastry":
-                categoryName = "Cakes & Pastry";
-                break;
-
+            case "beverages":
             case "drinks":
                 categoryName = "Juices & Drinks";
+                break;
+
+            case "snacks":
+                categoryName = "Snacks";
                 break;
         }
 

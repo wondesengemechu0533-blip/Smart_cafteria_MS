@@ -53,12 +53,17 @@ const DEFAULT_SETTINGS = [
 ];
 
 async function ensureDefaultSettings() {
-  for (const s of DEFAULT_SETTINGS) {
-    await Setting.findOneAndUpdate(
-      { key: s.key },
-      { $setOnInsert: s },
-      { upsert: true, new: true }
-    );
+  try {
+    const existingSettings = await Setting.find({}, { key: 1 }).lean();
+    const existingKeys = new Set(existingSettings.map(s => s.key));
+    
+    const toInsert = DEFAULT_SETTINGS.filter(s => !existingKeys.has(s.key));
+    
+    if (toInsert.length > 0) {
+      await Setting.insertMany(toInsert);
+    }
+  } catch (error) {
+    console.error('Settings initialization error:', error.message);
   }
 }
 

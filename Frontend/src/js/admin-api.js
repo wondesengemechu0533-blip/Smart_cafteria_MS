@@ -104,15 +104,21 @@
   }
 
   function clearAuthAndRedirect() {
+    // Only drop the API token; keep the local admin/customer session so the
+    // page does not unexpectedly bounce back to the login screen when the
+    // backend rejects/refuses a data request (e.g. 401/403).
     localStorage.removeItem("auth_token");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userProfile");
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("isLoggedIn");
+    try {
+      var toast = document.querySelector(".toast");
+      if (toast) toast.remove();
+    } catch (e) {}
+    var toastEl = document.createElement("div");
+    toastEl.className = "toast error";
+    toastEl.innerHTML = '<span class="toast-icon"><i class="fa-solid fa-circle-exclamation"></i></span><span class="toast-message">Session expired. Please log in again.</span><button class="toast-close" aria-label="Close">&times;</button>';
+    document.body.appendChild(toastEl);
     setTimeout(function () {
-      window.location.href = "../../pages/common/login.html";
-    }, 1500);
+      if (toastEl && toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
+    }, 4000);
   }
 
   function request(method, path, body, query) {

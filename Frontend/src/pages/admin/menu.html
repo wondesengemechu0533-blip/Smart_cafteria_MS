@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,8 +8,13 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Bootstrap CSS (required for grid + components) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
     <!-- Admin CSS stylesheet -->
-    <link rel="stylesheet" href="/frontend/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/image-upload.css">
+    <link rel="stylesheet" href="/src/css/image-gallery.css">
 </head>
 <body class="admin-body">
 
@@ -166,7 +171,7 @@
                         </div>
                         <div class="form-group">
                             <label for="itemNameAm" class="form-label">Amharic Name <span class="required">*</span></label>
-                            <input type="text" name="name_am" id="itemNameAm" class="form-control" placeholder="e.g. ዶሮ ወጥ" required>
+                            <input type="text" name="name_am" id="itemNameAm" class="form-control" placeholder="e.g. á‹¶áˆ® á‹ˆáŒ¥" required>
                         </div>
                         <div class="form-group">
                             <label for="itemCategory" class="form-label">Category <span class="required">*</span></label>
@@ -198,7 +203,7 @@
                     </div>
                     <div class="form-group" style="margin-top:0.8rem;">
                         <label for="itemDescriptionAm" class="form-label">Description (Amharic)</label>
-                        <textarea name="description_am" id="itemDescriptionAm" class="form-control" rows="2" placeholder="በአማርኛ መግለጫ..."></textarea>
+                        <textarea name="description_am" id="itemDescriptionAm" class="form-control" rows="2" placeholder="á‰ áŠ áˆ›áˆ­áŠ› áˆ˜áŒáˆˆáŒ«..."></textarea>
                     </div>
 
                     <div class="form-row upload-row" style="margin-top:1rem;">
@@ -236,19 +241,19 @@
                 <div class="detail-hero">
                     <img id="viewItemImage" class="img-thumb" alt="Item image" src="">
                     <div>
-                        <h4 id="viewItemName">—</h4>
-                        <div id="viewItemCategory" class="form-text">—</div>
+                        <h4 id="viewItemName">â€”</h4>
+                        <div id="viewItemCategory" class="form-text">â€”</div>
                     </div>
                 </div>
                 <div class="detail-grid">
-                    <div class="detail-item"><span>Item ID</span><strong id="viewItemId">—</strong></div>
-                    <div class="detail-item"><span>Price</span><strong id="viewItemPrice">—</strong></div>
-                    <div class="detail-item"><span>Availability</span><strong id="viewItemAvailability">—</strong></div>
-                    <div class="detail-item"><span>Prep Time</span><strong id="viewItemPrepTime">—</strong></div>
-                    <div class="detail-item"><span>Description (EN)</span><strong id="viewItemDescEn">—</strong></div>
-                    <div class="detail-item"><span>Description (AM)</span><strong id="viewItemDescAm">—</strong></div>
-                    <div class="detail-item"><span>Created</span><strong id="viewItemCreated">—</strong></div>
-                    <div class="detail-item"><span>Last Updated</span><strong id="viewItemUpdated">—</strong></div>
+                    <div class="detail-item"><span>Item ID</span><strong id="viewItemId">â€”</strong></div>
+                    <div class="detail-item"><span>Price</span><strong id="viewItemPrice">â€”</strong></div>
+                    <div class="detail-item"><span>Availability</span><strong id="viewItemAvailability">â€”</strong></div>
+                    <div class="detail-item"><span>Prep Time</span><strong id="viewItemPrepTime">â€”</strong></div>
+                    <div class="detail-item"><span>Description (EN)</span><strong id="viewItemDescEn">â€”</strong></div>
+                    <div class="detail-item"><span>Description (AM)</span><strong id="viewItemDescAm">â€”</strong></div>
+                    <div class="detail-item"><span>Created</span><strong id="viewItemCreated">â€”</strong></div>
+                    <div class="detail-item"><span>Last Updated</span><strong id="viewItemUpdated">â€”</strong></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -259,8 +264,11 @@
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
+    <script src="../../js/image-upload-manager.js"></script>
+    <script src="../../js/image-gallery-manager.js"></script>
     <script src="../../js/admin-menu.js"></script>
 
     <script>
@@ -271,3 +279,5 @@
     </script>
 </body>
 </html>
+
+

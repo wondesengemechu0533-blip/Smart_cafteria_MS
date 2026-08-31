@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/auth');
-const { validateBody } = require('../middleware/validation.middleware');
+const { validateQuery } = require('../middleware/validation.middleware');
 const {
     getDailyOrdersReport,
     getSalesReport,
@@ -16,10 +16,10 @@ const { validateReportQuery } = require('../validators/report.validator');
 router.use(protect);
 router.use(authorize('admin'));
 
-router.get('/daily', validateBody(validateReportQuery), getDailyOrdersReport);
-router.get('/sales', validateBody(validateReportQuery), getSalesReport);
-router.get('/popular', validateBody(validateReportQuery), getPopularItemsReport);
-router.get('/payments', validateBody(validateReportQuery), getPaymentsReport);
+router.get('/daily', validateQuery(validateReportQuery), getDailyOrdersReport);
+router.get('/sales', validateQuery(validateReportQuery), getSalesReport);
+router.get('/popular', validateQuery(validateReportQuery), getPopularItemsReport);
+router.get('/payments', validateQuery(validateReportQuery), getPaymentsReport);
 router.get('/', getAllReports);
 router.get('/:id', getReportById);
 router.delete('/:id', deleteReport);

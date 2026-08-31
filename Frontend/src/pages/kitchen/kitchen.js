@@ -1,192 +1,260 @@
 /**
  * Kitchen Display System (KDS) Module
- * Features: Working Status Filters, State Progression, Dynamic Elapsed Time
+ * Features: Real-time Socket.io updates, Status Filters, State Progression, Dynamic Elapsed Time
  */
+
+import { socketClient } from "../../js/socket.js";
+import api from "../../js/api.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     KDS.init();
 });
 
 const KDS = {
-    // In-memory mock order data (Replace with database/API endpoint)
-    orders: [
-        {
-            id: '1042',
-            customer: 'John Doe',
-            items: [
-                { name: 'Cheese Burger', qty: 2, notes: 'No onions' },
-                { name: 'French Fries', qty: 1, notes: 'Extra crispy' }
-            ],
-            status: 'Preparing',
-            createdAt: new Date(Date.now() - 8 * 60000)
-        },
-        {
-            id: '1043',
-            customer: 'Abebe Bikila',
-            items: [
-                { name: 'Veggie Pizza', qty: 1, notes: '' },
-                { name: 'Coca Cola', qty: 2, notes: 'Ice only' }
-            ],
-            status: 'Pending',
-            createdAt: new Date(Date.now() - 2 * 60000)
-        },
-        {
-            id: '1044',
-            customer: 'Sara Tadesse',
-            items: [
-                { name: 'Chicken Wings', qty: 12, notes: 'Spicy' }
-            ],
-            status: 'Ready',
-            createdAt: new Date(Date.now() - 15 * 60000)
-        }
-    ],
-
+    orders: new Map(), // orderId -> order object
     currentFilter: 'all',
+    gridContainer: null,
+    pendingCountEl: null,
+    preparingCountEl: null,
+    readyCountEl: null,
+    updateInterval: null,
 
-    init() {
+    async init() {
         this.cacheDOM();
         this.bindEvents();
-        this.render();
+        await this.loadInitialOrders();
+        this.setupSocketListeners();
         this.startTimer();
+        this.render();
     },
 
     cacheDOM() {
-        this.tableBody = document.getElementById('kitchenOrdersBody');
-        // Targets buttons inside .filter-group
-        this.filterButtons = document.querySelectorAll('.filter-group .btn');
+        this.gridContainer = document.getElementById('kitchenTicketsGrid');
+        this.pendingCountEl = document.getElementById('pendingCount');
+        this.preparingCountEl = document.getElementById('preparingCount');
+        this.readyCountEl = document.getElementById('readyCount');
     },
 
     bindEvents() {
-        // FILTER BUTTON CLICK EVENT
-        this.filterButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetBtn = e.currentTarget;
-                
-                // Update active button styling
-                this.filterButtons.forEach(b => b.classList.remove('active'));
-                targetBtn.classList.add('active');
+        // No filter buttons in dashboard.html, but keep for compatibility
+    },
 
-
-                // Read filter status (e.g., "all", "Pending", "Preparing", "Ready", "Cancelled")
-                this.currentFilter = targetBtn.getAttribute('data-status') || targetBtn.innerText.trim();
-                
-                // Re-render UI with filtered data
-                this.render();
-            });
-        });
-
-        // ACTION BUTTON CLICK EVENT (Delegated)
-        if (this.tableBody) {
-            this.tableBody.addEventListener('click', (e) => {
-                const actionBtn = e.target.closest('.js-action-btn');
-                if (!actionBtn) return;
-
-                const orderId = actionBtn.dataset.id;
-                const nextStatus = actionBtn.dataset.nextStatus;
-                this.updateOrderStatus(orderId, nextStatus);
-            });
+    async loadInitialOrders() {
+        try {
+            const response = await api.get('/kitchen/dashboard');
+            if (response.success) {
+                // Combine all orders from different statuses
+                const allOrders = [
+                    ...(response.orders.pending || []),
+                    ...(response.orders.preparing || []),
+                    ...(response.orders.ready || [])
+                ];
+                allOrders.forEach(order => {
+                    this.orders.set(order.orderId, order);
+                });
+                this.updateStats();
+            }
+        } catch (error) {
+            console.error('Failed to load initial orders:', error);
         }
     },
 
-    // Filter logic handling case-insensitive status matching
-    getFilteredOrders() {
-        if (!this.currentFilter || this.currentFilter.toLowerCase() === 'all') {
-            // Exclude completed or archived orders from active view if needed
-            return this.orders.filter(order => order.status !== 'Completed');
+    setupSocketListeners() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            console.warn('No auth token found, skipping socket connection');
+            return;
         }
+
+        socketClient.connect(token);
+
+        socketClient.on('order:new', (order) => this.handleNewOrder(order));
+        socketClient.on('order:status', (order) => this.handleStatusUpdate(order));
+        socketClient.on('order:payment', (order) => this.handlePaymentComplete(order));
+    },
+
+    handleNewOrder(order) {
+        console.log('New order received:', order);
+        this.orders.set(order.orderId, order);
+        this.playNotificationSound();
+        this.updateStats();
+        this.render();
+    },
+
+    handleStatusUpdate(order) {
+        console.log('Order status update:', order);
+        this.orders.set(order.orderId, order);
+        this.updateStats();
+        this.render();
+    },
+
+    handlePaymentComplete(order) {
+        console.log('Payment completed for order:', order);
+        this.orders.set(order.orderId, order);
+        this.updateStats();
+        this.render();
+    },
+
+    updateStats() {
+        let pending = 0, preparing = 0, ready = 0;
         
-        return this.orders.filter(order => 
-            order.status.toLowerCase() === this.currentFilter.toLowerCase()
+        this.orders.forEach(order => {
+            const status = order.status?.toLowerCase();
+            if (status === 'pending') pending++;
+            else if (status === 'preparing') preparing++;
+            else if (status === 'ready') ready++;
+        });
+
+        if (this.pendingCountEl) this.pendingCountEl.textContent = pending;
+        if (this.preparingCountEl) this.preparingCountEl.textContent = preparing;
+        if (this.readyCountEl) this.readyCountEl.textContent = ready;
+    },
+
+    getFilteredOrders() {
+        const orders = Array.from(this.orders.values());
+        if (!this.currentFilter || this.currentFilter.toLowerCase() === 'all') {
+            return orders.filter(o => o.status !== 'served' && o.status !== 'cancelled');
+        }
+        return orders.filter(o => 
+            o.status?.toLowerCase() === this.currentFilter.toLowerCase()
         );
     },
 
     getElapsedTime(createdAt) {
+        if (!createdAt) return '00 mins';
         const diffMs = new Date() - new Date(createdAt);
         const diffMins = Math.floor(diffMs / 60000);
         return `${String(diffMins).padStart(2, '0')} mins`;
     },
 
-    updateOrderStatus(orderId, newStatus) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            this.render();
+    async updateOrderStatus(orderId, newStatus) {
+        try {
+            const endpoint = newStatus === 'preparing' ? 'accept' : 
+                            newStatus === 'ready' ? 'ready' : 
+                            newStatus === 'served' ? 'serve' : null;
+            
+            if (!endpoint) return;
+
+            const response = await api.patch(`/kitchen/orders/${orderId}/${endpoint}`);
+            if (response.success) {
+                // Socket will handle the update, but we can optimistically update
+                const order = this.orders.get(orderId);
+                if (order) {
+                    order.status = newStatus;
+                    if (newStatus === 'ready') order.readyTime = new Date().toISOString();
+                    if (newStatus === 'served') order.completedTime = new Date().toISOString();
+                    this.updateStats();
+                    this.render();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to update order status:', error);
+            alert('Failed to update order status. Please try again.');
         }
-    },
-
-    render() {
-        if (!this.tableBody) return;
-
-        const filtered = this.getFilteredOrders();
-
-        if (filtered.length === 0) {
-            this.tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
-                        No <strong>${this.currentFilter}</strong> orders found in queue.
-                    </td>
-                </tr>`;
-            return;
-        }
-
-        this.tableBody.innerHTML = filtered.map(order => {
-            const itemsFormatted = order.items
-                .map(i => `${i.qty}x ${i.name}${i.notes ? ` <small style="color:var(--text-muted)">(${i.notes})</small>` : ''}`)
-                .join(', ');
-
-            const badgeClass = this.getBadgeClass(order.status);
-            const actionButton = this.getActionButtonHTML(order);
-
-            return `
-                <tr data-order-id="${order.id}">
-                    <td><strong>#${order.id}</strong></td>
-                    <td>${order.customer}</td>
-                    <td>${itemsFormatted}</td>
-                    <td><span class="badge ${badgeClass}">${order.status}</span></td>
-                    <td class="elapsed-timer" data-created="${order.createdAt}">${this.getElapsedTime(order.createdAt)}</td>
-                    <td>${actionButton}</td>
-                </tr>
-            `;
-        }).join('');
     },
 
     getBadgeClass(status) {
-        switch (status) {
-            case 'Pending': return 'badge-pending';
-            case 'Preparing': return 'badge-preparing';
-            case 'Ready': return 'badge-ready';
-            case 'Cancelled': return 'badge-cancelled';
+        switch (status?.toLowerCase()) {
+            case 'pending': return 'badge-pending';
+            case 'preparing': return 'badge-preparing';
+            case 'ready': return 'badge-ready';
+            case 'cancelled': return 'badge-cancelled';
+            case 'served': return 'badge-served';
             default: return '';
         }
     },
 
     getActionButtonHTML(order) {
-        if (order.status === 'Pending') {
-            return `<button class="btn js-action-btn" data-id="${order.id}" data-next-status="Preparing">
+        const status = order.status?.toLowerCase();
+        const orderId = order.orderId;
+        
+        if (status === 'pending') {
+            return `<button class="btn btn-advance js-action-btn" data-id="${orderId}" data-next-status="preparing">
                         <i class="fa-solid fa-fire"></i> Start Prep
                     </button>`;
-        } else if (order.status === 'Preparing') {
-            return `<button class="btn js-action-btn" data-id="${order.id}" data-next-status="Ready">
+        } else if (status === 'preparing') {
+            return `<button class="btn btn-advance js-action-btn" data-id="${orderId}" data-next-status="ready">
                         <i class="fa-solid fa-check"></i> Mark Ready
                     </button>`;
-        } else if (order.status === 'Ready') {
-            return `<button class="btn js-action-btn" data-id="${order.id}" data-next-status="Completed">
-                        <i class="fa-solid fa-box-archive"></i> Complete
+        } else if (status === 'ready') {
+            return `<button class="btn btn-advance js-action-btn" data-id="${orderId}" data-next-status="served">
+                        <i class="fa-solid fa-box-archive"></i> Mark Served
                     </button>`;
         }
         return `<span style="color: var(--text-muted); font-size: 0.85rem;">Done</span>`;
     },
 
+    formatItems(order) {
+        return order.items?.map(item => 
+            `${item.quantity}x ${item.name}${item.notes ? ` <small style="color:var(--text-muted)">(${item.notes})</small>` : ''}`
+        ).join('<br>') || 'No items';
+    },
+
+    render() {
+        if (!this.gridContainer) return;
+
+        const filtered = this.getFilteredOrders();
+
+        if (filtered.length === 0) {
+            this.gridContainer.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 32px;">
+                    No <strong>${this.currentFilter}</strong> orders found in queue.
+                </div>`;
+            return;
+        }
+
+        this.gridContainer.innerHTML = filtered.map(order => `
+            <div class="ticket-card ${order.status?.toLowerCase()}" data-order-id="${order.orderId}">
+                <div class="ticket-header">
+                    <span class="ticket-id">#${order.orderId}</span>
+                    <span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span>
+                </div>
+                <div class="ticket-customer">
+                    <i class="fa-solid fa-user"></i> ${order.customerName || 'Unknown'}
+                </div>
+                ${order.tableNumber && order.tableNumber !== 'N/A' ? 
+                    `<div class="ticket-table"><i class="fa-solid fa-table"></i> Table: ${order.tableNumber}</div>` : ''}
+                <div class="ticket-items">
+                    ${this.formatItems(order)}
+                </div>
+                <div class="ticket-time">
+                    <i class="fa-solid fa-clock"></i> ${this.getElapsedTime(order.createdAt || order.orderTime)} ago
+                </div>
+                <div class="ticket-actions-group">
+                    ${this.getActionButtonHTML(order)}
+                </div>
+            </div>
+        `).join('');
+
+        // Bind action buttons
+        this.gridContainer.querySelectorAll('.js-action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const orderId = e.currentTarget.dataset.id;
+                const nextStatus = e.currentTarget.dataset.nextStatus;
+                this.updateOrderStatus(orderId, nextStatus);
+            });
+        });
+    },
+
+    playNotificationSound() {
+        const audio = document.getElementById('orderNotificationSound');
+        if (audio) {
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+    },
+
     startTimer() {
-        setInterval(() => {
-            
-            const timerElements = document.querySelectorAll('.elapsed-timer');
-            timerElements.forEach(el => {
-                const createdAt = el.dataset.created;
-                if (createdAt) {
-                    el.textContent = this.getElapsedTime(createdAt);
+        this.updateInterval = setInterval(() => {
+            this.gridContainer?.querySelectorAll('.ticket-time').forEach(el => {
+                const orderId = el.closest('.ticket-card')?.dataset.orderId;
+                const order = orderId ? this.orders.get(orderId) : null;
+                if (order) {
+                    el.innerHTML = `<i class="fa-solid fa-clock"></i> ${this.getElapsedTime(order.createdAt || order.orderTime)} ago`;
                 }
             });
-        }, 30000); // Check every 30 seconds
+        }, 30000); // Update every 30 seconds
     }
 };
+
+// Make KDS globally accessible for debugging
+window.KDS = KDS;

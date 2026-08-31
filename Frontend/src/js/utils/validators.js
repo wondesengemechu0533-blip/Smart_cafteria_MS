@@ -130,10 +130,10 @@ export function validateQuantity(quantity, min = 1, max = 99) {
         return result(false, 'Quantity must be a whole number');
     }
     if (num < min) {
-        return result(false, Quantity must be at least ${min});
+        return result(false, `Quantity must be at least ${min}`);
     }
     if (num > max) {
-        return result(false, Quantity cannot exceed ${max});
+        return result(false, `Quantity cannot exceed ${max}`);
     }
     return result(true);
 }
@@ -155,10 +155,10 @@ export function validatePrice(price, min = 0, max = 10000) {
         return result(false, 'Price must be a number');
     }
     if (num < min) {
-        return result(false, Price cannot be less than ${min});
+        return result(false, `Price cannot be less than ${min}`);
     }
     if (num > max) {
-        return result(false, Price cannot exceed ${max});
+        return result(false, `Price cannot exceed ${max}`);
     }
     return result(true);
 }
@@ -171,11 +171,11 @@ export function validatePrice(price, min = 0, max = 10000) {
  * @returns {ValidationResult}
  */
 export function validateRequired(value, fieldName = 'Field') {
-    if (value === undefined  value === null  value === '') {
-        return result(false, ${fieldName} is required);
-    }
-    if (typeof value === 'string' && value.trim() === '') {
-        return result(false, ${fieldName} is required);
+    if (value === undefined || value === null || value === '') {
+        return result(false, `${fieldName} is required`);
+    }
+    if (typeof value === 'string' && value.trim() === '') {
+        return result(false, `${fieldName} is required`);
     }
     return result(true);
 }

@@ -81,7 +81,7 @@
     tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Loading feedback...</td></tr>';
 
     try {
-      var data = await window.AdminAPI.get("/admin/feedback", {
+      var data = await window.AdminAPI.get("/feedback", {
         page: state.page,
         limit: state.limit,
         search: state.search,
@@ -183,7 +183,7 @@
     }
 
     try {
-      await window.AdminAPI.patch("/admin/feedback/" + feedbackId + "/reply", {
+      await window.AdminAPI.patch("/feedback/" + feedbackId + "/reply", {
         reply: reply,
         resolved: markResolved
       });
@@ -199,7 +199,7 @@
     if (!window.confirm('Delete feedback from "' + (feedback.user?.name || "User") + '"? This action cannot be undone.')) return;
 
     try {
-      await window.AdminAPI.del("/admin/feedback/" + (feedback._id || feedback.id));
+      await window.AdminAPI.del("/feedback/" + (feedback._id || feedback.id));
       if (window.AdminToast) window.AdminToast.success("Feedback deleted successfully");
       if (state.total === 1 && state.page > 1) state.page--;
       loadFeedback();
@@ -281,7 +281,7 @@
         });
         if (!feedback) {
           try {
-            var data = await window.AdminAPI.get("/admin/feedback/" + id);
+            var data = await window.AdminAPI.get("/feedback/" + id);
             feedback = data.feedback;
           } catch (e) {
             feedback = null;

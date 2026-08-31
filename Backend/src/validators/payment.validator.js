@@ -10,11 +10,12 @@ const {
 const validatePaymentInput = (data) => {
     const errors = {};
 
-    const orderIdErr = validateObjectId(data.orderId, 'Order ID');
-    if (orderIdErr) errors.orderId = orderIdErr;
+    if (!data.orderId || typeof data.orderId !== 'string' || data.orderId.trim().length === 0) {
+        errors.orderId = 'Order ID is required';
+    }
 
-    const methodErr = validateEnum(data.paymentMethod, ['CHAPA', 'TELEBIRR'], 'Payment method');
-    if (methodErr) errors.paymentMethod = methodErr;
+    const methodErr = validateEnum(data.method, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
+    if (methodErr) errors.method = methodErr;
 
     return { isValid: Object.keys(errors).length === 0, errors };
 };
@@ -33,9 +34,10 @@ const validatePaymentVerification = (data) => {
 
 const validateAdminPaymentFilter = (data) => {
     const errors = {};
+    if (!data) return { isValid: true, errors };
 
     if (data.method) {
-        const methodErr = validateEnum(data.method, ['CHAPA', 'TELEBIRR'], 'Payment method');
+        const methodErr = validateEnum(data.method, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
         if (methodErr) errors.method = methodErr;
     }
 

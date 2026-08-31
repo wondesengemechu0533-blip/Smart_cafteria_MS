@@ -461,6 +461,19 @@ button, input, select, textarea {
 .metric-icon.teal { background: #14b8a6; }
 .metric-icon.indigo { background: #6366f1; }
 
+/* Background utility classes for metric icons (matching existing HTML patterns) */
+.metric-icon.bg-indigo { background: #6366f1; }
+.metric-icon.bg-blue { background: #3b82f6; }
+.metric-icon.bg-orange { background: #f97316; }
+.metric-icon.bg-red { background: #ef4444; }
+.metric-icon.bg-green { background: #10b981; }
+.metric-icon.bg-yellow { background: #f59e0b; }
+.metric-icon.bg-cyan { background: #06b6d4; }
+.metric-icon.bg-purple { background: #8b5cf6; }
+.metric-icon.bg-pink { background: #ec4899; }
+.metric-icon.bg-teal { background: #14b8a6; }
+.metric-icon.bg-gold { background: #fbbf24; }
+
 .metric-content { flex: 1; min-width: 0; }
 .metric-label { font-size: var(--text-xs); color: var(--color-neutral); font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; }
 .metric-value { font-size: var(--text-2xl); font-weight: 700; color: #111827; line-height: var(--line-height-tight); margin-top: var(--space-1); }
@@ -880,3 +893,18 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 /* ==========================================================================
    END OF ADMIN.CSS
    ========================================================================== */
+
+/* ==========================================================================
+   ALERT BANNER (admin settings / profile)
+   ========================================================================== */
+.alert-banner {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.alert-banner.success { background: var(--color-success-light); color: var(--color-success-text); border: 1px solid var(--color-success-text); }
+.alert-banner.error { background: var(--color-danger-light); color: var(--color-danger-text); border: 1px solid var(--color-danger-text); }
+.alert-banner.warning { background: var(--color-warning-light); color: #92400e; border: 1px solid #92400e; }
+.alert-banner.info { background: var(--color-info-light); color: #1e40af; border: 1px solid #1e40af; }

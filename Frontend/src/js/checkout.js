@@ -1,4 +1,12 @@
 import api from "./api.js";
+import { validateName, validatePhone, validateRequired } from "./utils/validators.js";
+
+// Check authentication before loading checkout
+const authToken = localStorage.getItem("auth_token");
+if (!authToken) {
+    alert("Please log in to place an order.");
+    window.location.href = "../common/login.html";
+}
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -276,6 +284,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                 }
 
+                // Show Chapa test-mode instructions only when Chapa is selected.
+                const chapaTestInfo =
+                    document.getElementById(
+                        "chapa-test-info"
+                    );
+
+                if (chapaTestInfo) {
+
+                    chapaTestInfo.style.display =
+                        event.target.value === "CHAPA"
+                            ? "block"
+                            : "none";
+                }
+
             }
         );
 
@@ -394,6 +416,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? customerPhoneElement.value.trim()
                         : "";
 
+                // Validate name
+                const nameValidation = validateName(customerName);
+                if (!nameValidation.valid) {
+                    alert(nameValidation.error);
+                    if (customerNameElement) customerNameElement.focus();
+                    return;
+                }
+
+                // Validate phone
+                const phoneValidation = validatePhone(customerPhone);
+                if (!phoneValidation.valid) {
+                    alert(phoneValidation.error);
+                    if (customerPhoneElement) customerPhoneElement.focus();
+                    return;
+                }
+
 
                 const paymentMethod =
                     selectedPaymentMethod.value;
@@ -422,6 +460,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const totalAmount =
                     subtotal + SERVICE_FEE_ETB;
 
+                // Map cart items to backend expected format
+                const orderItems = cart.map(item => ({
+                    id: item.menuItemId || item.id,
+                    name: item.name,
+                    quantity: Number(item.quantity) || 1,
+                    price: Number(item.price) || 0
+                }));
 
                 const orderId =
                     "ET-" +
@@ -454,7 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         paymentMethod,
 
                     items:
-                        cart,
+                        orderItems,
 
                     subtotal:
                         subtotal,
@@ -473,17 +518,106 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const orderResponse = await api.post("/orders", newOrder);
                     const createdOrderId = orderResponse.order?.orderId || orderId;
+                    
+                    // Try real payment first, fallback to simulation if not configured
+                    let checkoutUrl = null;
+                    let paymentSuccess = false;
+                    
                     const paymentEndpoint = paymentMethod === "TELEBIRR"
                         ? "/payments/telebirr/initialize"
-                        : "/payments/chapa/initialize";
-                    const paymentResponse = await api.post(paymentEndpoint, {
-                        orderId: createdOrderId,
-                        returnUrl: `${window.location.origin}/Frontend/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(createdOrderId)}`
-                    });
+                        : paymentMethod === "CBE_BIRR"
+                            ? "/payments/cbe-birr/initialize"
+                            : "/payments/chapa/initialize";
+                    
+                    try {
+                        const paymentResponse = await api.post(paymentEndpoint, {
+                            orderId: createdOrderId,
+                            returnUrl: `${window.location.origin}/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(createdOrderId)}`
+                        });
+                        
+                        checkoutUrl = paymentResponse.data?.checkoutUrl || paymentResponse.checkoutUrl;
 
-                    const checkoutUrl = paymentResponse.data?.checkoutUrl || paymentResponse.checkoutUrl;
+                        if (!checkoutUrl) {
+                            throw new Error("Provider did not return a checkout URL");
+                        }
+
+                        // Remember the Chapa transaction reference so the
+                        // order-tracking page can verify payment after the
+                        // user completes checkout on Chapa's hosted page.
+                        if (paymentMethod === "CHAPA") {
+                            const txRef =
+                                paymentResponse.transactionReference ||
+                                paymentResponse.data?.transactionReference ||
+                                paymentResponse.data?.tx_ref ||
+                                "";
+                            if (txRef) {
+                                try {
+                                    localStorage.setItem(
+                                        "chapa_pending_payment",
+                                        JSON.stringify({
+                                            orderId: createdOrderId,
+                                            txRef,
+                                            paymentId:
+                                                paymentResponse.data?.paymentId ||
+                                                paymentResponse.data?.id ||
+                                                ""
+                                        })
+                                    );
+                                } catch (e) {
+                                    console.warn("Could not save pending Chapa payment:", e);
+                                }
+                            }
+                        }
+                    } catch (paymentError) {
+                        console.log('Real payment failed, trying simulation:', paymentError.message);
+                        // Fallback to simulation payment with checkout URL
+                        try {
+                            const simResponse = await api.post("/payments/simulate", {
+                                orderId: createdOrderId,
+                                method: paymentMethod,
+                                phone: customerPhone,
+                                simulationMode: 'checkout',
+                                returnUrl: `${window.location.origin}/src/pages/customer/order-tracking.html?orderId=${encodeURIComponent(createdOrderId)}`
+                            });
+                            
+                            checkoutUrl = simResponse.data?.checkoutUrl || simResponse.checkoutUrl;
+                        } catch (simError) {
+                            console.error('Simulation payment also failed:', simError);
+                            throw new Error('Payment initialization failed. Please try again.');
+                        }
+                    }
+                    
                     if (!checkoutUrl) {
                         throw new Error(`${paymentMethod} did not return a checkout URL.`);
+                    }
+
+                    // Persist the order locally so the receipt / order-tracking
+                    // page can render it immediately after payment, even when
+                    // no backend order-history page is open.
+                    const orderRecord = {
+                        ...newOrder,
+                        orderId: createdOrderId,
+                        paymentMethod: paymentMethod,
+                        paymentStatus: "PENDING",
+                        status: "In Progress"
+                    };
+                    try {
+                        localStorage.setItem("latestOrder", JSON.stringify(orderRecord));
+                        let history = JSON.parse(localStorage.getItem("orderHistory")) || [];
+                        let exists = false;
+                        history = history.map((o) => {
+                            if ((o.orderId || o.id) === createdOrderId) {
+                                exists = true;
+                                return orderRecord;
+                            }
+                            return o;
+                        });
+                        if (!exists) {
+                            history.unshift(orderRecord);
+                        }
+                        localStorage.setItem("orderHistory", JSON.stringify(history));
+                    } catch (e) {
+                        console.warn("Could not save order locally:", e);
                     }
 
                     localStorage.removeItem(CART_KEY);
@@ -491,7 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.dispatchEvent(new CustomEvent("cart:updated"));
                     window.location.href = checkoutUrl;
                 } catch (error) {
-                    alert(error.message || "Unable to start Chapa payment.");
+                    alert(error.message || "Unable to start payment.");
                 }
 
             }

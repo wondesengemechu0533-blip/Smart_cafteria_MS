@@ -1,0 +1,32 @@
+{
+  "watch": [
+    "server.js",
+    "src/**/*.js"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "node_modules/**",
+    "**/node_modules/**",
+    "logs/**",
+    "**/logs/**",
+    "*.log",
+    "uploads/**",
+    "**/uploads/**",
+    "public/**",
+    "tests/**",
+    ".git/**"
+  ],
+  "ignoreRoot": [
+    ".git",
+    "node_modules",
+    "bower_components",
+    ".nyc_output",
+    "coverage",
+    ".sass-cache",
+    "logs"
+  ],
+  "delay": "1500",
+  "legacyWatch": false,
+  "restartable": "rs",
+  "quiet": false
+}

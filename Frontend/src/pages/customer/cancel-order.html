@@ -1,4 +1,4 @@
-
+﻿
 
 
 <!DOCTYPE html>
@@ -1679,7 +1679,7 @@
                                         item.name?.[lang] ||
                                         item.name?.en ||
                                         item.name
-                                    } × ${item.quantity}`
+                                    } Ã— ${item.quantity}`
                             )
                             .join(', ');
 
@@ -1763,7 +1763,7 @@
                                             font-weight:800;
                                         "
                                     >
-                                        ${order.totalAmount} ብር
+                                        ${order.totalAmount} á‰¥áˆ­
                                     </span>
 
                                 </div>
@@ -2091,12 +2091,16 @@
         // =========================================================
 
         console.log(
-            `❌ Cancel order page loaded for order: ${
+            `âŒ Cancel order page loaded for order: ${
                 orderId || 'none'
             }`
         );
 
     </script>
-
+    <script type="module" src="../../js/utils/i18n.js"></script>
 </body>
 </html>
+
+
+
+
