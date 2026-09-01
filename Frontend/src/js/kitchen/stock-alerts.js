@@ -48,7 +48,7 @@ function renderAlerts() {
     if (allAlerts.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">✓</div>
+                <div class="empty-icon"><i class="fa-solid fa-check"></i></div>
                 <p>No stock alerts at the moment</p>
             </div>
         `;
@@ -120,11 +120,11 @@ function filterAlerts() {
 
 function getSeverityIcon(severity) {
     switch(severity) {
-        case 'critical': return '🔴';
-        case 'high': return '🟠';
-        case 'medium': return '🟡';
-        case 'low': return '🔵';
-        default: return '⚠️';
+        case 'critical': return '<i class="fa-solid fa-circle-exclamation" style="color:#dc2626"></i>';
+        case 'high': return '<i class="fa-solid fa-circle-exclamation" style="color:#ea580c"></i>';
+        case 'medium': return '<i class="fa-solid fa-circle-exclamation" style="color:#eab308"></i>';
+        case 'low': return '<i class="fa-solid fa-circle-info" style="color:#2563eb"></i>';
+        default: return '<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i>';
     }
 }
 

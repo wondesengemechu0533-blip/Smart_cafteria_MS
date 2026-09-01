@@ -51,7 +51,7 @@ function renderItems(items) {
             <div class="item-header">
                 <div class="item-name">${item.name.en || item.name}</div>
                 <span class="availability-badge ${item.isAvailable ? 'badge-available' : 'badge-unavailable'}">
-                    ${item.isAvailable ? '✓ Available' : '✗ Unavailable'}
+                    ${item.isAvailable ? '<i class="fa-solid fa-check"></i> Available' : '<i class="fa-solid fa-xmark"></i> Unavailable'}
                 </span>
             </div>
 

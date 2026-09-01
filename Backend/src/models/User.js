@@ -57,6 +57,22 @@ const UserSchema = new mongoose.Schema(
         "Please provide a valid Ethiopian phone number (09XXXXXXXX or 07XXXXXXXX)",
       ],
     },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      minlength: [3, "Username must be at least 3 characters"],
+      maxlength: [30, "Username cannot exceed 30 characters"],
+      match: [/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"],
+      default: null,
+    },
+    address: {
+      type: String,
+      trim: true,
+      maxlength: [255, "Address cannot exceed 255 characters"],
+      default: null,
+    },
     password: {
       type: String,
       required: [true, "Password is required"],
@@ -91,6 +107,11 @@ const UserSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    agreedToTerms: {
+      type: Boolean,
+      required: [true, "You must agree to the Terms & Conditions"],
+      default: false,
     },
     createdAt: {
       type: Date,
@@ -132,6 +153,8 @@ UserSchema.methods.getPublicProfile = function () {
     name: this.name,
     email: this.email,
     phone: this.phone,
+    username: this.username,
+    address: this.address,
     role: this.role,
     balance: this.balance,
     status: this.status,

@@ -132,8 +132,8 @@
             background:
                 linear-gradient(
                     180deg,
-                    rgba(15, 23, 42, 0.10),
-                    rgba(15, 23, 42, 0.78)
+                    rgba(15, 23, 42, 0.05),
+                    rgba(15, 23, 42, 0.16)
                 ),
                 url("../../../public/assets/images/food/main-meals/grilled-meat.jpeg");
             background-size: cover;
@@ -146,7 +146,7 @@
             background:
                 linear-gradient(
                     135deg,
-                    rgba(37, 99, 235, 0.48),
+                    rgba(37, 99, 235, 0.10),
                     transparent 60%
                 );
         }
@@ -154,6 +154,7 @@
             position: relative;
             z-index: 2;
             max-width: 320px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
         .brand-icon {
             width: 38px;
@@ -350,6 +351,63 @@
         .login-redirect a:hover {
             text-decoration: underline;
         }
+        /* ===== INLINE FIELD VALIDATION ===== */
+        .field-error {
+            display: none;
+            color: #b42318;
+            font-size: 10px;
+            margin-top: 3px;
+            padding-left: 2px;
+        }
+        .field-error i {
+            margin-right: 3px;
+            font-size: 9px;
+        }
+        .form-group.invalid input {
+            border-color: #f04438;
+            background: #fff8f7;
+        }
+        .form-group.invalid input:focus {
+            border-color: #f04438;
+            box-shadow: 0 0 0 3px rgba(240, 68, 56, 0.12);
+        }
+        .form-group.valid input {
+            border-color: #12b76a;
+            background: #f7fdf9;
+        }
+        .form-group.valid input:focus {
+            border-color: #12b76a;
+            box-shadow: 0 0 0 3px rgba(18, 183, 106, 0.12);
+        }
+        .validation-icon {
+            position: absolute;
+            right: 26px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .validation-icon i {
+            display: none;
+        }
+        .form-group.invalid .validation-icon {
+            display: inline;
+        }
+        .form-group.invalid .validation-icon .fa-circle-xmark {
+            display: inline;
+            color: #f04438;
+        }
+        .form-group.valid .validation-icon {
+            display: inline;
+        }
+        .form-group.valid .validation-icon .fa-circle-check {
+            display: inline;
+            color: #12b76a;
+        }
+        .input-box.has-toggle .validation-icon {
+            right: 38px;
+        }
         @media (max-width: 900px) {
             .register-card {
                 grid-template-columns: 1fr;
@@ -423,55 +481,117 @@
                 <form id="registerForm" novalidate>
                     <div class="form-grid">
                         <!-- FULL NAME -->
-                        <div class="form-group full-width">
+                        <div class="form-group full-width" id="fullNameGroup">
                             <label for="fullName">Full Name <span>*</span></label>
                             <div class="input-box">
-                                <input type="text" id="fullName" placeholder="Enter your full name" required>
+                                <input type="text" id="fullName" placeholder="Enter your full name" required maxlength="100">
                                 <i class="fa-solid fa-user"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
                             </div>
+                            <div class="field-error" id="fullNameError"></div>
+                        </div>
+
+                        <!-- USERNAME (optional) -->
+                        <div class="form-group full-width" id="usernameGroup">
+                            <label for="regUsername">Username <small style="color:var(--gray)">(optional)</small></label>
+                            <div class="input-box">
+                                <input type="text" id="regUsername" placeholder="e.g. john_doe" maxlength="30">
+                                <i class="fa-solid fa-at"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                            </div>
+                            <div class="field-error" id="usernameError"></div>
                         </div>
 
                         <!-- EMAIL -->
-                        <div class="form-group">
+                        <div class="form-group" id="emailGroup">
                             <label for="regEmail">Email Address <span>*</span></label>
                             <div class="input-box">
                                 <input type="email" id="regEmail" placeholder="name@example.com" required>
                                 <i class="fa-solid fa-envelope"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
                             </div>
+                            <div class="field-error" id="emailError"></div>
                         </div>
 
                         <!-- PHONE -->
-                        <div class="form-group">
+                        <div class="form-group" id="phoneGroup">
                             <label for="regPhone">Phone Number <span>*</span></label>
                             <div class="input-box">
-                                <input type="tel" id="regPhone" placeholder="09XXXXXXXX" required>
+                                <input type="tel" id="regPhone" placeholder="09XXXXXXXX" required maxlength="11">
                                 <i class="fa-solid fa-phone"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
                             </div>
+                            <div class="field-error" id="phoneError"></div>
                         </div>
 
                         <!-- PASSWORD -->
-                        <div class="form-group">
+                        <div class="form-group" id="passwordGroup">
                             <label for="regPassword">Password <span>*</span></label>
-                            <div class="input-box">
-                                <input type="password" id="regPassword" placeholder="At least 6 characters" required>
+                            <div class="input-box has-toggle">
+                                <input type="password" id="regPassword" placeholder="At least 8 characters" required>
                                 <i class="fa-solid fa-lock"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
                                 <button type="button" class="toggle-password" data-target="regPassword" aria-label="Show password">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
                             </div>
+                            <div class="field-error" id="passwordError"></div>
                         </div>
 
                         <!-- CONFIRM PASSWORD -->
-                        <div class="form-group">
+                        <div class="form-group" id="confirmPasswordGroup">
                             <label for="confirmPassword">Confirm Password <span>*</span></label>
-                            <div class="input-box">
+                            <div class="input-box has-toggle">
                                 <input type="password" id="confirmPassword" placeholder="Repeat password" required>
                                 <i class="fa-solid fa-lock"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
                                 <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Show password">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
                             </div>
+                            <div class="field-error" id="confirmPasswordError"></div>
                         </div>
+
+                        <!-- ADDRESS (optional) -->
+                        <div class="form-group full-width" id="addressGroup">
+                            <label for="regAddress">Address <small style="color:var(--gray)">(optional)</small></label>
+                            <div class="input-box">
+                                <input type="text" id="regAddress" placeholder="Your delivery or dorm address" maxlength="255">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span class="validation-icon">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                            </div>
+                            <div class="field-error" id="addressError"></div>
+                        </div>
+                    </div>
+
+                    <!-- TERMS & CONDITIONS -->
+                    <div style="margin-bottom:10px;">
+                        <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#334155;cursor:pointer;">
+                            <input type="checkbox" id="agreeTerms" required style="accent-color:var(--primary);">
+                            I agree to the Terms & Conditions <span style="color:var(--primary);">*</span>
+                        </label>
+                        <div id="termsError" class="field-error" style="display:none;"></div>
                     </div>
 
                     <!-- SUBMIT BUTTON -->
@@ -496,6 +616,33 @@
         const regSuccess = document.getElementById("registerSuccess");
         const regSubmitBtn = document.getElementById("regSubmitBtn");
 
+        const fieldGroups = {
+            fullName: document.getElementById("fullNameGroup"),
+            username: document.getElementById("usernameGroup"),
+            email: document.getElementById("emailGroup"),
+            phone: document.getElementById("phoneGroup"),
+            password: document.getElementById("passwordGroup"),
+            confirmPassword: document.getElementById("confirmPasswordGroup"),
+            address: document.getElementById("addressGroup")
+        };
+
+        const errorEls = {
+            fullName: document.getElementById("fullNameError"),
+            username: document.getElementById("usernameError"),
+            email: document.getElementById("emailError"),
+            phone: document.getElementById("phoneError"),
+            password: document.getElementById("passwordError"),
+            confirmPassword: document.getElementById("confirmPasswordError"),
+            address: document.getElementById("addressError"),
+            agreeTerms: document.getElementById("termsError")
+        };
+
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const PHONE_REGEX = /^(09|07)[0-9]{8}$/;
+        const NAME_REGEX = /^[a-zA-Z\s]+$/;
+        const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+        const SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
         document.querySelectorAll(".toggle-password").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 const target = document.getElementById(btn.dataset.target);
@@ -514,47 +661,212 @@
             });
         });
 
+        function showFieldError(field, message) {
+            if (fieldGroups[field]) {
+                fieldGroups[field].classList.add("invalid");
+                fieldGroups[field].classList.remove("valid");
+            }
+            if (errorEls[field]) {
+                errorEls[field].innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>' + (message || "");
+                errorEls[field].style.display = "block";
+            }
+        }
+
+        function clearFieldError(field, showValid) {
+            if (fieldGroups[field]) {
+                fieldGroups[field].classList.remove("invalid");
+                if (showValid) {
+                    fieldGroups[field].classList.add("valid");
+                } else {
+                    fieldGroups[field].classList.remove("valid");
+                }
+            }
+            if (errorEls[field]) {
+                errorEls[field].innerHTML = "";
+                errorEls[field].style.display = "none";
+            }
+        }
+
+        function getValue(id) {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : "";
+        }
+
+        function validateField(field, { showValid = true } = {}) {
+            switch (field) {
+                case "fullName": {
+                    const v = getValue("fullName");
+                    if (!v) { showFieldError("fullName", "Full name is required."); return false; }
+                    if (v.length < 2) { showFieldError("fullName", "Full name must be at least 2 characters."); return false; }
+                    if (v.length > 100) { showFieldError("fullName", "Full name cannot exceed 100 characters."); return false; }
+                    if (!NAME_REGEX.test(v)) { showFieldError("fullName", "Full name can only contain letters and spaces."); return false; }
+                    clearFieldError("fullName", showValid);
+                    return true;
+                }
+                case "username": {
+                    const v = getValue("regUsername");
+                    if (!v) { clearFieldError("username", false); return true; }
+                    if (v.length < 3) { showFieldError("username", "Username must be at least 3 characters."); return false; }
+                    if (v.length > 30) { showFieldError("username", "Username cannot exceed 30 characters."); return false; }
+                    if (!USERNAME_REGEX.test(v)) { showFieldError("username", "Username can only contain letters, numbers, and underscores."); return false; }
+                    clearFieldError("username", showValid);
+                    return true;
+                }
+                case "email": {
+                    const v = getValue("regEmail");
+                    if (!v) { showFieldError("email", "Email address is required."); return false; }
+                    if (!EMAIL_REGEX.test(v)) { showFieldError("email", "Please enter a valid email address."); return false; }
+                    clearFieldError("email", showValid);
+                    return true;
+                }
+                case "phone": {
+                    const v = getValue("regPhone");
+                    if (!v) { showFieldError("phone", "Phone number is required."); return false; }
+                    if (!PHONE_REGEX.test(v)) { showFieldError("phone", "Enter a valid phone number (09XXXXXXXX or 07XXXXXXXX)."); return false; }
+                    clearFieldError("phone", showValid);
+                    return true;
+                }
+                case "password": {
+                    const v = document.getElementById("regPassword").value;
+                    if (!v) { showFieldError("password", "Password is required."); return false; }
+                    if (v.length < 8) { showFieldError("password", "Password must be at least 8 characters long."); return false; }
+                    if (!/[A-Z]/.test(v)) { showFieldError("password", "Password must contain at least one uppercase letter."); return false; }
+                    if (!/[a-z]/.test(v)) { showFieldError("password", "Password must contain at least one lowercase letter."); return false; }
+                    if (!/[0-9]/.test(v)) { showFieldError("password", "Password must contain at least one number."); return false; }
+                    if (!SPECIAL_CHARS.test(v)) { showFieldError("password", "Password must contain at least one special character."); return false; }
+                    clearFieldError("password", showValid);
+                    return true;
+                }
+                case "confirmPassword": {
+                    const p = document.getElementById("regPassword").value;
+                    const v = document.getElementById("confirmPassword").value;
+                    if (!v) { showFieldError("confirmPassword", "Please confirm your password."); return false; }
+                    if (v !== p) { showFieldError("confirmPassword", "Passwords do not match."); return false; }
+                    clearFieldError("confirmPassword", showValid);
+                    return true;
+                }
+                case "address": {
+                    const v = getValue("regAddress");
+                    if (v.length > 255) { showFieldError("address", "Address cannot exceed 255 characters."); return false; }
+                    clearFieldError("address", false);
+                    return true;
+                }
+                default:
+                    return true;
+            }
+        }
+
+        ["fullName", "regUsername", "regEmail", "regPhone", "regAddress"].forEach(function (id) {
+            document.getElementById(id).addEventListener("blur", function () {
+                const field = id === "regUsername" ? "username" :
+                              id === "regEmail" ? "email" :
+                              id === "regPhone" ? "phone" :
+                              id === "regAddress" ? "address" : "fullName";
+                validateField(field);
+            });
+        });
+
+        document.getElementById("regPassword").addEventListener("blur", function () {
+            validateField("password");
+        });
+
+        document.getElementById("confirmPassword").addEventListener("input", function () {
+            if (fieldGroups.confirmPassword.classList.contains("invalid")) {
+                validateField("confirmPassword");
+            }
+        });
+        document.getElementById("confirmPassword").addEventListener("blur", function () {
+            validateField("confirmPassword");
+        });
+
+        document.getElementById("agreeTerms").addEventListener("change", function () {
+            const termsErr = document.getElementById("termsError");
+            if (this.checked) {
+                termsErr.style.display = "none";
+            }
+        });
+
+        function mapBackendErrors(errors) {
+            if (!errors || typeof errors !== "object") return;
+            const map = {
+                name: "fullName",
+                fullName: "fullName",
+                username: "username",
+                email: "email",
+                phone: "phone",
+                password: "password",
+                confirmPassword: "confirmPassword",
+                address: "address",
+                agreedToTerms: "agreeTerms"
+            };
+            Object.keys(errors).forEach(function (key) {
+                const field = map[key];
+                if (field) {
+                    showFieldError(field, errors[key]);
+                } else if (key === "agreeTerms") {
+                    const termsErr = document.getElementById("termsError");
+                    termsErr.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>' + errors[key];
+                    termsErr.style.display = "block";
+                }
+            });
+        }
+
         regForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             regError.style.display = "none";
             regSuccess.style.display = "none";
 
-            const fullName = document.getElementById("fullName").value.trim();
-            const email = document.getElementById("regEmail").value.trim().toLowerCase();
-            const phone = document.getElementById("regPhone").value.trim();
-            const password = document.getElementById("regPassword").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
+            const validations = {
+                fullName: validateField("fullName", { showValid: false }),
+                username: validateField("username", { showValid: false }),
+                email: validateField("email", { showValid: false }),
+                phone: validateField("phone", { showValid: false }),
+                password: validateField("password", { showValid: false }),
+                confirmPassword: validateField("confirmPassword", { showValid: false }),
+                address: validateField("address", { showValid: false })
+            };
 
-            if (!fullName || !email || !phone || !password || !confirmPassword) {
-                showRegError("Please fill in all required fields.");
+            const agreedToTerms = document.getElementById("agreeTerms").checked;
+            if (!agreedToTerms) {
+                const termsErr = document.getElementById("termsError");
+                termsErr.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> You must agree to the Terms & Conditions.';
+                termsErr.style.display = "block";
+                validations.agreeTerms = false;
+            } else {
+                validations.agreeTerms = true;
+            }
+
+            const allValid = Object.values(validations).every(Boolean);
+            if (!allValid) {
+                showRegError("Please fix the highlighted fields below.");
                 return;
             }
 
-            if (password.length < 6) {
-                showRegError("Password must be at least 6 characters long.");
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showRegError("Passwords do not match.");
-                return;
-            }
-
-            // Show loading state
             regSubmitBtn.disabled = true;
             const originalBtnHtml = regSubmitBtn.innerHTML;
             regSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering...';
 
+            const fullName = getValue("fullName");
+            const username = getValue("regUsername");
+            const email = getValue("regEmail").toLowerCase();
+            const phone = getValue("regPhone");
+            const password = document.getElementById("regPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const address = getValue("regAddress");
+
             try {
-                let response;
                 const reqBody = JSON.stringify({
                     name: fullName,
+                    username: username || undefined,
                     email: email,
                     phone: phone,
                     password: password,
-                    confirmPassword: confirmPassword
+                    confirmPassword: confirmPassword,
+                    address: address || undefined,
+                    agreedToTerms: true
                 });
 
+                let response;
                 try {
                     response = await fetch("http://localhost:5000/api/v1/auth/register", {
                         method: "POST",
@@ -572,28 +884,18 @@
                 const data = await response.json();
 
                 if (!response.ok || !data.success) {
-                    showRegError(data.message || data.error || "Registration failed. Please try again.");
+                    mapBackendErrors(data.errors);
+                    showRegError(data.error || data.message || "Registration failed. Please try again.");
                     regSubmitBtn.disabled = false;
                     regSubmitBtn.innerHTML = originalBtnHtml;
                     return;
                 }
 
-                // Save to registeredUsers list as local fallback
-                const userObj = data.user || { name: fullName, email: email, phone: phone, role: "customer" };
-                let registeredUsers = [];
-                try {
-                    registeredUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
-                } catch (err) {
-                    registeredUsers = [];
-                }
-                registeredUsers.push({ id: userObj.id || Date.now(), name: fullName, email, phone, role: "CUSTOMER" });
-                localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
-
                 showRegSuccess("Registration successful! Redirecting to login page...");
 
                 setTimeout(function () {
                     window.location.href = "login.html";
-                }, 1200);
+                }, 1500);
 
             } catch (err) {
                 console.error("Registration error:", err);

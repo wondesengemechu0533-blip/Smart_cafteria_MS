@@ -22,11 +22,11 @@ exports.submitFeedback = async (req, res) => {
   try {
     const { orderId, rating, comment, category, dishName } = req.body;
 
-    // ✅ Validate required fields
-    if (!orderId || !rating) {
+    // ✅ Validate rating (required)
+    if (!rating) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        error: "Order ID and rating are required",
+        error: "Rating is required",
       });
     }
 
@@ -39,33 +39,35 @@ exports.submitFeedback = async (req, res) => {
       });
     }
 
-    // ✅ Check if order exists
-    const order = await Order.findOne({ orderId: orderId });
-    if (!order) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        success: false,
-        error: "Order not found",
-      });
-    }
+    // ✅ Validate order if provided (feedback can also be given without an order)
+    let orderRef = null;
+    if (orderId) {
+      const order = await Order.findOne({ orderId: orderId });
+      if (!order) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          success: false,
+          error: "Order not found",
+        });
+      }
+      orderRef = order._id;
 
-    // ✅ Check if feedback already
-
-    exists;
-    const existingFeedback = await Feedback.findOne({
-      orderId: order._id,
-      userId: req.user.id,
-    });
-    if (existingFeedback) {
-      return res.status(HTTP_STATUS.CONFLICT).json({
-        success: false,
-        error: "Feedback already submitted for this order",
+      // ✅ Check if feedback already exists for this order
+      const existingFeedback = await Feedback.findOne({
+        orderId: orderRef,
+        userId: req.user.id,
       });
+      if (existingFeedback) {
+        return res.status(HTTP_STATUS.CONFLICT).json({
+          success: false,
+          error: "Feedback already submitted for this order",
+        });
+      }
     }
 
     // ✅ Create feedback
     const feedback = await Feedback.create({
       userId: req.user.id,
-      orderId: order._id,
+      orderId: orderRef,
       rating: rating,
       comment: comment || "",
       category: category || "Food Quality",

@@ -90,9 +90,13 @@ const validateEmail = (email) => {
     return null;
 };
 
-const validatePassword = (password, minLength = 6) => {
+const validatePassword = (password, minLength = 8) => {
     if (!password) return 'Password is required';
     if (password.length < minLength) return `Password must be at least ${minLength} characters`;
+    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter';
+    if (!/[a-z]/.test(password)) return 'Password must contain at least one lowercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain at least one number';
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return 'Password must contain at least one special character';
     return null;
 };
 
@@ -107,6 +111,30 @@ const validateName = (name, fieldName = 'Name', min = 2, max = 100) => {
 const validatePhone = (phone) => {
     if (!phone) return 'Phone number is required';
     if (!/^(\+?[0-9\s-]{10,15})$/.test(phone)) return 'Invalid phone number format';
+    return null;
+};
+
+const validateFullName = (name) => {
+    if (!name) return 'Full name is required';
+    const trimmed = name.trim();
+    if (trimmed.length < 2) return 'Full name must be at least 2 characters';
+    if (trimmed.length > 100) return 'Full name cannot exceed 100 characters';
+    if (!/^[a-zA-Z\s]+$/.test(trimmed)) return 'Full name can only contain letters and spaces';
+    return null;
+};
+
+const validateUsername = (username) => {
+    if (!username || username.trim() === '') return null;
+    const trimmed = username.trim();
+    if (trimmed.length < 3) return 'Username must be at least 3 characters';
+    if (trimmed.length > 30) return 'Username cannot exceed 30 characters';
+    if (!/^[a-zA-Z0-9_]+$/.test(trimmed)) return 'Username can only contain letters, numbers, and underscores';
+    return null;
+};
+
+const validateAddress = (address) => {
+    if (!address || address.trim() === '') return null;
+    if (address.trim().length > 255) return 'Address cannot exceed 255 characters';
     return null;
 };
 
@@ -159,6 +187,9 @@ module.exports = {
     validateEmail,
     validatePassword,
     validateName,
+    validateFullName,
+    validateUsername,
+    validateAddress,
     validatePhone,
     validatePrice,
     validateCategory,

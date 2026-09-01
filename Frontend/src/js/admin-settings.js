@@ -139,7 +139,22 @@
         avatar: document.getElementById('adminProfileAvatar').value.trim()
       });
       const profile = window.AdminAPI.getProfile() || {};
-      localStorage.setItem('userProfile', JSON.stringify(Object.assign(profile, data.user)));
+      const updated = Object.assign(profile, data.user);
+      localStorage.setItem('userProfile', JSON.stringify(updated));
+      // Sync current_user and name helpers so the updated admin profile shows
+      // in the navbar / profile icon across the admin dashboard.
+      try {
+        const savedCurrent = JSON.parse(localStorage.getItem('current_user')) || {};
+        localStorage.setItem('current_user', JSON.stringify(Object.assign(savedCurrent, {
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+          avatar: updated.avatar,
+          role: savedCurrent.role || 'admin'
+        })));
+        localStorage.setItem('userName', updated.name);
+        localStorage.setItem('name', updated.name);
+      } catch (e) {}
       showAlert('Admin profile saved successfully');
     } catch (error) { showAlert('Failed to save admin profile: ' + (error.message || error), 'error'); }
     finally { setLoading(btn, false); }

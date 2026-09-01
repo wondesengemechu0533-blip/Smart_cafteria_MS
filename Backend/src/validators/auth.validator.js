@@ -1,10 +1,13 @@
-const { validateName, validateEmail, validatePhone, validatePassword } = require('./common.validator');
+    const { validateFullName, validateUsername, validateEmail, validatePhone, validatePassword, validateAddress } = require('./common.validator');
 
 const validateRegisterInput = (data) => {
     const errors = {};
 
-    const nameErr = validateName(data.name || data.fullName, 'Full name', 2, 100);
-    if (nameErr) errors.fullName = nameErr;
+    const nameErr = validateFullName(data.name || data.fullName);
+    if (nameErr) errors.name = nameErr;
+
+    const usernameErr = validateUsername(data.username);
+    if (usernameErr) errors.username = usernameErr;
 
     const emailErr = validateEmail(data.email);
     if (emailErr) errors.email = emailErr;
@@ -12,13 +15,20 @@ const validateRegisterInput = (data) => {
     const phoneErr = validatePhone(data.phone);
     if (phoneErr) errors.phone = phoneErr;
 
-    const passErr = validatePassword(data.password, 6);
+    const passErr = validatePassword(data.password, 8);
     if (passErr) errors.password = passErr;
 
     if (!data.confirmPassword) {
         errors.confirmPassword = 'Please confirm your password';
     } else if (data.password !== data.confirmPassword) {
         errors.confirmPassword = 'Passwords do not match';
+    }
+
+    const addressErr = validateAddress(data.address);
+    if (addressErr) errors.address = addressErr;
+
+    if (!data.agreedToTerms) {
+        errors.agreedToTerms = 'You must agree to the Terms & Conditions';
     }
 
     return { isValid: Object.keys(errors).length === 0, errors };

@@ -14,10 +14,11 @@ const validateBody = (validatorFunction) => {
 
         if (!validationResult || !validationResult.isValid) {
             const errors = validationResult?.errors || {};
-            const firstError = Object.values(errors)[0];
+            const firstError = Object.values(errors)[0] || 'Validation failed';
             return res.status(400).json({
                 success: false,
-                message: firstError || 'Validation failed',
+                error: firstError,
+                message: firstError,
                 errors
             });
         }
@@ -40,10 +41,11 @@ const validateQuery = (validatorFunction) => {
 
         if (!validationResult || !validationResult.isValid) {
             const errors = validationResult?.errors || {};
-            const firstError = Object.values(errors)[0];
+            const firstError = Object.values(errors)[0] || 'Validation failed';
             return res.status(400).json({
                 success: false,
-                message: firstError || 'Validation failed',
+                error: firstError,
+                message: firstError,
                 errors
             });
         }

@@ -28,7 +28,7 @@ function checkActiveOrder() {
                 <i class="fa-solid fa-fire-burner"></i>
                 <span>Order <strong>#${activeOrder.orderId}</strong> is currently in progress!</span>
             </div>
-            <a href="order-status.html?orderId=${activeOrder.orderId}" class="btn-track-order">
+            <a href="order-tracking.html?orderId=${activeOrder.orderId}" class="btn-track-order">
                 View Status <i class="fa-solid fa-arrow-right"></i>
             </a>
         </div>

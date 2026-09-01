@@ -3,8 +3,10 @@ const { validateObjectId, validateQuantity } = require('./common.validator');
 const validateFeedbackInput = (data) => {
     const errors = {};
 
-    const orderIdErr = validateObjectId(data.orderId, 'Order ID');
-    if (orderIdErr) errors.orderId = orderIdErr;
+    if (data.orderId) {
+        const orderIdErr = validateObjectId(data.orderId, 'Order ID');
+        if (orderIdErr) errors.orderId = orderIdErr;
+    }
 
     const ratingErr = validateQuantity(data.rating, 'Rating', 1, 5);
     if (ratingErr) errors.rating = ratingErr;

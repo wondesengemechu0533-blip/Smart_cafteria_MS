@@ -28,7 +28,7 @@ expiresIn: process.env.JWT_EXPIRE || '30d'
 */
 exports.register = async (req, res) => {
 try {
-const { name, email, phone, password, confirmPassword } = req.body;
+const { name, email, phone, password, confirmPassword, username, address, agreedToTerms } = req.body;
 
 // ✅ Validate required fields (matches register.html validation)
 
@@ -36,6 +36,14 @@ if (!name || !email || !phone || !password) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
 error: 'All fields are required'
+});
+}
+
+// ✅ Validate terms agreement
+if (!agreedToTerms) {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: 'You must agree to the Terms & Conditions'
 });
 }
 
@@ -66,10 +74,18 @@ error: 'Enter a valid phone number (09XXXXXXXX or 07XXXXXXXX)'
 }
 
 // Validate password length.
-if (password.length < 6) {
+if (password.length < 8) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
-error: 'Password must be at least 6 characters'
+error: 'Password must be at least 8 characters'
+});
+}
+
+// ✅ Validate password complexity
+if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: 'Password must contain uppercase, lowercase, number, and special character'
 });
 }
 
@@ -84,18 +100,36 @@ error: 'Passwords do not match'
 
 // ✅ Check if user exists (email or phone)
 const existingUser = await User.findOne({
-$or: [
-{ email: email.toLowerCase() },
-{ phone: phone }
-]
+    $or: [
+        { email: email.toLowerCase() },
+        { phone: phone }
+    ]
 });
 
 if (existingUser) {
+    const isEmailTaken = existingUser.email === email.toLowerCase();
 
-return res.status(HTTP_STATUS.CONFLICT).json({
-success: false,
-error: 'User with this email or phone already exists'
-});
+    return res.status(HTTP_STATUS.CONFLICT).json({
+        success: false,
+        error: isEmailTaken ? 'This email is already registered' : 'This phone number is already registered',
+        errors: isEmailTaken
+            ? { email: 'This email is already registered' }
+            : { phone: 'This phone number is already registered' },
+        errorField: isEmailTaken ? 'email' : 'phone'
+    });
+}
+
+// ✅ Check username uniqueness if provided
+if (username && username.trim()) {
+    const existingUsername = await User.findOne({ username: username.trim() });
+    if (existingUsername) {
+        return res.status(HTTP_STATUS.CONFLICT).json({
+            success: false,
+            error: 'This username is already taken',
+            errors: { username: 'This username is already taken' },
+            errorField: 'username'
+        });
+    }
 }
 
 // ✅ Create user
@@ -107,7 +141,10 @@ name: name.trim(),
 email: email.toLowerCase(),
 phone: phone,
 password: password,
-role: ROLES.CUSTOMER // Default role
+role: ROLES.CUSTOMER,
+username: username && username.trim() ? username.trim() : null,
+address: address && address.trim() ? address.trim() : null,
+agreedToTerms: agreedToTerms === true
 });
 
 
@@ -123,6 +160,7 @@ id: user._id,
 name: user.name,
 email: user.email,
 phone: user.phone,
+username: user.username,
 role: user.role,
 
 avatar: user.avatar,
@@ -135,12 +173,16 @@ console.error('❌ Registration Error:', error);
 
 // ✅ Mongoose schema validation -> return the real field errors
 if (error.name === 'ValidationError') {
-const messages = Object.values(error.errors).map((e) => e.message);
-return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: messages[0] || 'Validation failed',
-errors: messages
-});
+    const messages = Object.values(error.errors).map((e) => e.message);
+    const errorsObj = {};
+    Object.keys(error.errors).forEach((key) => {
+        errorsObj[key] = error.errors[key].message;
+    });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: messages[0] || 'Validation failed',
+        errors: errorsObj
+    });
 }
 
 // ✅ Duplicate key (unique email/phone) e.g. a race between the check
@@ -148,10 +190,12 @@ errors: messages
 if (error.code === 11000) {
 const field = Object.keys(error.keyValue)[0];
 return res.status(HTTP_STATUS.CONFLICT).json({
-success: false,
-error: field === 'email' || field === 'phone'
-? `User with this ${field} already exists`
-: 'User with this information already exists'
+    success: false,
+    error: field === 'email' || field === 'phone'
+    ? `This ${field} is already registered`
+    : 'User with this information already exists',
+    errors: { [field]: `This ${field} is already registered` },
+    errorField: field
 });
 }
 

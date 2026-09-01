@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <i class="fa-solid fa-utensils"></i> ${order.orderType === "dine-in" ? `Table ${order.tableNumber || '-'}` : "Takeaway"}
                         </span>
                         <div class="action-buttons" style="display: flex; gap: 8px;">
-                            <a href="order-status.html?orderId=${id}" class="btn btn-secondary btn-sm" style="background: #f3f4f6; color: #374151; padding: 6px 12px; border-radius: 6px; text-decoration: none;">
+                            <a href="order-tracking.html?orderId=${id}" class="btn btn-secondary btn-sm" style="background: #f3f4f6; color: #374151; padding: 6px 12px; border-radius: 6px; text-decoration: none;">
                                 <i class="fa-solid fa-eye"></i> Details
                             </a>
                             ${cancelButton}

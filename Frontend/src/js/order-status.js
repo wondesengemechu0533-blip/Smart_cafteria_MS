@@ -1,4 +1,30 @@
 /**
+ * Find an order by its ID from localStorage (orderHistory / latestOrder)
+ * @param {string} orderId - Order ID (may include a leading #)
+ * @returns {Object|null} Order object or null
+ */
+export function getOrderById(orderId) {
+    if (!orderId) return null;
+    const normalized = String(orderId).replace(/^#/, "");
+
+    const historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
+    let found = historyData.find(o => (o.orderId || o.id || "").replace(/^#/, "") === normalized);
+    if (found) {
+        return found;
+    }
+
+    const latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+    if (latestOrder) {
+        const latestId = (latestOrder.orderId || latestOrder.id || "").replace(/^#/, "");
+        if (latestId === normalized) {
+            return latestOrder;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Attached to window object for live cancellation from status receipt page
  */
 window.cancelOrderFromStatusPage = function(orderId) {

@@ -1655,7 +1655,50 @@ const directTextMap = {
   "Account Settings": { en: "Account Settings", am: "የሂሳብ ቅንብሮች" },
   "Account Details": { en: "Account Details", am: "የሂሳብ ዝርዝሮች" },
   "Cafeteria Member": { en: "Cafeteria Member", am: "የካፌቴሪያ አባል" },
-  "Save Changes": { en: "Save Changes", am: "ለውጦችን አስቀምጥ" }
+  "Save Changes": { en: "Save Changes", am: "ለውጦችን አስቀምጥ" },
+
+  // ===== AUTH PAGE HEADLINE FRAGMENTS =====
+  "good mood.": { en: "good mood.", am: "ጥሩ ስሜት።" },
+  "simplified.": { en: "simplified.", am: "ቀላል የተደረገ።" },
+  "Cafeteria": { en: "Cafeteria", am: "ካፌቴሪያ" },
+
+  // ===== PROFILE PAGE =====
+  "Customer": { en: "Customer", am: "ደንበኛ" },
+  "No phone added": { en: "No phone added", am: "ስልክ አልተጨመረም" },
+  "Personal Details": { en: "Personal Details", am: "የግል ዝርዝሮች" },
+  "Username": { en: "Username", am: "የተጠቃሚ ስም" },
+  "Language Preference": { en: "Language Preference", am: "የቋንቋ ምርጫ" },
+  "Address": { en: "Address", am: "አድራሻ" },
+  "Default Checkout Preferences": { en: "Default Checkout Preferences", am: "ነባሪ የክፍያ ምርጫዎች" },
+  "Preferred Order Type": { en: "Preferred Order Type", am: "የሚመረጥ የትዕዛዝ አይነት" },
+  "Dine-In (Cafeteria Table)": { en: "Dine-In (Cafeteria Table)", am: "በቦታው መመገብ (የካፌቴሪያ ጠረጴዛ)" },
+  "Takeaway / Express Pick-up": { en: "Takeaway / Express Pick-up", am: "ለይዞ መሄድ / ፈጣን መልቀሚያ" },
+
+  // ===== ORDER HISTORY / TRACKING =====
+  "In Progress / Pending": { en: "In Progress / Pending", am: "በሂደት ላይ / በመጠባበቅ ላይ" },
+  "No Past Orders Found": { en: "No Past Orders Found", am: "ምንም ያለፉ ትዕዛዞች አልተገኙም" },
+  "You haven't placed any food orders yet.": { en: "You haven't placed any food orders yet.", am: "እስካሁን ምንም የምግብ ትዕዛዝ አላስፈጽመውም።" },
+  "No Active Order Found": { en: "No Active Order Found", am: "ንቁ ትዕዛዝ አልተገኘም" },
+  "View Menu": { en: "View Menu", am: "ማውጫ ይመልከቱ" },
+
+  // ===== NOTIFICATIONS =====
+  "User": { en: "User", am: "ተጠቃሚ" },
+  "No Notifications": { en: "No Notifications", am: "ምንም ማስታወቂያዎች የሉም" },
+
+  // ===== FEEDBACK PAGE =====
+  "Select a rating": { en: "Select a rating", am: "ደረጃ ይምረጡ" },
+  "Feedback Topic": { en: "Feedback Topic", am: "የአስተያየት ርዕስ" },
+  "Food & Drink Quality": { en: "Food & Drink Quality", am: "የምግብ እና የመጠጥ ጥራት" },
+  "Service & Preparation Speed": { en: "Service & Preparation Speed", am: "የአገልግሎት እና የዝግጅት ፍጥነት" },
+  "Cafeteria Cleanliness": { en: "Cafeteria Cleanliness", am: "የካፌቴሪያ ንፅህና" },
+  "Website / App Suggestion": { en: "Website / App Suggestion", am: "የድረ-ገፅ / መተግበሪያ ሀሳብ" },
+  "Other": { en: "Other", am: "ሌላ" },
+  "Specific Dish (Optional)": { en: "Specific Dish (Optional)", am: "የተወሰነ ምግብ (አማራጭ)" },
+  "My Past Reviews": { en: "My Past Reviews", am: "የቀድሞ ግምገማዎቼ" },
+
+  // ===== MENU SORT / RESULTS =====
+  "Price: Low to High": { en: "Price: Low to High", am: "ዋጋ: ከዝቅተኛ ወደ ከፍተኛ" },
+  "Price: High to Low": { en: "Price: High to Low", am: "ዋጋ: ከከፍተኛ ወደ ዝቅተኛ" }
 };
 
 // Support both storage keys for backward compatibility

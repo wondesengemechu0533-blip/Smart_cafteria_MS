@@ -5,16 +5,31 @@ import { STORAGE_KEYS } from "../js/config.js";
 /**
  * Top Navigation Bar Component
  */
+function resolveUserProfile() {
+    // Prefer authService's canonical session, fall back to userProfile so the
+    // navbar reflects profile updates saved under either key.
+    const current = authService.getCurrentUser();
+    if (current) return current;
+    try {
+        const fallback = JSON.parse(localStorage.getItem("userProfile") || "null");
+        return fallback;
+    } catch (e) {
+        return null;
+    }
+}
+
 export function renderNavbar(containerId = "navbar-container") {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const user = authService.getCurrentUser();
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true" || Boolean(authService.isAuthenticated());
+    const user = isLoggedIn ? resolveUserProfile() : null;
     const cart = Storage.get(STORAGE_KEYS.cart, []);
     const cartCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
 
+    const userName = user?.name || "User";
     const userNavHtml = user ? `
-        <span class="user-greeting">Hello, <strong>${user.name}</strong></span>
+        <span class="user-greeting">Hello, <strong>${userName}</strong></span>
         <button id="logoutBtn" class="nav-btn btn-logout">Logout</button>
     ` : `
         <a href="../common/login.html" class="nav-btn">Login</a>
@@ -33,7 +48,7 @@ export function renderNavbar(containerId = "navbar-container") {
                 <a href="../customer/menu.html">Menu</a>
                 <a href="../customer/order-tracking.html">Track Order</a>
                 <a href="../customer/cart.html" class="cart-link">
-                    🛒 Cart <span class="cart-badge">${cartCount}</span>
+                    <i class="fa-solid fa-cart-shopping"></i> Cart <span class="cart-badge">${cartCount}</span>
                 </a>
             </div>
             <div class="nav-auth">

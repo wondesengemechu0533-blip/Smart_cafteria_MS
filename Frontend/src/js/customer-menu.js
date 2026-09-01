@@ -415,6 +415,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const addButton = event.target.closest(".add-to-cart-btn");
             if (addButton && !addButton.disabled) {
                 event.preventDefault();
+                // Only this module handles add-to-cart; menu.js also binds a
+                // document-level add-to-cart listener, so stop it from firing
+                // a second (duplicate) cart insertion.
+                event.stopImmediatePropagation();
                 const itemId = addButton.dataset.id;
                 let cart = [];
                 try { cart = JSON.parse(localStorage.getItem(CUSTOMER_MENU.CART_KEY) || "[]"); } catch (e) { cart = []; }

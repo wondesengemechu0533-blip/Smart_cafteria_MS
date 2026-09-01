@@ -54,6 +54,15 @@ document.addEventListener("DOMContentLoaded", function () {
     let currentCategory = "all";
     let currentSearch = "";
     let currentSort = "recommended";
+    let lastResultsCount = 0;
+
+    // Re-translate the results counter when the language changes
+    window.addEventListener("language:changed", function () {
+        if (resultsCount) resultsCount.textContent = buildResultsLabel(lastResultsCount);
+    });
+    window.addEventListener("languageChanged", function () {
+        if (resultsCount) resultsCount.textContent = buildResultsLabel(lastResultsCount);
+    });
 
 
     // =========================================================
@@ -575,65 +584,57 @@ document.addEventListener("DOMContentLoaded", function () {
     // RESULT COUNT
     // =========================================================
 
+    function buildResultsLabel(count) {
+        const lang = (typeof window.getCurrentLanguage === "function") ? window.getCurrentLanguage() : "en";
+        const isAm = lang === "am";
+
+        if (currentCategory === "all" && currentSearch === "") {
+            return isAm
+                ? `በጠቅላላ ${count} የማውጫ አማራጮች ታይተዋል`
+                : `Showing all ${count} menu options`;
+        }
+
+        let categoryName = "menu";
+        switch (currentCategory) {
+            case "breakfast":
+                categoryName = isAm ? "ቁርስ" : "Breakfast";
+                break;
+            case "main-meals":
+            case "mains":
+                categoryName = isAm ? "ምሳ እና እራት" : "Lunch & Dinner";
+                break;
+            case "fasting":
+                categoryName = isAm ? "የፆም ምግቦች" : "Fasting Meals";
+                break;
+            case "beverages":
+            case "drinks":
+                categoryName = isAm ? "ጭማቂ እና መጠጦች" : "Juices & Drinks";
+                break;
+            case "snacks":
+                categoryName = isAm ? "መክሰስ" : "Snacks";
+                break;
+        }
+        categoryName = categoryName === "menu" && isAm ? "ማውጫ" : categoryName;
+
+        if (currentSearch !== "") {
+            return isAm
+                ? `${count} የፍለጋ ውጤቶች ታይተዋል`
+                : `Showing ${count} search result${count !== 1 ? "s" : ""}`;
+        }
+
+        return isAm
+            ? `${count} የ${categoryName} ምግቦች ታይተዋል`
+            : `Showing ${count} ${categoryName} item${count !== 1 ? "s" : ""}`;
+    }
+
     function updateResultsCount(count) {
 
         if (!resultsCount) {
             return;
         }
 
-
-        if (
-            currentCategory === "all" &&
-            currentSearch === ""
-        ) {
-
-            resultsCount.textContent =
-                `Showing all ${count} menu options`;
-
-            return;
-        }
-
-
-        let categoryName = "menu";
-
-
-        switch (currentCategory) {
-
-            case "breakfast":
-                categoryName = "Breakfast";
-                break;
-
-            case "main-meals":
-            case "mains":
-                categoryName = "Lunch & Dinner";
-                break;
-
-            case "fasting":
-                categoryName = "Fasting Meals";
-                break;
-
-            case "beverages":
-            case "drinks":
-                categoryName = "Juices & Drinks";
-                break;
-
-            case "snacks":
-                categoryName = "Snacks";
-                break;
-        }
-
-
-        if (currentSearch !== "") {
-
-            resultsCount.textContent =
-                `Showing ${count} search result${count !== 1 ? "s" : ""}`;
-
-        } else {
-
-            resultsCount.textContent =
-                `Showing ${count} ${categoryName} item${count !== 1 ? "s" : ""}`;
-
-        }
+        lastResultsCount = count;
+        resultsCount.textContent = buildResultsLabel(count);
     }
 
 
