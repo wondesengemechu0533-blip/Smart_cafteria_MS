@@ -12,6 +12,7 @@
 
     <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/image-upload.css">
 </head>
 <body class="admin-body">
 
@@ -117,15 +118,23 @@
 
                     <!-- APPEARANCE -->
                     <h4 class="form-section-title mt-4"><i class="fa-solid fa-palette"></i> Appearance</h4>
-                    <div class="form-grid">
+                    <div class="form-group">
+                        <label for="categoryIcon" class="form-label">Icon</label>
+                        <input type="text" name="icon" id="categoryIcon" class="form-control" placeholder="fa-solid fa-utensils or emoji 🍽️">
+                    </div>
+                    <div class="form-row upload-row mt-3">
                         <div class="form-group">
-                            <label for="categoryIcon" class="form-label">Icon</label>
-                            <input type="text" name="icon" id="categoryIcon" class="form-control" placeholder="fa-solid fa-utensils or emoji 🍽️">
+                            <label for="categoryImageFile" class="form-label">Upload Image (JPG, PNG, WEBP, max 2 MB)</label>
+                            <input type="file" name="image" id="categoryImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
                         </div>
                         <div class="form-group">
-                            <label for="categoryImageUrl" class="form-label">Image URL</label>
+                            <label for="categoryImageUrl" class="form-label">...or Image URL (optional)</label>
                             <input type="url" id="categoryImageUrl" class="form-control" placeholder="https://example.com/category.jpg">
                         </div>
+                    </div>
+                    <div class="file-preview" id="categoryImagePreviewRow" style="display:none;">
+                        <img id="categoryImagePreview" alt="Preview">
+                        <button type="button" class="btn-remove-file" id="removeCategoryImageBtn"><i class="fa-solid fa-trash-can"></i> Remove Image</button>
                     </div>
 
                     <!-- DISPLAY & ORGANIZATION -->

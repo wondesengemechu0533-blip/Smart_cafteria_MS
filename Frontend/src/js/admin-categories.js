@@ -24,6 +24,10 @@
     sort: "created"
   };
 
+  var pendingImage = null;
+  var ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  var MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+
   function escapeHtml(value) {
     return window.esc(value);
   }
@@ -52,6 +56,57 @@
       return availTime.startTime + " — " + availTime.endTime;
     }
     return "Enabled (no times set)";
+  }
+
+  /* ============================================================
+   * IMAGE HANDLING
+   * ============================================================ */
+  function resetImageState() {
+    pendingImage = null;
+    var fileInput = document.getElementById("categoryImageFile");
+    var urlInput = document.getElementById("categoryImageUrl");
+    var previewRow = document.getElementById("categoryImagePreviewRow");
+    var preview = document.getElementById("categoryImagePreview");
+    if (fileInput) fileInput.value = "";
+    if (urlInput) urlInput.value = "";
+    if (previewRow) previewRow.style.display = "none";
+    if (preview) preview.removeAttribute("src");
+  }
+
+  function handleImageFileChange(file) {
+    if (!file) return;
+    if (ALLOWED_IMAGE_TYPES.indexOf(file.type) === -1) {
+      pendingImage = null;
+      if (window.AdminToast) window.AdminToast.error("Invalid image type. Allowed: JPG, JPEG, PNG, WEBP");
+      document.getElementById("categoryImageFile").value = "";
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      pendingImage = null;
+      if (window.AdminToast) window.AdminToast.error("Image too large. Maximum size is 2 MB");
+      document.getElementById("categoryImageFile").value = "";
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      pendingImage = { type: "file", value: String(reader.result) };
+      document.getElementById("categoryImageUrl").value = "";
+      document.getElementById("categoryImagePreview").src = String(reader.result);
+      document.getElementById("categoryImagePreviewRow").style.display = "flex";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleImageUrlInput(value) {
+    if (value && value.trim()) {
+      pendingImage = { type: "url", value: value.trim() };
+      document.getElementById("categoryImageFile").value = "";
+      document.getElementById("categoryImagePreview").src = value.trim();
+      document.getElementById("categoryImagePreviewRow").style.display = "flex";
+    } else if (!pendingImage || pendingImage.type !== "file") {
+      pendingImage = null;
+      document.getElementById("categoryImagePreviewRow").style.display = "none";
+    }
   }
 
   document.addEventListener("click", function(e) {
@@ -143,6 +198,7 @@
 
   function openAddCategoryModal() {
     closeAllModals();
+    resetImageState();
     var form = document.getElementById("categoryForm");
     if (form) form.reset();
     document.getElementById("categoryId").value = "";
@@ -163,6 +219,7 @@
   function openEditCategoryModal(category) {
     if (!category) return;
     closeAllModals();
+    resetImageState();
     document.getElementById("categoryForm").reset();
     document.getElementById("categoryId").value = category.id || "";
     document.getElementById("categoryName").value = categoryName(category);
@@ -182,6 +239,12 @@
     document.getElementById("categoryAvailEnd").value = avail.endTime || "";
     document.getElementById("availabilityTimeRow").style.display = avail.enabled ? "grid" : "none";
 
+    if (category.imageUrl) {
+      var src = category.imageUrl.indexOf("http") === 0 ? category.imageUrl : "http://localhost:5000" + category.imageUrl;
+      document.getElementById("categoryImagePreview").src = src;
+      document.getElementById("categoryImagePreviewRow").style.display = "flex";
+    }
+
     document.getElementById("categoryModalTitle").textContent = "Edit Category";
     document.getElementById("saveCategoryBtn").textContent = "Update Category";
     openModal("categoryModal");
@@ -196,7 +259,6 @@
       name: document.getElementById("categoryName").value.trim(),
       slug: document.getElementById("categorySlug").value.trim() || document.getElementById("categoryName").value.trim().toLowerCase().replace(/\s+/g, "-"),
       icon: (document.getElementById("categoryIcon").value || "fa-solid fa-tag").trim(),
-      imageUrl: (document.getElementById("categoryImageUrl").value || "").trim(),
       description: document.getElementById("categoryDescription").value,
       isActive: document.getElementById("categoryIsActive").checked,
       sortOrder: parseInt(document.getElementById("categorySortOrder").value, 10) || 0,
@@ -209,6 +271,16 @@
       },
       notes: document.getElementById("categoryNotes").value,
     };
+
+    if (pendingImage) {
+      if (pendingImage.type === "remove") {
+        payload.imageUrl = "";
+      } else {
+        payload.imageUrl = pendingImage.value;
+      }
+    } else if (!id) {
+      payload.imageUrl = null;
+    }
 
     if (!payload.name) {
       if (window.AdminToast) window.AdminToast.error("Category name is required");
@@ -274,6 +346,27 @@
     if (availToggle) {
       availToggle.addEventListener("change", function() {
         document.getElementById("availabilityTimeRow").style.display = availToggle.checked ? "grid" : "none";
+      });
+    }
+
+    var fileInput = document.getElementById("categoryImageFile");
+    if (fileInput) fileInput.addEventListener("change", function () {
+      handleImageFileChange(fileInput.files[0]);
+    });
+
+    var urlInput = document.getElementById("categoryImageUrl");
+    if (urlInput) urlInput.addEventListener("input", function () {
+      handleImageUrlInput(urlInput.value);
+    });
+
+    var removeImageBtn = document.getElementById("removeCategoryImageBtn");
+    if (removeImageBtn) {
+      removeImageBtn.addEventListener("click", function () {
+        pendingImage = { type: "remove", value: "" };
+        document.getElementById("categoryImageFile").value = "";
+        document.getElementById("categoryImageUrl").value = "";
+        document.getElementById("categoryImagePreview").removeAttribute("src");
+        document.getElementById("categoryImagePreviewRow").style.display = "none";
       });
     }
 
