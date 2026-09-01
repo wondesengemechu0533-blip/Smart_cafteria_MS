@@ -54,13 +54,34 @@ const DEFAULT_SETTINGS = [
 
 async function ensureDefaultSettings() {
   try {
-    const existingSettings = await Setting.find({}, { key: 1 }).lean();
-    const existingKeys = new Set(existingSettings.map(s => s.key));
-    
-    const toInsert = DEFAULT_SETTINGS.filter(s => !existingKeys.has(s.key));
-    
-    if (toInsert.length > 0) {
-      await Setting.insertMany(toInsert);
+    const existingSettings = await Setting.find({}, { key: 1, type: 1, group: 1, label: 1 }).lean();
+    const existingMap = {};
+    for (const s of existingSettings) existingMap[s.key] = s;
+
+    const toInsert = [];
+    const toUpdate = [];
+
+    for (const def of DEFAULT_SETTINGS) {
+      const existing = existingMap[def.key];
+      if (!existing) {
+        toInsert.push({ key: def.key, value: def.value, type: def.type, group: def.group, label: def.label, protected: false });
+      } else {
+        // Ensure type/group/label are set
+        const changes = {};
+        if (!existing.type) changes.type = def.type;
+        if (!existing.group) changes.group = def.group;
+        if (!existing.label) changes.label = def.label;
+        if (Object.keys(changes).length > 0) {
+          toUpdate.push({ key: def.key, $set: changes });
+        }
+      }
+    }
+
+    if (toInsert.length > 0) await Setting.insertMany(toInsert);
+    for (const op of toUpdate) await Setting.updateOne({ key: op.key }, op.$set);
+
+    if (toInsert.length > 0 || toUpdate.length > 0) {
+      console.log(`Settings: ${toInsert.length} inserted, ${toUpdate.length} updated`);
     }
   } catch (error) {
     console.error('Settings initialization error:', error.message);
