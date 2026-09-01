@@ -53,6 +53,7 @@ const DEFAULT_SETTINGS = [
   { key: 'theme', value: 'light', type: 'string', group: 'appearance', label: 'Theme' },
   { key: 'favicon_url', value: '', type: 'string', group: 'appearance', label: 'Favicon URL' },
   { key: 'appearance_logo_url', value: '', type: 'string', group: 'appearance', label: 'Appearance Logo URL' },
+  { key: 'dashboard_layout', value: 'comfortable', type: 'string', group: 'appearance', label: 'Dashboard Layout' },
 ];
 
 async function ensureDefaultSettings() {

@@ -188,6 +188,49 @@
   }
 
   /* =============================================
+     5. APPEARANCE
+     ============================================= */
+  function populateAppearance(m) {
+    $('faviconUrl').value = m.favicon_url || '';
+    $('dashboardLayout').value = m.dashboard_layout || 'comfortable';
+    $('logoUrlInput').value = m.appearance_logo_url || '';
+    // Show logo preview if URL exists
+    if (m.appearance_logo_url) {
+      const img = $('logoPreviewImg');
+      const ph = $('logoPlaceholder');
+      if (img && ph) { img.src = m.appearance_logo_url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
+    }
+  }
+
+  async function saveAppearance() {
+    const btn = $('saveAppearanceBtn');
+    setLoading(btn, true);
+    try {
+      // Handle logo file
+      let logoUrl = val('logoUrlInput');
+      const logoFile = $('logoFileInput').files[0];
+      if (logoFile) {
+        if (logoFile.size > 2 * 1024 * 1024) { showAlert('Logo must be under 2MB', 'error'); setLoading(btn, false); return; }
+        logoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(logoFile);
+        });
+      }
+      await saveSetting('theme', val('themeSelect'));
+      await saveSetting('favicon_url', val('faviconUrl'));
+      await saveSetting('appearance_logo_url', logoUrl);
+      await saveSetting('dashboard_layout', val('dashboardLayout'));
+      // Apply favicon
+      const favLink = document.querySelector('link[rel="icon"]');
+      if (favLink && val('faviconUrl')) favLink.href = val('faviconUrl');
+      showAlert('Appearance saved');
+    } catch (e) { showAlert('Failed to save appearance: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
+  }
+
+  /* =============================================
      SAVE ALL / RESET
      ============================================= */
   async function saveAllSettings() {
@@ -204,8 +247,23 @@
         notify_new_orders: chk('notifyNewOrders'),
         notify_low_stock: chk('notifyLowStock'),
         notify_daily_sales: chk('notifyDailySales'),
-        notify_security_login: chk('notifySecurityLogin')
+        notify_security_login: chk('notifySecurityLogin'),
+        theme: val('themeSelect'),
+        favicon_url: val('faviconUrl'),
+        dashboard_layout: val('dashboardLayout')
       };
+      // Handle logo file for save all
+      let logoUrl = val('logoUrlInput');
+      const logoFile = $('logoFileInput').files[0];
+      if (logoFile) {
+        logoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(logoFile);
+        });
+      }
+      all.appearance_logo_url = logoUrl;
       for (const [k, v] of Object.entries(all)) await saveSetting(k, v);
       showAlert('All settings saved successfully');
     } catch (e) { showAlert('Failed to save all: ' + e.message, 'error'); }
@@ -218,7 +276,8 @@
       cafeteria_opening_time: '07:00', cafeteria_closing_time: '22:00',
       currency: 'ETB', max_daily_orders: 100, order_availability: true,
       two_factor_enabled: false, notify_new_orders: true, notify_low_stock: true,
-      notify_daily_sales: false, notify_security_login: true
+      notify_daily_sales: false, notify_security_login: true,
+      theme: 'light', favicon_url: '', appearance_logo_url: '', dashboard_layout: 'comfortable'
     };
     const btn = $('resetSettingsBtn');
     setLoading(btn, true);
@@ -226,7 +285,14 @@
       for (const [k, v] of Object.entries(defaults)) await saveSetting(k, v);
       populateSystemConfig(defaults);
       populateNotifications(defaults);
+      populateAppearance(defaults);
       $('twoFactorEnabled').checked = false;
+      // Reset logo preview
+      const img = $('logoPreviewImg'); const ph = $('logoPlaceholder');
+      if (img) { img.classList.add('hidden'); img.src = ''; }
+      if (ph) ph.classList.remove('hidden');
+      // Reset theme buttons
+      if (typeof window.setTheme === 'function') window.setTheme('light');
       showAlert('Settings reset to defaults');
     } catch (e) { showAlert('Failed to reset: ' + e.message, 'error'); }
     finally { setLoading(btn, false); }
@@ -241,6 +307,7 @@
     $('twoFactorEnabled')?.addEventListener('change', save2FA);
     $('saveSystemConfigBtn')?.addEventListener('click', saveSystemConfig);
     $('saveNotificationsBtn')?.addEventListener('click', saveNotifications);
+    $('saveAppearanceBtn')?.addEventListener('click', saveAppearance);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
     $('resetSettingsBtn')?.addEventListener('click', resetSettings);
 
@@ -262,8 +329,38 @@
       const map = await loadSettingsMap();
       populateSystemConfig(map);
       populateNotifications(map);
+      populateAppearance(map);
     } catch (e) { showAlert('Failed to load settings: ' + e.message, 'error'); }
   }
 
   document.addEventListener('DOMContentLoaded', init);
+  // Expose setTheme for inline script
+  window.setTheme = function(theme) {
+    const sel = $('themeSelect');
+    if (sel) sel.value = theme;
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.classList.remove('border-emerald-500', 'bg-emerald-50');
+      btn.classList.add('border-gray-200', 'bg-gray-50');
+      const icon = btn.querySelector('i');
+      if (icon) { icon.classList.remove('text-emerald-600'); icon.classList.add('text-gray-500'); }
+      const span = btn.querySelector('span');
+      if (span) { span.classList.remove('text-emerald-700'); span.classList.add('text-gray-600'); }
+    });
+    const idMap = { light: 'themeLightBtn', dark: 'themeDarkBtn', system: 'themeSystemBtn' };
+    const active = $(idMap[theme]);
+    if (active) {
+      active.classList.add('border-emerald-500', 'bg-emerald-50');
+      active.classList.remove('border-gray-200', 'bg-gray-50');
+      const icon = active.querySelector('i');
+      if (icon) { icon.classList.add('text-emerald-600'); icon.classList.remove('text-gray-500'); }
+      const span = active.querySelector('span');
+      if (span) { span.classList.add('text-emerald-700'); span.classList.remove('text-gray-600'); }
+    }
+    document.documentElement.classList.remove('dark');
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else if (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+    localStorage.setItem('scos_theme', theme);
+  };
 })();
