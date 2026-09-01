@@ -195,7 +195,6 @@
      5. APPEARANCE
      ============================================= */
   function populateAppearance(m) {
-    $('faviconUrl').value = m.favicon_url || '';
     $('dashboardLayout').value = m.dashboard_layout || 'comfortable';
     $('logoUrlInput').value = m.appearance_logo_url || '';
     // Show logo preview if URL exists
@@ -223,7 +222,6 @@
         });
       }
       await saveSetting('theme', val('themeSelect'));
-      await saveSetting('favicon_url', val('faviconUrl'));
       await saveSetting('appearance_logo_url', logoUrl);
       await saveSetting('dashboard_layout', val('dashboardLayout'));
       // Apply favicon
@@ -253,7 +251,6 @@
         notify_daily_sales: chk('notifyDailySales'),
         notify_security_login: chk('notifySecurityLogin'),
         theme: val('themeSelect'),
-        favicon_url: val('faviconUrl'),
         dashboard_layout: val('dashboardLayout')
       };
       // Handle logo file for save all
@@ -281,7 +278,7 @@
       currency: 'ETB', max_daily_orders: 100, order_availability: true,
       two_factor_enabled: false, notify_new_orders: true, notify_low_stock: true,
       notify_daily_sales: false, notify_security_login: true,
-      theme: 'light', favicon_url: '', appearance_logo_url: '', dashboard_layout: 'comfortable'
+      theme: 'light', appearance_logo_url: '', dashboard_layout: 'comfortable'
     };
     const btn = $('resetSettingsBtn');
     setLoading(btn, true);
