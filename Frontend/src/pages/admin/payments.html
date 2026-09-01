@@ -174,39 +174,6 @@
                     </div>
                 </div>
             </div>
-<option value="">All Status</option>
-<option value="PAID">Paid</option>
-<option value="PENDING">Pending</option>
-<option value="FAILED">Failed</option>
-<option value="CANCELLED">Cancelled</option>
-</select>
-                        </div>
-                        <div class="col-md-2">
-                            <select id="paymentDateFilter" class="form-select">
-                                <option value="">All Dates</option>
-                                <option value="today">Today</option>
-                                <option value="7d">Last 7 Days</option>
-                                <option value="30d">Last 30 Days</option>
-                                <option value="90d">Last 90 Days</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <select id="paymentSortSelect" class="form-select">
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="amount-desc">Amount High to Low</option>
-                                <option value="amount-asc">Amount Low to High</option>
-                            </select>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-secondary w-100" id="resetPaymentFiltersBtn">
-                                <i class="fa-solid fa-rotate-left"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- PAYMENTS TABLE -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -247,15 +214,15 @@
     <div class="modal-overlay" id="paymentDetailsModal">
         <div class="modal modal-lg">
             <div class="modal-header">
-                <h3 class="modal-title">Payment Details - <span id="modalPaymentOrderId">#0000</span></h3>
+                <h3 class="modal-title">Payment Details - <span id="modalPaymentNumber">#0000</span></h3>
                 <button class="modal-close" data-close-modal="paymentDetailsModal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="order-summary-header">
                     <div>
-                        <strong>Customer:</strong> <span id="modalPaymentCustomer">-</span><br>
-                        <strong>Phone:</strong> <span id="modalPaymentCustomerPhone">-</span><br>
-                        <strong>Email:</strong> <span id="modalPaymentCustomerEmail">-</span>
+                        <strong>Customer:</strong> <span id="modalCustomerName">-</span><br>
+                        <strong>Phone:</strong> <span id="modalCustomerPhone">-</span><br>
+                        <strong>Email:</strong> <span id="modalCustomerEmail">-</span>
                     </div>
                     <div>
                         <strong>Payment Method:</strong> <span id="modalPaymentMethod">-</span><br>
@@ -263,9 +230,9 @@
                         <strong>Amount:</strong> <span id="modalPaymentAmount">-</span>
                     </div>
                     <div>
-                        <strong>Transaction Ref:</strong> <span id="modalPaymentTransactionId">-</span><br>
-                        <strong>Provider Ref:</strong> <span id="modalPaymentProviderReference">-</span><br>
-                        <strong>Payment Date:</strong> <span id="modalPaymentDate">-</span>
+                        <strong>Transaction ID:</strong> <span id="modalPaymentTransactionId">-</span><br>
+                        <strong>Provider:</strong> <span id="modalPaymentProvider">-</span><br>
+                        <strong>Currency:</strong> <span id="modalPaymentCurrency">-</span>
                     </div>
                 </div>
 
@@ -273,46 +240,42 @@
 
                 <h4 class="section-heading"><i class="fa-solid fa-bag-shopping"></i> Order Information</h4>
                 <div class="timeline-grid">
-                    <div class="detail-item"><span>Order Type</span><strong id="modalPaymentOrderType">—</strong></div>
-                    <div class="detail-item"><span>Table</span><strong id="modalPaymentTableNumber">—</strong></div>
-                    <div class="detail-item"><span>Order Status</span><strong id="modalPaymentOrderStatus">—</strong></div>
+                    <div class="detail-item"><span>Order ID</span><strong id="modalOrderId">—</strong></div>
+                    <div class="detail-item"><span>Order Status</span><strong id="modalOrderStatus">—</strong></div>
+                    <div class="detail-item"><span>Items</span><strong id="modalOrderItems">0</strong></div>
+                    <div class="detail-item"><span>Order Total</span><strong id="modalOrderTotal">—</strong></div>
+                    <div class="detail-item"><span>Payment Date</span><strong id="modalPaymentDate">—</strong></div>
                     <div class="detail-item"><span>Paid At</span><strong id="modalPaymentPaidAt">—</strong></div>
+                    <div class="detail-item"><span>Refund Amount</span><strong id="modalRefundAmount">0.00 ETB</strong></div>
                 </div>
 
                 <hr class="form-divider">
 
-                <h4 class="section-heading"><i class="fa-solid fa-list"></i> Order Items</h4>
-                <div class="table-wrapper">
-                    <table class="admin-table compact">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Unit Price</th>
-                                <th>Qty</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modalPaymentItemsBody">
-                            <tr><td colspan="4" class="table-empty">No items</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="order-total-summary">
-                    <span>Subtotal: <strong id="modalPaymentSubtotal">0.00 ETB</strong></span>
-                    <span>Service Fee: <strong id="modalPaymentServiceFee">0.00 ETB</strong></span>
-                    <span class="grand-total">Total: <strong id="modalPaymentTotal">0.00 ETB</strong></span>
-                </div>
+                <h4 class="section-heading"><i class="fa-solid fa-clock-rotate-left"></i> Payment History</h4>
+                <div id="modalPaymentHistory">Loading history...</div>
 
                 <hr class="form-divider">
 
-                <div class="alert alert-warning">
+                <h4 class="section-heading"><i class="fa-solid fa-arrow-rotate-left"></i> Process Refund</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="refundAmountInput" class="form-label">Refund Amount (ETB)</label>
+                        <input type="number" id="refundAmountInput" class="form-control" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="refundReasonInput" class="form-label">Reason</label>
+                        <input type="text" id="refundReasonInput" class="form-control" placeholder="Reason for refund">
+                    </div>
+                </div>
+
+                <div class="alert alert-warning mt-3">
                     <i class="fa-solid fa-shield-halved"></i>
                     <span>Payment status is read-only. Only verified responses from Chapa / Telebirr can mark a payment as Paid.</span>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-close-modal="paymentDetailsModal">Close</button>
+                <button type="button" class="btn btn-danger" id="refundPaymentBtn"><i class="fa-solid fa-arrow-rotate-left"></i> Process Refund</button>
             </div>
         </div>
     </div>

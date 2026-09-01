@@ -188,16 +188,15 @@
 
       return (
         "<tr>" +
-        '<td>' + window.esc(payment.paymentNumber || "—") + '</td>' +
+        '<td>' + refText(payment.transactionId || payment.paymentNumber) + '</td>' +
         '<td><strong>' + window.esc(payment.order?.orderId || "—") + '</strong></td>' +
         '<td><div class="user-cell"><div class="user-avatar">' +
           window.esc((payment.customer?.name || "?").charAt(0)) +
           "</div><div>" + customerLines + "</div></div></td>" +
-        "<td><strong>" + money(payment.amount) + "</strong></td>" +
+        "<td><strong>" + money(payment.amount) + " ETB</strong></td>" +
         "<td>" + methodLabel(payment.paymentMethod) + "</td>" +
         "<td>" + paymentBadge(payment.status) + "</td>" +
         "<td>" + window.AdminAPI.formatDateTime(payment.paymentDate) + "</td>" +
-        "<td>" + refText(payment.transactionId) + "</td>" +
         "<td>" +
           '<div class="table-actions">' +
             '<button class="action-btn" data-action="view" data-id="' + payment.id + '" title="View payment details"><i class="fa-solid fa-eye"></i></button>' +
