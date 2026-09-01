@@ -8,7 +8,9 @@ const {
   updateMenuItem,
   deleteMenuItem,
   toggleAvailability,
-  getMenuStats
+  getMenuStats,
+  updateStock,
+  getStockHistory
 } = require('../controllers/admin.menu.controller');
 
 // All routes require admin role
@@ -34,6 +36,8 @@ router.get('/stats', getMenuStats);
  * Body: { name: {en, am}, category, price, description, image | imageUrl, preparationTime, available }
  */
 router.post('/', createMenuItem);
+router.patch('/:id/stock', updateStock);
+router.get('/:id/stock-history', getStockHistory);
 
 /**
  * @route   GET /api/v1/admin/menu/:id

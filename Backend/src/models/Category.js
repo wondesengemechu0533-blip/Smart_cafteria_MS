@@ -30,6 +30,7 @@ const CategorySchema = new mongoose.Schema(
       type: String,
       default: "🍽️",
     },
+    imageUrl: { type: String, default: null },
     description: {
       en: { type: String, default: "" },
       am: { type: String, default: "" },

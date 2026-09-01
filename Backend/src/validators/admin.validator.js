@@ -87,7 +87,7 @@ const validateAssignRole = (data) => {
 
 const validateToggleStatus = (data) => {
     const errors = {};
-    const statusErr = validateEnum(data.status, ['ACTIVE', 'BLOCKED'], 'Status');
+    const statusErr = validateEnum(data.status, ['ACTIVE', 'BLOCKED', 'SUSPENDED'], 'Status');
     if (statusErr) errors.status = statusErr;
     return { isValid: Object.keys(errors).length === 0, errors };
 };

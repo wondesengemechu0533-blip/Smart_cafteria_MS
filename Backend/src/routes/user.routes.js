@@ -11,6 +11,7 @@ const {
     toggleUserStatus,
     assignUserRole,
     getUserStats,
+    resetUserPassword,
 } = require("../controllers/user.controller");
 const {
     validateCreateUser,
@@ -29,6 +30,7 @@ router.get("/:id", getUserById);
 router.put("/:id", validateBody(validateUpdateUser), updateUser);
 router.patch("/:id/status", validateBody(validateToggleStatus), toggleUserStatus);
 router.patch("/:id/role", validateBody(validateAssignRole), assignUserRole);
+router.patch("/:id/password", resetUserPassword);
 router.delete("/:id", deleteUser);
 
 module.exports = router;

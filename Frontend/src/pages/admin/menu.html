@@ -133,6 +133,7 @@
                                 <th>Item</th>
                                 <th>Category</th>
                                 <th>Price</th>
+                                <th>Stock</th>
                                 <th>Prep Time</th>
                                 <th>Availability</th>
                                 <th>Updated</th>
@@ -195,6 +196,9 @@
                             </label>
                             <small id="itemAvailableLabel" class="form-text">Available for ordering</small>
                         </div>
+                        <div class="form-group"><label for="itemStockQuantity" class="form-label">Stock Quantity</label><input type="number" id="itemStockQuantity" class="form-control" min="0" step="1" value="0"></div>
+                        <div class="form-group"><label for="itemLowStockThreshold" class="form-label">Low-stock Threshold</label><input type="number" id="itemLowStockThreshold" class="form-control" min="0" step="1" value="5"></div>
+                        <div class="form-group"><label class="form-label">Promotion</label><label class="switch"><input type="checkbox" id="itemPopular"><span class="switch-slider"></span><span class="switch-caption">Popular</span></label><label class="switch"><input type="checkbox" id="itemRecommended"><span class="switch-slider"></span><span class="switch-caption">Recommended</span></label><label class="switch"><input type="checkbox" id="itemHomepage"><span class="switch-slider"></span><span class="switch-caption">Show on Homepage</span></label></div>
                     </div>
 
                     <div class="form-group" style="margin-top:1rem;">

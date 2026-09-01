@@ -264,10 +264,10 @@ const menuItems = [
 
   // SNACKS
   {
-    name: { en: 'Avocado with Injera', am: 'አ≮ካዶ ከእንጀራ' },
+    name: { en: 'Avocado with Injera', am: 'አቮካዶ ከእንጀራ' },
     category: 'snacks',
     price: 70,
-    description: { en: 'Fresh avocado slices served with traditional injera', am: 'ትኩስ የአ≮ካዶ ክፍሎች ከባህላዊ እንጀራ ጋር' },
+    description: { en: 'Fresh avocado slices served with traditional injera', am: 'ትኩስ የአቮካዶ ክፍሎች ከባህላዊ እንጀራ ጋር' },
     icon: '🥑',
     image: '/assets/images/food/snacks/Avocado with injera.jpg',
     preparationTime: 5,
@@ -321,29 +321,55 @@ const seedData = async () => {
     await connectDatabase();
     console.log('Connected.');
 
-    // Clear existing data
-    console.log('Clearing existing database collections...');
-    await User.deleteMany({});
-    await Category.deleteMany({});
-    await MenuItem.deleteMany({});
-    console.log('Cleared collections.');
-
-    // Insert categories
+    // Upsert categories (idempotent, keeps existing categories untouched)
     console.log('Seeding categories...');
-    const createdCategories = await Category.insertMany(categories);
-    console.log(`Successfully seeded ${createdCategories.length} categories.`);
-
-    // Insert menu items
-    console.log('Seeding menu items...');
-    const createdMenuItems = await MenuItem.insertMany(menuItems);
-    console.log(`Successfully seeded ${createdMenuItems.length} menu items.`);
-
-    // Insert users
-    console.log('Seeding users...');
-    for (const u of users) {
-      await User.create(u);
+    let categoryCount = 0;
+    for (const category of categories) {
+      await Category.findOneAndUpdate(
+        { id: category.id },
+        { $set: category },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      categoryCount++;
     }
-    console.log(`Successfully seeded ${users.length} users.`);
+    console.log(`Ensured ${categoryCount} categories (breakfast, main-meals, fasting, beverages, snacks).`);
+
+    // Upsert menu items (idempotent) - items are always visible:
+    // they carry stock + AVAILABLE so the customer /menu endpoint returns them.
+    console.log('Seeding menu items...');
+    let itemCount = 0;
+    for (const item of menuItems) {
+      await MenuItem.findOneAndUpdate(
+        { 'name.en': item.name.en, category: item.category },
+        {
+          $set: {
+            ...item,
+            availability: item.availability !== undefined ? item.availability : true,
+            isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
+            isActive: true,
+            availabilityStatus: 'AVAILABLE',
+            stockQuantity: 50,
+            lowStockThreshold: 10
+          }
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      itemCount++;
+    }
+    console.log(`Ensured ${itemCount} menu items across all 5 food categories.`);
+
+    // Create users only if neither email nor phone already exists
+    // (keeps existing accounts untouched, avoids unique-phone collisions).
+    console.log('Seeding default users...');
+    let userCount = 0;
+    for (const u of users) {
+      const existing = await User.findOne({ $or: [{ email: u.email }, { phone: u.phone }] }).select('_id');
+      if (!existing) {
+        await User.create(u);
+        userCount++;
+      }
+    }
+    console.log(`Created ${userCount} missing default user(s).`);
 
     console.log('Database seeded successfully! 🎉');
     process.exit(0);

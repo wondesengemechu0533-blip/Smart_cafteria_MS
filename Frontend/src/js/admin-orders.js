@@ -24,7 +24,10 @@
     status: "",
     paymentStatus: "",
     orderType: "",
-    sort: "newest"
+    sort: "newest",
+    dateRange: "",
+    dateFrom: null,
+    dateTo: null
   };
 
   function money(value) {
@@ -113,7 +116,7 @@
     tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Loading orders...</td></tr>';
 
     try {
-      var data = await window.AdminAPI.get("/admin/orders", {
+      var params = {
         page: state.page,
         limit: state.limit,
         search: state.search,
@@ -121,7 +124,11 @@
         paymentStatus: state.paymentStatus,
         orderType: state.orderType,
         sort: state.sort
-      });
+      };
+      if (state.dateFrom) params.from = state.dateFrom;
+      if (state.dateTo) params.to = state.dateTo;
+      
+      var data = await window.AdminAPI.get("/admin/orders", params);
 
       window.__ordersCache = data.orders || [];
       renderOrders(window.__ordersCache);
@@ -294,6 +301,12 @@
     }
     document.getElementById("modalCancellationInfo").textContent = cancelInfo;
 
+    document.getElementById("modalStatusHistory").textContent = "Loading history...";
+    window.AdminAPI.get("/admin/orders/" + order.id + "/history").then(function(data) {
+      var history = data.history || [];
+      document.getElementById("modalStatusHistory").innerHTML = history.length ? history.map(function(entry) { return '<div class="detail-item"><span>' + window.AdminAPI.formatDateTime(entry.createdAt) + '</span><strong>' + escapeHtml(entry.previousStatus) + ' → ' + escapeHtml(entry.newStatus) + (entry.changedBy ? ' · ' + escapeHtml(entry.changedBy.name) : '') + '</strong></div>'; }).join('') : 'No status history available.';
+    }).catch(function() { document.getElementById("modalStatusHistory").textContent = "Status history unavailable."; });
+
     window.__activeOrder = order;
     renderStatusSelect(status);
     openModal("orderDetailsModal");
@@ -336,6 +349,114 @@
       loadStats();
     } catch (error) {
       if (window.AdminToast) window.AdminToast.error(error.message || "Failed to cancel order");
+    }
+  }
+
+  async function printReceipt() {
+    var order = window.__activeOrder;
+    if (!order) return;
+
+    try {
+      var data = await window.AdminAPI.get("/admin/orders/" + order.id + "/receipt");
+      var receipt = data.receipt;
+      if (!receipt) throw new Error("Receipt not found");
+
+      var itemsHTML = (receipt.items || []).map(function(item) {
+        return '<tr><td>' + escapeHtml(item.name) + '</td><td>' + money(item.unitPrice) + '</td><td>' + item.qty + '</td><td>' + money(item.subtotal) + '</td></tr>';
+      }).join('');
+
+      var printContent = `
+        <html>
+          <head>
+            <title>Receipt - ${receipt.orderNumber}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              .receipt { max-width: 600px; margin: 0 auto; }
+              .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+              .header h1 { margin: 0; font-size: 24px; }
+              .info-row { display: flex; justify-content: space-between; margin: 5px 0; }
+              .info-label { font-weight: bold; }
+              .items-table { width: 100%; margin: 20px 0; border-collapse: collapse; }
+              .items-table th { text-align: left; border-bottom: 2px solid #000; padding: 5px 0; }
+              .items-table td { padding: 8px 0; }
+              .totals { margin-top: 20px; border-top: 2px solid #000; padding-top: 10px; }
+              .total-row { display: flex; justify-content: space-between; margin: 5px 0; }
+              .grand-total { font-weight: bold; font-size: 18px; }
+              .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+              @media print { body { margin: 0; padding: 0; } }
+            </style>
+          </head>
+          <body>
+            <div class="receipt">
+              <div class="header">
+                <h1>Receipt</h1>
+                <p>${receipt.orderNumber}</p>
+              </div>
+
+              <div class="info-row">
+                <span class="info-label">Customer:</span>
+                <span>${escapeHtml(receipt.customerName)}</span>
+              </div>
+              ${receipt.customerPhone ? '<div class="info-row"><span class="info-label">Phone:</span><span>' + escapeHtml(receipt.customerPhone) + '</span></div>' : ''}
+              ${receipt.customerEmail ? '<div class="info-row"><span class="info-label">Email:</span><span>' + escapeHtml(receipt.customerEmail) + '</span></div>' : ''}
+
+              <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span>${window.AdminAPI.formatDateTime(receipt.orderDate)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Type:</span>
+                <span>${receipt.orderType || 'Dine-in'}</span>
+              </div>
+
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Unit Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHTML}
+                </tbody>
+              </table>
+
+              <div class="totals">
+                <div class="total-row">
+                  <span>Subtotal:</span>
+                  <span>${money(receipt.subtotal)} ETB</span>
+                </div>
+                ${receipt.serviceFee ? '<div class="total-row"><span>Service Fee:</span><span>' + money(receipt.serviceFee) + ' ETB</span></div>' : ''}
+                <div class="total-row grand-total">
+                  <span>Total:</span>
+                  <span>${money(receipt.total)} ETB</span>
+                </div>
+              </div>
+
+              <div class="info-row">
+                <span class="info-label">Payment Status:</span>
+                <span>${receipt.paymentStatus || 'Pending'}</span>
+              </div>
+              ${receipt.paymentMethod ? '<div class="info-row"><span class="info-label">Payment Method:</span><span>' + escapeHtml(receipt.paymentMethod) + '</span></div>' : ''}
+
+              <div class="footer">
+                <p>Thank you for your order!</p>
+                <p>Printed on ${new Date().toLocaleString()}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      var printWindow = window.open('', '', 'height=600,width=800');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+      if (window.AdminToast) window.AdminToast.success("Opening receipt for printing...");
+    } catch (error) {
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to print receipt");
     }
   }
 
@@ -402,6 +523,62 @@
       });
     }
 
+    var dateRangeFilter = document.getElementById("orderDateRangeFilter");
+    if (dateRangeFilter) {
+      dateRangeFilter.addEventListener("change", function() {
+        var container = document.getElementById("customDateRangeContainer");
+        if (dateRangeFilter.value === "custom") {
+          if (container) container.style.display = "block";
+        } else {
+          if (container) container.style.display = "none";
+          var today = new Date();
+          state.dateFrom = null;
+          state.dateTo = null;
+          
+          switch(dateRangeFilter.value) {
+            case "today":
+              state.dateFrom = today.toISOString().split('T')[0];
+              state.dateTo = today.toISOString().split('T')[0];
+              break;
+            case "yesterday":
+              var yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+              state.dateFrom = yesterday.toISOString().split('T')[0];
+              state.dateTo = yesterday.toISOString().split('T')[0];
+              break;
+            case "last7":
+              var sevenDaysAgo = new Date(today);
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              state.dateFrom = sevenDaysAgo.toISOString().split('T')[0];
+              state.dateTo = today.toISOString().split('T')[0];
+              break;
+            case "last30":
+              var thirtyDaysAgo = new Date(today);
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+              state.dateFrom = thirtyDaysAgo.toISOString().split('T')[0];
+              state.dateTo = today.toISOString().split('T')[0];
+              break;
+          }
+          if (state.dateFrom) {
+            state.page = 1;
+            loadOrders();
+          }
+        }
+      });
+    }
+
+    var applyDateRangeBtn = document.getElementById("applyDateRangeBtn");
+    if (applyDateRangeBtn) {
+      applyDateRangeBtn.addEventListener("click", function() {
+        var dateFrom = document.getElementById("orderDateFrom");
+        var dateTo = document.getElementById("orderDateTo");
+        state.dateFrom = dateFrom ? dateFrom.value : null;
+        state.dateTo = dateTo ? dateTo.value : null;
+        state.page = 1;
+        loadOrders();
+      });
+    }
+
     var sortSelect = document.getElementById("orderSortSelect");
     if (sortSelect) {
       sortSelect.addEventListener("change", function () {
@@ -419,11 +596,21 @@
         if (paymentFilter) paymentFilter.value = "";
         if (typeFilter) typeFilter.value = "";
         if (sortSelect) sortSelect.value = "newest";
+        var dateRangeFilter = document.getElementById("orderDateRangeFilter");
+        if (dateRangeFilter) dateRangeFilter.value = "";
+        var customDateContainer = document.getElementById("customDateRangeContainer");
+        if (customDateContainer) customDateContainer.style.display = "none";
+        var dateFromInput = document.getElementById("orderDateFrom");
+        var dateToInput = document.getElementById("orderDateTo");
+        if (dateFromInput) dateFromInput.value = "";
+        if (dateToInput) dateToInput.value = "";
         state.search = "";
         state.status = "";
         state.paymentStatus = "";
         state.orderType = "";
         state.sort = "newest";
+        state.dateFrom = null;
+        state.dateTo = null;
         state.page = 1;
         loadOrders();
       });
@@ -439,6 +626,9 @@
 
     var cancelBtn = document.getElementById("cancelOrderBtn");
     if (cancelBtn) cancelBtn.addEventListener("click", cancelCurrentOrder);
+
+    var printReceiptBtn = document.getElementById("printReceiptBtn");
+    if (printReceiptBtn) printReceiptBtn.addEventListener("click", printReceipt);
 
     var tbody = document.getElementById("ordersTableBody");
     if (tbody) {

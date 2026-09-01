@@ -5,6 +5,11 @@ const Payment = require('../models/Payment');
 const Notification = require('../models/Notification');
 const { PAYMENT_STATUS, ORDER_STATUS, MESSAGES, HTTP_STATUS } = require('../config/constants');
 const { logAction } = require('../utils/audit');
+const OrderStatusHistory = require('../models/OrderStatusHistory');
+const MenuItem = require('../models/MenuItem');
+const StockTransaction = require('../models/StockTransaction');
+const Cancellation = require('../models/Cancellation');
+const svc = require('../services/cancellation.service');
 
 const FLOW = ['PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'];
 
@@ -61,6 +66,11 @@ function serializeOrder(order) {
       name: i.name,
       quantity: i.quantity,
       price: i.price,
+      foodNameSnapshot: i.foodNameSnapshot || i.name,
+      foodDescriptionSnapshot: i.foodDescriptionSnapshot || '',
+      categoryNameSnapshot: i.categoryNameSnapshot || '',
+      foodImageSnapshot: i.foodImageSnapshot || null,
+      subtotal: i.subtotal || (Number(i.price) || 0) * (Number(i.quantity) || 0),
       notes: i.notes
     })),
     subtotal: order.subtotal,
@@ -74,7 +84,17 @@ function serializeOrder(order) {
     readyTime: order.readyTime,
     completedTime: order.completedTime,
     createdAt: order.createdAt,
-    updatedAt: order.updatedAt
+    updatedAt: order.updatedAt,
+    cancellationRequested: order.cancellationRequested,
+    cancellationStatus: order.cancellationStatus,
+    cancellationReason: order.cancellationReason,
+    cancellationAdminNote: order.cancellationAdminNote,
+    cancellationProcessedAt: order.cancellationProcessedAt,
+    cancellationProcessedBy: order.cancellationProcessedBy,
+    inventoryRestored: order.inventoryRestored,
+    refundStatus: order.refundStatus,
+    refundAmount: order.refundAmount,
+    refundReference: order.refundReference
   };
 }
 
@@ -239,7 +259,11 @@ exports.getOrderById = async (req, res) => {
       cancellationStatus: order.cancellationStatus,
       requestedAt: order.cancellationRequestedAt,
       adminNote: order.cancellationAdminNote,
-      processedAt: order.cancellationProcessedAt
+      processedAt: order.cancellationProcessedAt,
+      inventoryRestored: order.inventoryRestored,
+      refundStatus: order.refundStatus,
+      refundAmount: order.refundAmount,
+      refundReference: order.refundReference
     };
     record.notes = order.notes;
 
@@ -335,6 +359,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     await order.save();
+    await OrderStatusHistory.create({ orderId: order._id, previousStatus: current, newStatus: next, changedBy: req.user.id });
 
     try {
       await Notification.create({
@@ -400,7 +425,51 @@ exports.cancelOrder = async (req, res) => {
     order.cancellationStatus = 'approved';
     order.cancellationProcessedAt = new Date();
     order.cancellationProcessedBy = req.user.id;
+    if (!order.inventoryRestored) {
+      for (const orderItem of order.items) {
+        const food = await MenuItem.findByIdAndUpdate(orderItem.itemId, { $inc: { stockQuantity: orderItem.quantity } }, { new: true });
+        if (food) {
+          food.availabilityStatus = food.availability === false ? 'UNAVAILABLE' : 'AVAILABLE';
+          await food.save();
+          await StockTransaction.create({ foodId: food._id, previousQuantity: food.stockQuantity - orderItem.quantity, quantityChanged: orderItem.quantity, newQuantity: food.stockQuantity, action: 'CANCELLATION_RESTORE', performedBy: req.user.id, orderId: order._id });
+        }
+      }
+      order.inventoryRestored = true;
+    }
+    const previousStatus = current;
     await order.save();
+    await OrderStatusHistory.create({ orderId: order._id, previousStatus, newStatus: 'CANCELLED', changedBy: req.user.id, reason: reason || 'Cancelled by admin' });
+
+    // Keep the standalone Cancellation record in sync (create one if missing).
+    try {
+      let cancellation = await Cancellation.findOne({ orderId: order._id, isActive: true });
+      if (!cancellation) {
+        const created = await svc.createCancellation(order, req.user, {
+          reason: (reason || 'Cancelled by admin').toUpperCase().replace(/\s+/g, '_').slice(0, 40) || 'OTHER',
+          description: reason || 'Cancelled by admin',
+          adminNote: adminNote || 'Cancelled by admin',
+        });
+        cancellation = created.cancellation;
+        order = created.order;
+      }
+      cancellation.status = 'CANCELLED';
+      cancellation.approvedAt = new Date();
+      cancellation.processedBy = req.user.id;
+      cancellation.adminNote = adminNote || cancellation.adminNote || 'Cancelled by admin';
+      cancellation.isActive = true;
+      await cancellation.save();
+      // Re-sync order flat fields (createCancellation reset them for a request flow).
+      order.orderStatus = 'CANCELLED';
+      order.status = STATUS_TO_LOWERCASE.CANCELLED;
+      order.cancellationRequested = false;
+      order.cancellationStatus = 'approved';
+      order.cancellationAdminNote = adminNote || '';
+      order.cancellationProcessedAt = new Date();
+      order.cancellationProcessedBy = req.user.id;
+      await order.save();
+    } catch (syncError) {
+      console.error('⚠️ Cancellation record sync failed (admin cancel):', syncError.message);
+    }
 
     try {
       await Notification.create({

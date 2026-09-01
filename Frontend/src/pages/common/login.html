@@ -603,6 +603,7 @@
             let authenticatedUser = null;
             let authToken = null;
             let backendSuccess = false;
+            let backendError = "Unable to reach the authentication server.";
 
             // Try authenticating with backend API
             try {
@@ -633,9 +634,11 @@
                     backendSuccess = true;
                     authenticatedUser = data.user;
                     authToken = data.token;
+                } else {
+                    backendError = data.error || data.message || "Invalid email/phone or password.";
                 }
             } catch (err) {
-                console.warn("Backend API login unreachable, trying local fallback:", err);
+                console.warn("Backend API login unreachable:", err);
             }
 
             let userRole = "";
@@ -644,14 +647,15 @@
             let redirectUrl = "";
 
             if (backendSuccess && authenticatedUser) {
-                const rawRole = (authenticatedUser.role || "customer").toLowerCase();
+                const rawRole = String(authenticatedUser.role || "customer").trim();
+                const normalizedRole = rawRole.toLowerCase();
                 userName = authenticatedUser.name || authenticatedUser.email;
                 userEmail = authenticatedUser.email;
 
-                if (rawRole === "admin") {
+                if (normalizedRole === "admin") {
                     userRole = "ADMIN";
                     redirectUrl = "../admin/dashboard.html";
-                } else if (rawRole === "kitchen" || rawRole === "staff") {
+                } else if (normalizedRole === "kitchen" || normalizedRole === "foodmaker" || normalizedRole === "staff" || normalizedRole === "kitchen_staff") {
                     userRole = "KITCHEN_STAFF";
                     redirectUrl = "../kitchen/dashboard.html";
                 } else {
@@ -659,46 +663,10 @@
                     redirectUrl = "../customer/menu.html";
                 }
             } else {
-                /* LOCAL FALLBACK CHECK FOR MOCK ACCOUNTS */
-                if (identifier.toLowerCase() === "admin@gmail.com" && password === "12121212") {
-                    userRole = "ADMIN";
-                    userName = "Admin";
-                    userEmail = identifier;
-                    redirectUrl = "../admin/dashboard.html";
-                } else if (identifier.toLowerCase() === "kitchen@gmail.com" && password === "21212121") {
-                    userRole = "KITCHEN_STAFF";
-                    userName = "Kitchen Staff";
-                    userEmail = identifier;
-                    redirectUrl = "../kitchen/dashboard.html";
-                } else {
-                    let registeredUsers = [];
-                    try {
-                        registeredUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
-                    } catch (error) {
-                        registeredUsers = [];
-                    }
-
-                    const normalizedIdentifier = identifier.toLowerCase();
-                    const foundUser = registeredUsers.find(function (user) {
-                        const email = String(user.email || "").trim().toLowerCase();
-                        const phone = String(user.phone || "").trim();
-                        const savedPassword = String(user.password || "");
-                        const identifierMatches = email === normalizedIdentifier || phone === identifier;
-                        return identifierMatches && savedPassword === password;
-                    });
-
-                    if (foundUser) {
-                        userRole = "CUSTOMER";
-                        userName = foundUser.name || foundUser.fullName || "Customer";
-                        userEmail = foundUser.email || "";
-                        redirectUrl = "../customer/menu.html";
-                    } else {
-                        showError("Invalid email/phone or password.");
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnHtml;
-                        return;
-                    }
-                }
+                showError(backendError);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+                return;
             }
 
             /* SAVE LOGIN SESSION */

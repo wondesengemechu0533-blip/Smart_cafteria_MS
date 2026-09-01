@@ -10,7 +10,7 @@ const { MESSAGES, HTTP_STATUS } = require('../config/constants');
  */
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort({ sortOrder: 1, createdAt: 1 });
+    const categories = await Category.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 });
 
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat) => {
@@ -19,6 +19,7 @@ exports.getAllCategories = async (req, res) => {
           id: cat.id,
           name: cat.name,
           icon: cat.icon,
+          imageUrl: cat.imageUrl,
           description: cat.description,
           isActive: cat.isActive,
           itemCount: count,
@@ -47,6 +48,9 @@ exports.getCategoryById = async (req, res) => {
   try {
     const category = await Category.findOne({ id: req.params.id });
     if (!category) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
+    }
+    if (!category.isActive) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
     }
     const count = await MenuItem.countDocuments({ category: category.id });

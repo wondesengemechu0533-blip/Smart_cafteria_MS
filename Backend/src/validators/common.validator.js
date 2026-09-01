@@ -1,6 +1,23 @@
 const { ORDER_STATUS, PAYMENT_STATUS } = require('../config/constants');
 
-const VALID_ROLES = ['customer', 'kitchen', 'admin', 'STUDENT', 'STAFF', 'ADMIN', 'KITCHEN_STAFF'];
+const VALID_ROLES = ['customer', 'kitchen', 'admin'];
+const normalizeRole = (role) => {
+    const value = String(role ?? '').trim();
+    if (!value) return '';
+
+    const key = value.toLowerCase();
+    const roleMap = {
+        customer: 'customer',
+        kitchen: 'kitchen',
+        foodmaker: 'kitchen',
+        'kitchen staff': 'kitchen',
+        kitchen_staff: 'kitchen',
+        staff: 'kitchen',
+        admin: 'admin'
+    };
+
+    return roleMap[key] || value;
+};
 
 const VALID_ORDER_STATUSES = [
     'PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED', 'CANCELLED',
@@ -21,8 +38,10 @@ const isValidDate = (date) => {
 };
 
 const validateRole = (role) => {
-    if (!role) return 'Role is required';
-    if (!VALID_ROLES.includes(role)) {
+    const normalized = normalizeRole(role);
+    if (!normalized) return 'Role is required';
+
+    if (!VALID_ROLES.includes(normalized)) {
         return `Invalid role. Allowed: ${VALID_ROLES.join(', ')}`;
     }
     return null;
@@ -100,7 +119,7 @@ const validatePrice = (price) => {
 
 const validateCategory = (category) => {
     if (!category) return 'Category is required';
-    const VALID_CATEGORIES = ['breakfast', 'mains', 'main-meals', 'fasting', 'beverages', 'snacks', 'Lunch', 'Dinner'];
+    const VALID_CATEGORIES = ['breakfast', 'main-meals', 'fasting', 'beverages', 'snacks'];
     if (!VALID_CATEGORIES.includes(category)) {
         return `Invalid category. Allowed: ${VALID_CATEGORIES.join(', ')}`;
     }
@@ -146,6 +165,7 @@ module.exports = {
     validateQuantity,
     validateBoolean,
     validateEnum,
+    normalizeRole,
     VALID_ROLES,
     VALID_ORDER_STATUSES,
     VALID_PAYMENT_STATUSES,

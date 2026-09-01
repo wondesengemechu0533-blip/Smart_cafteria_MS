@@ -14,8 +14,16 @@
  * ================================================================
  */
 
-import { MENU_ITEMS, MENU_CATEGORIES } from "./config.js";
-import { showToast } from "./main.js";
+import { MENU_ITEMS } from "./mock-menu-data.js";
+import { MENU_CATEGORIES } from "./config.js";
+
+export function showToast(message, type = "success") {
+    if (window.AdminToast && typeof window.AdminToast.show === "function") {
+        window.AdminToast.show(message, type);
+        return;
+    }
+    window.alert(message);
+}
 
 // ================================================================
 // 1. MENU STATE

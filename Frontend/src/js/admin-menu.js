@@ -32,14 +32,10 @@
 
   var FALLBACK_CATEGORIES = [
     { id: "breakfast", name: "Breakfast" },
-    { id: "mains", name: "Mains" },
     { id: "main-meals", name: "Main Meals" },
     { id: "fasting", name: "Fasting" },
     { id: "beverages", name: "Beverages" },
     { id: "snacks", name: "Snacks" },
-    { id: "Lunch", name: "Lunch" },
-    { id: "Dinner", name: "Dinner" },
-    { id: "Drinks", name: "Drinks" }
   ];
 
   var ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -183,12 +179,12 @@
     if (!tbody) return;
 
     if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No menu items found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No menu items found.</td></tr>';
       return;
     }
 
     tbody.innerHTML = items.map(function (item) {
-      var available = item.availability && item.isAvailable;
+      var available = item.availabilityStatus === "AVAILABLE" || (item.availability && item.isAvailable && Number(item.stockQuantity || 0) > 0);
       var toggleBtn =
         '<button class="action-btn" data-action="toggle" data-id="' + item.id + '" title="' +
         (available ? "Make unavailable" : "Make available") + '">' +
@@ -207,6 +203,7 @@
         "</td>" +
         '<td><span class="cat-pill">' + escapeHtml(categoryLabel(item.category)) + "</span></td>" +
         "<td><strong>" + money(item.price) + " ETB</strong></td>" +
+        '<td>' + Number(item.stockQuantity || 0) + (Number(item.stockQuantity || 0) <= Number(item.lowStockThreshold || 0) ? ' <span class="order-badge suspended-badge">Low</span>' : '') + "</td>" +
         "<td>" + (item.preparationTime || 10) + " min</td>" +
         "<td>" + availabilityBadge(item) + "</td>" +
         "<td>" + window.AdminAPI.formatDate(item.updatedAt) + "</td>" +
@@ -247,6 +244,11 @@
     document.getElementById("menuItemForm").reset();
     document.getElementById("itemId").value = "";
     document.getElementById("itemPrepTime").value = 10;
+    document.getElementById("itemStockQuantity").value = 0;
+    document.getElementById("itemLowStockThreshold").value = 5;
+    document.getElementById("itemPopular").checked = false;
+    document.getElementById("itemRecommended").checked = false;
+    document.getElementById("itemHomepage").checked = false;
     document.getElementById("itemAvailable").checked = true;
     document.getElementById("itemAvailableLabel").textContent = "Available for ordering";
     document.getElementById("menuModalTitle").textContent = "Add New Menu Item";
@@ -265,6 +267,11 @@
     document.getElementById("itemCategory").value = item.category;
     document.getElementById("itemPrice").value = item.price;
     document.getElementById("itemPrepTime").value = item.preparationTime || 10;
+    document.getElementById("itemStockQuantity").value = item.stockQuantity || 0;
+    document.getElementById("itemLowStockThreshold").value = item.lowStockThreshold || 5;
+    document.getElementById("itemPopular").checked = item.isPopular === true;
+    document.getElementById("itemRecommended").checked = item.isRecommended === true;
+    document.getElementById("itemHomepage").checked = item.showOnHomepage === true;
     document.getElementById("itemAvailable").checked = !!(item.availability && item.isAvailable);
     document.getElementById("itemAvailableLabel").textContent =
       item.availability && item.isAvailable ? "Available for ordering" : "Not available for ordering";
@@ -299,7 +306,12 @@
         en: document.getElementById("itemDescriptionEn").value.trim(),
         am: document.getElementById("itemDescriptionAm").value.trim()
       },
-      available: document.getElementById("itemAvailable").checked
+      available: document.getElementById("itemAvailable").checked,
+      stockQuantity: parseInt(document.getElementById("itemStockQuantity").value, 10) || 0,
+      lowStockThreshold: parseInt(document.getElementById("itemLowStockThreshold").value, 10) || 0,
+      isPopular: document.getElementById("itemPopular").checked,
+      isRecommended: document.getElementById("itemRecommended").checked,
+      showOnHomepage: document.getElementById("itemHomepage").checked
     };
   }
 

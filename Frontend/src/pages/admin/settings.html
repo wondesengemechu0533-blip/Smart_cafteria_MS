@@ -30,6 +30,21 @@
 
             <div id="settingsAlert" class="alert-banner" style="display:none;"></div>
 
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-user-shield"></i> Admin Profile</h3></div>
+                <div class="card-body">
+                    <form id="adminProfileForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="adminProfileName" class="form-label">Admin Name</label><input id="adminProfileName" class="form-control" required></div>
+                            <div class="form-group"><label for="adminProfileEmail" class="form-label">Email</label><input id="adminProfileEmail" type="email" class="form-control" required></div>
+                            <div class="form-group"><label for="adminProfilePhone" class="form-label">Phone</label><input id="adminProfilePhone" class="form-control" required></div>
+                            <div class="form-group"><label for="adminProfileAvatar" class="form-label">Profile Image URL</label><input id="adminProfileAvatar" type="url" class="form-control" placeholder="https://example.com/admin.jpg"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveAdminProfileBtn"><i class="fa-solid fa-check"></i> Save Profile</button>
+                    </form>
+                </div>
+            </section>
+
             <section class="card">
                 <div class="card-header">
                     <h3 class="section-title"><i class="fa-solid fa-gear"></i> System Settings</h3>
@@ -81,6 +96,46 @@
                                     <span class="switch-caption">Temporarily disable ordering</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-shield-halved"></i> Security Settings</h4>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label><input type="number" id="sessionTimeout" class="form-control" min="5" max="1440"></div>
+                            <div class="form-group"><label for="loginMaxAttempts" class="form-label">Maximum Login Attempts</label><input type="number" id="loginMaxAttempts" class="form-control" min="1" max="20"></div>
+                            <div class="form-group"><label class="form-label">Two-Factor Authentication</label><label class="switch"><input type="checkbox" id="twoFactorEnabled" disabled><span class="switch-slider"></span><span class="switch-caption">Not configured for this installation</span></label></div>
+                        </div>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-cart-shopping"></i> Order Settings</h4>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="minimumOrderAmount" class="form-label">Minimum Order Amount (ETB)</label><input type="number" id="minimumOrderAmount" class="form-control" min="0" step="0.01"></div>
+                            <div class="form-group"><label for="cancellationWindow" class="form-label">Cancellation Window (minutes)</label><input type="number" id="cancellationWindow" class="form-control" min="0" max="1440"></div>
+                            <div class="form-group"><label for="defaultPreparationTime" class="form-label">Default Preparation Time (minutes)</label><input type="number" id="defaultPreparationTime" class="form-control" min="1" max="240"></div>
+                            <div class="form-group"><label class="form-label">Order Cancellation</label><label class="switch"><input type="checkbox" id="orderCancellationEnabled"><span class="switch-slider"></span><span class="switch-caption">Allow customers to cancel eligible orders</span></label></div>
+                        </div>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-credit-card"></i> Payment Settings</h4>
+                        <div class="form-grid">
+                            <div class="form-group"><label class="form-label">Enabled Payment Methods</label><label class="switch"><input type="checkbox" id="paymentTelebirrEnabled"><span class="switch-slider"></span><span class="switch-caption">Telebirr</span></label><label class="switch"><input type="checkbox" id="paymentChapaEnabled"><span class="switch-slider"></span><span class="switch-caption">Chapa</span></label><label class="switch"><input type="checkbox" id="paymentCbeBirrEnabled"><span class="switch-slider"></span><span class="switch-caption">CBE Birr</span></label></div>
+                            <div class="form-group"><label for="paymentProvider" class="form-label">Default Payment Provider</label><select id="paymentProvider" class="form-select"><option value="chapa">Chapa</option><option value="telebirr">Telebirr</option><option value="cbe_birr">CBE Birr</option></select></div>
+                            <div class="form-group"><label for="paymentStatusMode" class="form-label">Payment Status</label><select id="paymentStatusMode" class="form-select"><option value="automatic">Automatic</option><option value="manual">Manual review</option></select></div>
+                        </div>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-globe"></i> Language Settings</h4>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="defaultLanguage" class="form-label">Default System Language</label><select id="defaultLanguage" class="form-select"><option value="en">English</option><option value="am">Amharic</option></select></div>
+                        </div>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-bell"></i> Notification Settings</h4>
+                        <div class="form-grid">
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyNewOrders"><span class="switch-slider"></span><span class="switch-caption">New order notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyPayments"><span class="switch-slider"></span><span class="switch-caption">Payment notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyLowStock"><span class="switch-slider"></span><span class="switch-caption">Low-stock notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyUserAccounts"><span class="switch-slider"></span><span class="switch-caption">User/account notifications</span></label></div>
                         </div>
                     </form>
                 </div>

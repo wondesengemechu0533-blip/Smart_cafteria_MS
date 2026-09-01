@@ -11,6 +11,8 @@ const connectDatabase = require('./src/config/database');
 const paymentRoutes = require('./src/routes/payment.routes');
 const orderRoutes = require('./src/routes/order.routes');
 const kitchenRoutes = require('./src/routes/kitchen.routes');
+const kitchenStaffRoutes = require('./src/routes/kitchen-staff.routes');
+const kitchenReportsRoutes = require('./src/routes/kitchen-reports.routes');
 const userRoutes = require('./src/routes/user.routes');
 const menuRoutes = require('./src/routes/menu.routes');
 const categoryRoutes = require('./src/routes/category.routes');
@@ -27,6 +29,7 @@ const adminReportRoutes = require('./src/routes/admin.reports.routes');
 const publicSettingsRoutes = require('./src/routes/public.settings.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const { ensureDefaultSettings } = require('./src/utils/settings');
+const { ensureDefaultCategories } = require('./src/utils/categories');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
 const { setupSocketIO } = require('./src/socket');
 
@@ -92,6 +95,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/kitchen', kitchenRoutes);
+app.use('/api/v1/kitchen-staff', kitchenStaffRoutes);
+app.use('/api/v1/kitchen', kitchenReportsRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/admin/users', userRoutes);
 app.use('/api/v1/menu', menuRoutes);
@@ -121,6 +126,7 @@ const start = async () => {
         
         console.log('⚙️  Initializing settings...');
         await ensureDefaultSettings();
+        await ensureDefaultCategories();
 
         // The backend MUST always run on the configured PORT (default 5000)
         // because the frontend API client is hardcoded to it. Do NOT fall

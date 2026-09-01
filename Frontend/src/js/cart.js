@@ -31,6 +31,54 @@ const DISH_NAME_MAP = {
 };
 function translateDish(name){ if(getLang()==="am" && DISH_NAME_MAP[name]) return DISH_NAME_MAP[name]; return name; }
 
+// ===================================================================
+// Shared cart API (module scope + exports)
+//   LocalStorage key: "smart_cafeteria_cart"
+// ===================================================================
+
+export function getCart() {
+    try {
+        const savedCart = localStorage.getItem(CART_KEY);
+        if (!savedCart) return [];
+        const cart = JSON.parse(savedCart);
+        return Array.isArray(cart) ? cart : [];
+    } catch (error) {
+        console.error("Error reading cart:", error);
+        return [];
+    }
+}
+
+export function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    window.dispatchEvent(new CustomEvent("cart:updated"));
+}
+
+/** Convenience alias for getCart(). */
+export function getCartItems() {
+    return getCart();
+}
+
+/** Sum of all item quantities currently in the cart. */
+export function getCartCount() {
+    return getCart().reduce(function (total, item) {
+        return total + (Number(item.quantity) || 0);
+    }, 0);
+}
+
+/** Total value of the cart (sum of price * quantity). */
+export function getCartTotal() {
+    return getCart().reduce(function (total, item) {
+        return total + (Number(item.price) || 0) * (Number(item.quantity) || 0);
+    }, 0);
+}
+
+/** Empty the cart (clears localStorage + stale checkout data). */
+export function clearCart() {
+    localStorage.removeItem(CART_KEY);
+    localStorage.removeItem(CHECKOUT_KEY);
+    window.dispatchEvent(new CustomEvent("cart:updated"));
+}
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const cartContainer = document.getElementById("cart-container");
@@ -43,37 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const subtotalElement = document.getElementById("summary-subtotal");
     const serviceFeeElement = document.getElementById("summary-service-fee");
     const totalElement = document.getElementById("summary-total");
-
-
-    function getCart() {
-        try {
-            const savedCart = localStorage.getItem(CART_KEY);
-
-            if (!savedCart) {
-                return [];
-            }
-
-            const cart = JSON.parse(savedCart);
-
-            return Array.isArray(cart) ? cart : [];
-
-        } catch (error) {
-            console.error("Error reading cart:", error);
-            return [];
-        }
-    }
-
-
-    function saveCart(cart) {
-        localStorage.setItem(
-            CART_KEY,
-            JSON.stringify(cart)
-        );
-
-        window.dispatchEvent(
-            new CustomEvent("cart:updated")
-        );
-    }
 
 
     function updateCart() {

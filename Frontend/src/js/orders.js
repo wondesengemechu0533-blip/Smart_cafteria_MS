@@ -6,7 +6,8 @@
  * ================================================================
  */
 
-import { MOCK_ORDERS, ORDER_STATUS } from './config.js';
+import { MOCK_ORDERS } from './mock-orders-data.js';
+import { ORDER_STATUS } from './config.js';
 import { getCurrentUser } from './auth.js';
 import { getCartItems, getCartTotal, clearCart } from './cart.js';
 import { showToast } from './main.js';

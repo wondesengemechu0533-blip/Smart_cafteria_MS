@@ -1198,29 +1198,99 @@
             getCategoryById
         } from '../../js/menu.js';
 
-        import {
-            getCartCount,
-            addToCart,
-            isInCart
-        } from '../../js/cart.js';
+        import { showToast } from '../../js/main.js';
 
-        import {
-            isLoggedIn,
-            getCurrentUser
-        } from '../../js/auth.js';
+        import authService from '../../services/auth.service.js';
 
-        import {
-            showToast
-        } from '../../js/main.js';
+
+        // =========================================================
+        // CART HELPERS (localStorage "smart_cafeteria_cart")
+        // =========================================================
+
+        const CART_KEY = 'smart_cafeteria_cart';
+
+        function getCart() {
+            try {
+                const saved = localStorage.getItem(CART_KEY);
+                const cart = saved ? JSON.parse(saved) : [];
+                return Array.isArray(cart) ? cart : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveCart(cart) {
+            localStorage.setItem(CART_KEY, JSON.stringify(cart));
+            window.dispatchEvent(new CustomEvent('cart:updated'));
+        }
+
+        function getCartCount() {
+            return getCart().reduce(function (total, item) {
+                return total + Number(item.quantity || 0);
+            }, 0);
+        }
+
+        function isInCart(itemId) {
+            return getCart().some(function (item) {
+                return String(item.menuItemId || item.id) === String(itemId);
+            });
+        }
+
+        function addToCart(itemId, quantity) {
+            quantity = Math.max(1, Number(quantity) || 1);
+            let cart = getCart();
+            const existing = cart.find(function (item) {
+                return String(item.menuItemId || item.id) === String(itemId);
+            });
+            if (existing) {
+                existing.quantity = Number(existing.quantity || 0) + quantity;
+            } else {
+                cart.push({
+                    menuItemId: itemId,
+                    name: item.name[getLang()] || item.name.en || item.name.am,
+                    price: Number(item.price) || 0,
+                    image: resolveImage(item.image),
+                    quantity: quantity
+                });
+            }
+            saveCart(cart);
+            return cart;
+        }
+
+        function getLang() {
+            try {
+                return localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en';
+            } catch (e) {
+                return 'en';
+            }
+        }
+
+        function resolveImage(image) {
+            if (!image) return '';
+            const value = String(image);
+            if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:')) {
+                return value;
+            }
+            if (value.startsWith('/uploads/')) {
+                return 'http://localhost:5000' + value;
+            }
+            if (value.startsWith('/assets/')) {
+                return '/public' + value;
+            }
+            if (value.startsWith('/') === false) {
+                return '/public/' + value.replace(/^\.?\//, '');
+            }
+            return value;
+        }
 
 
         // =========================================================
         // RENDER HEADER
         // =========================================================
 
-        const user = getCurrentUser();
+        const user = authService.getCurrentUser();
 
-        const isLoggedInUser = isLoggedIn();
+        const isLoggedInUser = Boolean(user);
 
         document.body.insertAdjacentHTML(
             'afterbegin',
@@ -1363,12 +1433,32 @@
             );
 
         const itemId =
-            parseInt(
-                urlParams.get('id')
-            ) || 1;
+            urlParams.get('id');
 
-        const item =
-            getMenuItemById(itemId);
+        // Load the menu item + related items + category label from the API.
+        let item = null;
+        let relatedItems = [];
+        let categoryLabel = null;
+
+        try {
+            if (!itemId) {
+                throw new Error('Missing item id');
+            }
+
+            item = await getMenuItemById(itemId);
+
+            if (item) {
+                relatedItems = await getRelatedItems(itemId, 4);
+                const category = await getCategoryById(item.category, getLang());
+                if (category) {
+                    categoryLabel = category.name;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load menu item details:', error);
+            item = null;
+            relatedItems = [];
+        }
 
 
         // =========================================================
@@ -1439,10 +1529,7 @@
                 || item.description.en;
 
             const category =
-                getCategoryById(
-                    item.category,
-                    lang
-                )?.name
+                categoryLabel
                 || item.category;
 
             const inCart =
@@ -1456,7 +1543,7 @@
                     ${
                         item.image
                             ? `<img
-                                src="${item.image}"
+                                src="${resolveImage(item.image)}"
                                 alt="${name}"
                             >`
                             : item.icon || 'ðŸ½ï¸'
@@ -1735,15 +1822,8 @@
 
 
             // =====================================================
-            // RELATED ITEMS
+            // RELATED ITEMS (already fetched from the API above)
             // =====================================================
-
-            const relatedItems =
-                getRelatedItems(
-                    item.id,
-                    4
-                );
-
 
             if (
                 relatedItems.length > 0

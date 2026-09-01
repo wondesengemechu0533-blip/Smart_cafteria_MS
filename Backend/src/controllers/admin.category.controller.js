@@ -36,6 +36,8 @@ exports.getAllCategories = async (req, res) => {
       filter.$or = [
         { 'name.en': { $regex: term, $options: 'i' } },
         { 'name.am': { $regex: term, $options: 'i' } },
+        { 'description.en': { $regex: term, $options: 'i' } },
+        { 'description.am': { $regex: term, $options: 'i' } },
         { id: { $regex: term, $options: 'i' } },
       ];
     }
@@ -43,8 +45,10 @@ exports.getAllCategories = async (req, res) => {
       filter.isActive = status === 'true';
     }
 
+    const sortMap = { name: { 'name.en': 1 }, foods: { sortOrder: 1 }, created: { createdAt: 1 }, updated: { updatedAt: -1 } };
+    const sort = sortMap[String(req.query.sort || 'created')] || sortMap.created;
     const [categories, total] = await Promise.all([
-      Category.find(filter).sort({ sortOrder: 1, createdAt: 1 }).skip(skip).limit(limit),
+      Category.find(filter).sort(sort).skip(skip).limit(limit),
       Category.countDocuments(filter),
     ]);
 
@@ -75,6 +79,7 @@ function serialize(cat, itemCount) {
     name: localName(cat.name, 'en'),
     amharicName: localName(cat.name, 'am'),
     icon: cat.icon,
+    imageUrl: cat.imageUrl,
     category: cat.id,
     description: localDesc(cat.description, 'en'),
     isActive: cat.isActive,
@@ -97,7 +102,8 @@ exports.getCategoryById = async (req, res) => {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
     }
     const count = await MenuItem.countDocuments({ category: category.id });
-    res.status(HTTP_STATUS.OK).json({ success: true, category: serialize(category, count) });
+    const foods = await MenuItem.find({ category: category.id }).sort({ createdAt: -1 }).select('name price image stockQuantity availability availabilityStatus isActive isPopular isRecommended');
+    res.status(HTTP_STATUS.OK).json({ success: true, category: serialize(category, count), foods });
   } catch (error) {
     console.error('❌ Admin Get Category By ID Error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
@@ -111,21 +117,24 @@ exports.getCategoryById = async (req, res) => {
  */
 exports.createCategory = async (req, res) => {
   try {
-    const { name, icon, description, isActive } = req.body || {};
+    const { name, icon, imageUrl, description, isActive } = req.body || {};
     if (!name) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Category name is required' });
     }
 
-    const id = toId(name);
-    const existing = await Category.findOne({ id });
+    const cleanName = String(name).trim();
+    if (cleanName.length > 100) return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Category name cannot exceed 100 characters' });
+    const id = toId(cleanName);
+    const existing = await Category.findOne({ $or: [{ id }, { 'name.en': { $regex: `^${cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } }] });
     if (existing) {
       return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: 'A category with this name already exists' });
     }
 
     const category = await Category.create({
       id,
-      name: { en: name, am: name },
+      name: { en: cleanName, am: cleanName },
       icon: icon || '🍽️',
+      imageUrl: imageUrl || null,
       description: { en: description || '', am: description || '' },
       isActive: isActive !== undefined ? isActive : true,
       sortOrder: await Category.countDocuments(),
@@ -145,16 +154,20 @@ exports.createCategory = async (req, res) => {
  */
 exports.updateCategory = async (req, res) => {
   try {
-    const { name, icon, description, isActive } = req.body || {};
+    const { name, icon, imageUrl, description, isActive } = req.body || {};
     const category = await Category.findOne({ id: req.params.id });
     if (!category) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
     }
 
     if (name !== undefined && String(name).trim() !== '') {
-      category.name = { en: name, am: name };
+      const cleanName = String(name).trim();
+      const duplicate = await Category.findOne({ _id: { $ne: category._id }, 'name.en': { $regex: `^${cleanName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } });
+      if (duplicate) return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: 'A category with this name already exists' });
+      category.name = { en: cleanName, am: cleanName };
     }
     if (icon !== undefined) category.icon = icon;
+    if (imageUrl !== undefined) category.imageUrl = imageUrl || null;
     if (description !== undefined) {
       category.description = { en: description, am: description };
     }
@@ -223,14 +236,15 @@ exports.deleteCategory = async (req, res) => {
  */
 exports.getCategoryStats = async (req, res) => {
   try {
-    const [total, active, inactive] = await Promise.all([
+    const [total, active, inactive, usedCategoryIds] = await Promise.all([
       Category.countDocuments(),
       Category.countDocuments({ isActive: true }),
       Category.countDocuments({ isActive: false }),
+      MenuItem.distinct('category'),
     ]);
     res.status(HTTP_STATUS.OK).json({
       success: true,
-      stats: { totalCategories: total, active: active, inactive: inactive },
+      stats: { totalCategories: total, active, inactive, withFoods: usedCategoryIds.length, empty: Math.max(total - usedCategoryIds.length, 0) },
     });
   } catch (error) {
     console.error('❌ Admin Get Category Stats Error:', error);

@@ -3,24 +3,12 @@
  * File: Frontend/src/js/customer-menu.js
  *
  * Loads menu items from the backend API (/api/v1/menu) and renders
- * them into the customer menu page. Falls back to static data if
- * the backend is unavailable.
+ * them into the customer menu page from the backend database.
  */
 
 import api from "./api.js";
 
 const CUSTOMER_MENU = {
-
-    STATIC_FALLBACK_ITEMS: [],
-
-    async loadStaticFallback() {
-        try {
-            const { COMPLETE_MENU_ITEMS } = await import("../js/static-menu-data.js");
-            this.STATIC_FALLBACK_ITEMS = COMPLETE_MENU_ITEMS || [];
-        } catch (e) {
-            this.STATIC_FALLBACK_ITEMS = [];
-        }
-    },
 
     CART_KEY: "smart_cafeteria_cart",
 
@@ -399,15 +387,19 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn("Backend API unavailable, trying static fallback:", apiError.message);
         }
 
-        // Fallback to static data
+        renderError();
+    }
+
+    async function loadActiveCategoryFilters() {
         try {
-            if (CUSTOMER_MENU.STATIC_FALLBACK_ITEMS.length === 0) {
-                await CUSTOMER_MENU.loadStaticFallback();
-            }
-            renderMenu(CUSTOMER_MENU.STATIC_FALLBACK_ITEMS);
+            const response = await api.get("/categories");
+            const active = new Set((response.categories || []).filter(category => category.isActive !== false).map(category => String(category.id).toLowerCase()));
+            document.querySelectorAll(".category-pill[data-category]").forEach(button => {
+                const category = String(button.dataset.category).toLowerCase();
+                if (category !== "all") button.hidden = active.size > 0 && !active.has(category);
+            });
         } catch (error) {
-            console.error("Failed to load menu:", error);
-            renderError();
+            console.warn("Unable to load category visibility:", error.message);
         }
     }
 
@@ -419,6 +411,26 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener(
         "click",
         function (event) {
+
+            const addButton = event.target.closest(".add-to-cart-btn");
+            if (addButton && !addButton.disabled) {
+                event.preventDefault();
+                const itemId = addButton.dataset.id;
+                let cart = [];
+                try { cart = JSON.parse(localStorage.getItem(CUSTOMER_MENU.CART_KEY) || "[]"); } catch (e) { cart = []; }
+                const existing = cart.find(item => String(item.menuItemId || item.id) === String(itemId));
+                if (existing) existing.quantity = Number(existing.quantity || 0) + 1;
+                else cart.push({ menuItemId: itemId, name: addButton.dataset.name, price: Number(addButton.dataset.price), image: addButton.dataset.image || "", quantity: 1 });
+                localStorage.setItem(CUSTOMER_MENU.CART_KEY, JSON.stringify(cart));
+                document.querySelectorAll("#cart-badge-count, #mobile-cart-badge").forEach(badge => {
+                    badge.textContent = cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
+                });
+                const original = addButton.innerHTML;
+                addButton.innerHTML = '<i class="fa-solid fa-check"></i> Added';
+                addButton.disabled = true;
+                setTimeout(() => { addButton.innerHTML = original; addButton.disabled = false; }, 700);
+                return;
+            }
 
             const retryButton =
                 event.target.closest("#menu-retry-btn");
@@ -434,10 +446,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // INITIAL LOAD + LANGUAGE LISTENER
     // =========================================================
 
-    // Load static fallback data first (async)
-    CUSTOMER_MENU.loadStaticFallback().then(() => {
-        loadMenu();
-    });
+    loadActiveCategoryFilters();
+    loadMenu();
 
     window.addEventListener("language:changed", loadMenu);
     window.addEventListener("languageChanged", loadMenu);

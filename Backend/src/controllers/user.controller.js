@@ -3,10 +3,28 @@ const User = require('../models/User');
 const { MESSAGES, HTTP_STATUS } = require('../config/constants');
 const { logAction } = require('../utils/audit');
 
-const VALID_ROLES = ['customer', 'kitchen', 'admin', 'STUDENT', 'STAFF', 'ADMIN', 'KITCHEN_STAFF'];
-const ADMIN_ROLES = ['admin', 'ADMIN'];
+const VALID_ROLES = ['customer', 'kitchen', 'admin'];
+const ADMIN_ROLES = ['admin'];
 
-const isAdminRole = (role) => ADMIN_ROLES.includes(role);
+const normalizeUserRole = (role) => {
+  const value = String(role ?? '').trim();
+  if (!value) return 'customer';
+
+  const key = value.toLowerCase();
+  const roleMap = {
+    customer: 'customer',
+    kitchen: 'kitchen',
+    foodmaker: 'kitchen',
+    'kitchen staff': 'kitchen',
+    kitchen_staff: 'kitchen',
+    staff: 'kitchen',
+    admin: 'admin'
+  };
+
+  return roleMap[key] || value;
+};
+
+const isAdminRole = (role) => ADMIN_ROLES.includes(String(role ?? '').trim()) || String(role ?? '').toLowerCase() === 'admin';
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -18,7 +36,7 @@ function sanitizeUser(user) {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    role: user.role,
+    role: normalizeUserRole(user.role),
     balance: user.balance,
     status: user.status,
     isActive: user.isActive,
@@ -53,7 +71,7 @@ exports.getAllUsers = async (req, res) => {
       ];
     }
     if (role && role !== 'all') {
-      filter.role = role.toUpperCase() === 'KITCHEN_STAFF' ? role.toUpperCase() : role;
+      filter.role = normalizeUserRole(role);
     }
     if (status && status !== 'all') filter.status = status.toUpperCase();
 
@@ -134,7 +152,8 @@ exports.createUser = async (req, res) => {
     if (typeof password !== 'string' || password.length < 6) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Password must be at least 6 characters' });
     }
-    if (!VALID_ROLES.includes(role)) {
+    const normalizedRole = normalizeUserRole(role);
+    if (!VALID_ROLES.includes(normalizedRole)) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: `Invalid role. Allowed: ${VALID_ROLES.join(', ')}` });
     }
 
@@ -151,7 +170,7 @@ exports.createUser = async (req, res) => {
       email: email.toLowerCase(),
       phone,
       password,
-      role,
+      role: normalizedRole,
       balance: balance || 0,
       status: 'ACTIVE',
       isActive: true
@@ -260,10 +279,11 @@ exports.updateUser = async (req, res) => {
           error: 'Admins cannot remove their own administrator role'
         });
       }
-      await assertRoleChangeAllowed(user, role);
+      const normalizedRole = normalizeUserRole(role);
+      await assertRoleChangeAllowed(user, normalizedRole);
       previousRole = String(user.role);
-      roleChanged = previousRole !== String(role);
-      user.role = role;
+      roleChanged = previousRole !== String(normalizedRole);
+      user.role = normalizedRole;
     }
 
     if (balance !== undefined) {
@@ -337,7 +357,8 @@ exports.assignUserRole = async (req, res) => {
     if (!role) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Role is required' });
     }
-    if (!VALID_ROLES.includes(role)) {
+    const normalizedRole = normalizeUserRole(role);
+    if (!VALID_ROLES.includes(role) && !VALID_ROLES.includes(normalizedRole)) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: `Invalid role. Allowed: ${VALID_ROLES.join(', ')}` });
     }
 
@@ -347,7 +368,7 @@ exports.assignUserRole = async (req, res) => {
     }
 
     const isSelf = String(user._id) === String(req.user.id);
-    if (isSelf && isAdminRole(user.role) && !isAdminRole(role)) {
+    if (isSelf && isAdminRole(user.role) && !isAdminRole(normalizedRole)) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: 'Admins cannot remove their own administrator role'
@@ -355,8 +376,8 @@ exports.assignUserRole = async (req, res) => {
     }
 
     const previousRole = String(user.role);
-    await assertRoleChangeAllowed(user, role);
-    user.role = role;
+    await assertRoleChangeAllowed(user, normalizedRole);
+    user.role = normalizedRole;
     await user.save();
 
     await logAction({
@@ -364,7 +385,7 @@ exports.assignUserRole = async (req, res) => {
       action: 'ROLE_CHANGED',
       entityType: 'User',
       entityId: String(user._id),
-      description: `Changed role of "${user.name}" from ${previousRole} to ${role}`
+      description: `Changed role of "${user.name}" from ${previousRole} to ${normalizedRole}`
     });
 
     res.status(HTTP_STATUS.OK).json({ success: true, user: sanitizeUser(user) });
@@ -378,7 +399,7 @@ exports.assignUserRole = async (req, res) => {
 };
 
 /**
- * @desc    Delete user (Admin only) - protects last active administrator
+ * @desc    Delete/deactivate user (Admin only) - soft delete by deactivating
  * @route   DELETE /api/v1/admin/users/:id
  * @access  Private/Admin
  */
@@ -403,17 +424,19 @@ exports.deleteUser = async (req, res) => {
       }
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    user.status = 'BLOCKED';
+    user.isActive = false;
+    await user.save();
 
     await logAction({
       req,
       action: 'USER_DELETED',
       entityType: 'User',
       entityId: String(user._id),
-      description: `Deleted user "${user.name}" (${user.email}) - role: ${user.role}`
+      description: `Deactivated user "${user.name}" (${user.email}) - role: ${user.role}`
     });
 
-    res.status(HTTP_STATUS.OK).json({ success: true, message: 'User deleted successfully' });
+    res.status(HTTP_STATUS.OK).json({ success: true, user: sanitizeUser(user), message: 'User deactivated successfully' });
   } catch (error) {
     console.error('❌ Delete User Error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
@@ -421,19 +444,19 @@ exports.deleteUser = async (req, res) => {
 };
 
 /**
- * @desc    Toggle user status / activate-deactivate (Admin only)
+ * @desc    Toggle user status / activate-deactivate-suspend (Admin only)
  * @route   PATCH /api/v1/admin/users/:id/status
  * @access  Private/Admin
- * Body: { status: 'ACTIVE' | 'BLOCKED' }
+ * Body: { status: 'ACTIVE' | 'BLOCKED' | 'SUSPENDED' }
  */
 exports.toggleUserStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['ACTIVE', 'BLOCKED'];
+    const validStatuses = ['ACTIVE', 'BLOCKED', 'SUSPENDED'];
     if (!status || !validStatuses.includes(String(status).toUpperCase())) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
-        error: 'Invalid status. Must be ACTIVE or BLOCKED'
+        error: 'Invalid status. Must be ACTIVE, BLOCKED, or SUSPENDED'
       });
     }
     if (!isValidObjectId(req.params.id)) {
@@ -446,11 +469,11 @@ exports.toggleUserStatus = async (req, res) => {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'User not found' });
     }
 
-    if (normalizedStatus === 'BLOCKED' && isAdminRole(user.role)) {
+    if (normalizedStatus !== 'ACTIVE' && isAdminRole(user.role)) {
       if (String(user._id) === String(req.user.id)) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           success: false,
-          error: 'Admins cannot deactivate their own account'
+          error: 'Admins cannot deactivate or suspend their own account'
         });
       }
       if (user.status === 'ACTIVE') {
@@ -458,7 +481,7 @@ exports.toggleUserStatus = async (req, res) => {
         if (activeAdminCount <= 1) {
           return res.status(HTTP_STATUS.BAD_REQUEST).json({
             success: false,
-            error: 'Cannot deactivate the last active administrator'
+            error: 'Cannot deactivate or suspend the last active administrator'
           });
         }
       }
@@ -468,15 +491,22 @@ exports.toggleUserStatus = async (req, res) => {
     user.isActive = normalizedStatus === 'ACTIVE';
     await user.save();
 
+    let actionLabel = 'USER_ACTIVATED';
+    let description = `Activated user "${user.name}" (${user.email})`;
+    if (normalizedStatus === 'BLOCKED') {
+      actionLabel = 'USER_DEACTIVATED';
+      description = `Deactivated user "${user.name}" (${user.email})`;
+    } else if (normalizedStatus === 'SUSPENDED') {
+      actionLabel = 'USER_SUSPENDED';
+      description = `Suspended user "${user.name}" (${user.email})`;
+    }
+
     await logAction({
       req,
-      action: normalizedStatus === 'ACTIVE' ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
+      action: actionLabel,
       entityType: 'User',
       entityId: String(user._id),
-      description:
-        normalizedStatus === 'ACTIVE'
-          ? `Activated user "${user.name}" (${user.email})`
-          : `Deactivated user "${user.name}" (${user.email})`
+      description
     });
 
     res.status(HTTP_STATUS.OK).json({ success: true, user: sanitizeUser(user) });
@@ -494,25 +524,71 @@ exports.toggleUserStatus = async (req, res) => {
 exports.getUserStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
-    const activeStudents = await User.countDocuments({
-      role: { $in: ['customer', 'STUDENT'] },
+    const activeCustomers = await User.countDocuments({
+      role: 'customer',
       status: 'ACTIVE',
       isActive: true
     });
     const staffCount = await User.countDocuments({
-      role: { $in: ['kitchen', 'STAFF', 'KITCHEN_STAFF', 'admin', 'ADMIN'] }
+      role: { $in: ['kitchen', 'admin'] }
     });
     const blockedCount = await User.countDocuments({
       status: 'BLOCKED',
       isActive: false
     });
+    const suspendedCount = await User.countDocuments({
+      status: 'SUSPENDED'
+    });
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
-      stats: { totalUsers, activeStudents, staffCount, blockedCount }
+      stats: { totalUsers, activeCustomers, staffCount, blockedCount, suspendedCount }
     });
   } catch (error) {
     console.error('❌ Get User Stats Error:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
+  }
+};
+
+/**
+ * @desc    Reset a user's password (Admin only)
+ * @route   PATCH /api/v1/admin/users/:id/password
+ * @access  Private/Admin
+ * Body: { password }
+ */
+exports.resetUserPassword = async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Invalid user id' });
+    }
+
+    const { password } = req.body;
+    if (!password || typeof password !== 'string' || password.length < 6) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: 'Password must be at least 6 characters'
+      });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'User not found' });
+    }
+
+    user.password = password;
+    await user.save();
+
+    await logAction({
+      req,
+      action: 'PASSWORD_RESET',
+      entityType: 'User',
+      entityId: String(user._id),
+      description: `Admin reset password for user "${user.name}" (${user.email})`
+    });
+
+    res.status(HTTP_STATUS.OK).json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('❌ Reset User Password Error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
   }
 };

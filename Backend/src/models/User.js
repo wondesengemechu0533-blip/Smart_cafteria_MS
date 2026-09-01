@@ -1,6 +1,24 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const normalizeUserRole = (role) => {
+  const value = String(role ?? '').trim();
+  if (!value) return 'customer';
+
+  const key = value.toLowerCase();
+  const roleMap = {
+    customer: 'customer',
+    kitchen: 'kitchen',
+    foodmaker: 'kitchen',
+    'kitchen staff': 'kitchen',
+    kitchen_staff: 'kitchen',
+    staff: 'kitchen',
+    admin: 'admin'
+  };
+
+  return roleMap[key] || value;
+};
+
 /**
  * User Schema - Matches Frontend Requirements
  *
@@ -47,8 +65,14 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["customer", "kitchen", "admin", "STAFF", "STUDENT", "ADMIN", "KITCHEN_STAFF"],
+      enum: [
+        "customer",
+        "kitchen",
+        "admin"
+      ],
       default: "customer",
+      lowercase: false,
+      set: normalizeUserRole,
     },
     balance: {
       type: Number,
@@ -57,7 +81,7 @@ const UserSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["ACTIVE", "BLOCKED", "active", "blocked"],
+      enum: ["ACTIVE", "BLOCKED", "SUSPENDED"],
       default: "ACTIVE",
     },
     avatar: {

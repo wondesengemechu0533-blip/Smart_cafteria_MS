@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+const CATEGORY_ALIASES = {
+  mains: "main-meals",
+  lunch: "main-meals",
+  dinner: "main-meals",
+  drinks: "beverages"
+};
+
 /**
  * MenuItem Schema - Matches Frontend Requirements
  *
@@ -24,18 +31,8 @@ const MenuItemSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: [
-        "breakfast",
-        "mains",
-        "main-meals",
-        "fasting",
-        "beverages",
-        "snacks",
-        "Lunch",
-        "Dinner",
-        "Drinks",
-      ],
       required: [true, "Category is required"],
+      set: (value) => CATEGORY_ALIASES[String(value || "").toLowerCase()] || String(value || "").toLowerCase(),
     },
     price: {
       type: Number,
@@ -65,13 +62,33 @@ const MenuItemSchema = new mongoose.Schema(
       default: 10,
       min: 1,
     },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    isActive: { type: Boolean, default: true },
+    stockQuantity: { type: Number, default: 0, min: 0 },
+    lowStockThreshold: { type: Number, default: 5, min: 0 },
+    availabilityStatus: { type: String, enum: ['AVAILABLE', 'OUT_OF_STOCK', 'UNAVAILABLE'], default: 'OUT_OF_STOCK' },
+    isPopular: { type: Boolean, default: false },
+    isRecommended: { type: Boolean, default: false },
+    showOnHomepage: { type: Boolean, default: false },
     availability: {
       type: Boolean,
       default: true,
     },
-    isAvailable: {
-      type: Boolean,
-      default: true,
+    outOfStockReason: {
+      type: String,
+      default: null,
+    },
+    lastAvailabilityUpdate: {
+      type: Date,
+      default: null,
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   {
@@ -90,7 +107,8 @@ MenuItemSchema.methods.getLocalized = function (lang = "en") {
     icon: this.icon,
     image: this.image,
     preparationTime: this.preparationTime,
-    availability: this.availability || this.isAvailable,
+    isAvailable: this.isAvailable,
+    outOfStockReason: this.outOfStockReason,
   };
 };
 

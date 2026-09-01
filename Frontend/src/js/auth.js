@@ -5,6 +5,34 @@
 
 import authService from "../services/auth.service.js";
 
+// ===== Shared auth helpers (re-export authService-backed functions) =====
+
+/**
+ * Return the currently logged-in user (from authService/localStorage).
+ * @returns {Object|null}
+ */
+export function getCurrentUser() {
+    return authService.getCurrentUser();
+}
+
+/**
+ * True when a user is currently logged in.
+ * @returns {boolean}
+ */
+export function isLoggedIn() {
+    return Boolean(authService.getCurrentUser());
+}
+
+/**
+ * Log the current user out (delegates to authService.logout).
+ * @returns {Promise<void>}
+ */
+export async function logout() {
+    await authService.logout();
+}
+
+export { authService };
+
 document.addEventListener("DOMContentLoaded", () => {
     initializeAuth();
 });
@@ -97,7 +125,7 @@ async function handleRegister(event) {
             name,
             email,
             password,
-            role: "student"
+            role: "customer"
         });
 
         showMessage(

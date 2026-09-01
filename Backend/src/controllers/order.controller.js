@@ -5,6 +5,8 @@ const MenuItem = require('../models/MenuItem');
 const Notification = require('../models/Notification');
 const { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHODS, MESSAGES, HTTP_STATUS } = require('../config/constants');
 const { getSettingsMap } = require('../utils/settings');
+const StockTransaction = require('../models/StockTransaction');
+const OrderStatusHistory = require('../models/OrderStatusHistory');
 
 /**
 * @desc    Create new order
@@ -16,6 +18,7 @@ const { getSettingsMap } = require('../utils/settings');
 * Response: { success, order }
 */
 exports.createOrder = async (req, res) => {
+let reservations = [];
 try {
 const {
 items,
@@ -72,9 +75,18 @@ $or: [
 });
 }
 
-const price = menuItem ? menuItem.price : (Number(item.price) || 0);
+if (!menuItem) return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Food item not found' });
+const quantity = parseInt(item.quantity);
+if (!Number.isInteger(quantity) || quantity < 1) return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Quantity must be at least 1' });
+const reserved = await MenuItem.findOneAndUpdate(
+  { _id: menuItem._id, isActive: true, availabilityStatus: 'AVAILABLE', availability: true, isAvailable: true, stockQuantity: { $gte: quantity } },
+  { $inc: { stockQuantity: -quantity } },
+  { new: false }
+);
+if (!reserved) return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: `Only ${menuItem.stockQuantity || 0} items are currently available.` });
+reservations.push({ id: menuItem._id, quantity, previous: reserved.stockQuantity });
+const price = menuItem.price;
 const name = menuItem ? (menuItem.name?.en || menuItem.name) : (item.name || 'Food Item');
-const quantity = parseInt(item.quantity) || 1;
       const itemTotal = price * quantity;
       subtotal += itemTotal;
 
@@ -84,6 +96,11 @@ const quantity = parseInt(item.quantity) || 1;
         quantity: quantity,
         price: price,
         notes: item.notes || ''
+        , foodNameSnapshot: name
+        , foodDescriptionSnapshot: menuItem.description?.en || ''
+        , categoryNameSnapshot: menuItem.category || ''
+        , foodImageSnapshot: menuItem.image || null
+        , subtotal: itemTotal
       });
     }
 
@@ -139,6 +156,15 @@ status: ORDER_STATUS.PENDING,
 orderDate: new Date().toLocaleString(),
 notes: notes || ''
 });
+await OrderStatusHistory.create({ orderId: order._id, previousStatus: 'NONE', newStatus: 'PENDING', changedBy: req.user.id, reason: 'Order placed' });
+for (const reservation of reservations) {
+  const updated = await MenuItem.findById(reservation.id);
+  if (updated) {
+    updated.availabilityStatus = updated.stockQuantity === 0 ? 'OUT_OF_STOCK' : updated.availabilityStatus;
+    await updated.save();
+    await StockTransaction.create({ foodId: updated._id, previousQuantity: reservation.previous, quantityChanged: -reservation.quantity, newQuantity: updated.stockQuantity, action: 'ORDER', performedBy: req.user.id, orderId: order._id });
+  }
+}
 
 // ✅ Emit socket event for new order (kitchen dashboard real-time updates)
 const { emitSocketEvent } = require('../utils/socket');
@@ -154,6 +180,9 @@ order: orderSummary
 
 } catch (error) {
 console.error('❌ Create Order Error:', error);
+for (const reservation of reservations) {
+  await MenuItem.findByIdAndUpdate(reservation.id, { $inc: { stockQuantity: reservation.quantity } }).catch(() => {});
+}
 res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
 success: false,
 error: MESSAGES.SERVER_ERROR

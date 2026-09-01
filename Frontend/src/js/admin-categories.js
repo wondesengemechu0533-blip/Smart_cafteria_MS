@@ -20,7 +20,8 @@
     page: 1,
     limit: 10,
     search: "",
-    status: ""
+    status: "",
+    sort: "created"
   };
 
   function escapeHtml(value) {
@@ -67,7 +68,8 @@
         page: state.page,
         limit: state.limit,
         search: state.search,
-        status: state.status
+        status: state.status,
+        sort: state.sort
       });
 
       state.total = data.total || 0;
@@ -95,12 +97,13 @@
       return (
         "<tr>" +
         '<td><strong>' + window.esc(categoryName(cat)) + '</strong><br><small class="table-muted">' + window.esc(icon) + '</small></td>' +
-        '<td><span class="category-pill">' + window.esc(cat.category || "-") + '</span></td>' +
+        '<td><strong>' + Number(cat.itemCount || 0) + '</strong>' + (Number(cat.itemCount || 0) === 0 ? '<br><small class="table-muted">No foods yet</small>' : '') + '</td>' +
         '<td>' + (isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>') + '</td>' +
         '<td>' + window.esc(categoryDescription(cat) || "-") + '</td>' +
         '<td>' + window.AdminAPI.formatDate(cat.createdAt) + '</td>' +
         '<td>' +
         '<div class="table-actions">' +
+          '<button class="action-btn" data-action="view" data-id="' + window.esc(cat.id) + '" title="View category"><i class="fa-solid fa-eye"></i></button>' +
           '<button class="action-btn" data-action="edit" data-id="' + window.esc(cat.id) + '" title="Edit category"><i class="fa-solid fa-pen"></i></button>' +
           '<button class="action-btn" data-action="toggle" data-id="' + window.esc(cat.id) + '" title="' + (isActive ? "Deactivate" : "Activate") + '"><i class="fa-solid ' + (isActive ? "fa-toggle-on" : "fa-toggle-off") + '"></i></button>' +
           '<button class="action-btn danger" data-action="delete" data-id="' + window.esc(cat.id) + '" title="Delete category"><i class="fa-solid fa-trash"></i></button>' +
@@ -153,6 +156,8 @@
     if (nameEl) nameEl.value = categoryName(category);
     var iconEl = document.getElementById("categoryIcon");
     if (iconEl) iconEl.value = category.icon || "fa-solid fa-tag";
+    var imageEl = document.getElementById("categoryImageUrl");
+    if (imageEl) imageEl.value = category.imageUrl || "";
     var descEl = document.getElementById("categoryDescription");
     if (descEl) descEl.value = categoryDescription(category);
     var activeEl = document.getElementById("categoryIsActive");
@@ -172,6 +177,7 @@
     var payload = {
       name: (document.getElementById("categoryName") || {}).value || "",
       icon: ((document.getElementById("categoryIcon") || {}).value || "fa-solid fa-tag").trim(),
+      imageUrl: ((document.getElementById("categoryImageUrl") || {}).value || "").trim(),
       description: (document.getElementById("categoryDescription") || {}).value || "",
       isActive: !!(document.getElementById("categoryIsActive") || {}).checked
     };
@@ -257,6 +263,8 @@
         loadCategories();
       });
     }
+    var sortFilter = document.getElementById("sortFilter");
+    if (sortFilter) sortFilter.addEventListener("change", function() { state.sort = sortFilter.value; state.page = 1; loadCategories(); });
 
     var resetBtn = document.getElementById("resetFiltersBtn");
     if (resetBtn) {
@@ -285,7 +293,7 @@
         if (!id) return;
 
         var category = (window.__categoriesCache || []).find(function(c) { return c.id === id; });
-        if (!category && (action === "edit" || action === "toggle" || action === "delete")) {
+        if (!category && (action === "view" || action === "edit" || action === "toggle" || action === "delete")) {
           category = await findCategoryById(id);
         }
         if (!category) {
@@ -293,7 +301,18 @@
           return;
         }
 
-        if (action === "edit") openEditCategoryModal(category);
+        if (action === "view") {
+          var details = await window.AdminAPI.get("/admin/categories/" + encodeURIComponent(category.id));
+          document.getElementById("categoryDetailIcon").textContent = category.icon || "🍽️";
+          document.getElementById("categoryDetailName").textContent = categoryName(category);
+          document.getElementById("categoryDetailDescription").textContent = categoryDescription(category) || "No description";
+          document.getElementById("categoryDetailStatus").textContent = category.isActive ? "Active" : "Inactive";
+          document.getElementById("categoryDetailCount").textContent = (details.foods || []).length;
+          document.getElementById("categoryDetailCreated").textContent = window.AdminAPI.formatDate(category.createdAt);
+          document.getElementById("categoryDetailUpdated").textContent = window.AdminAPI.formatDate(category.updatedAt);
+          document.getElementById("categoryDetailFoods").innerHTML = (details.foods || []).map(function(food) { return '<tr><td>' + window.esc(food.name.en || food.name) + '</td><td>' + Number(food.price || 0) + ' ETB</td><td>' + Number(food.stockQuantity || 0) + '</td><td>' + window.esc(food.availabilityStatus || "-") + '</td></tr>'; }).join("") || '<tr><td colspan="4">No foods have been added to this category yet.</td></tr>';
+          openModal("categoryDetailsModal");
+        } else if (action === "edit") openEditCategoryModal(category);
         else if (action === "toggle") toggleCategoryStatus(category);
         else if (action === "delete") deleteCategory(category);
       });
@@ -303,6 +322,7 @@
   function init() {
     bindEvents();
     loadCategories();
+    window.AdminAPI.get("/admin/categories/stats").then(function(data) { var stats = data.stats || {}; document.getElementById("metricTotalCategories").textContent = stats.totalCategories || 0; document.getElementById("metricActiveCategories").textContent = stats.active || 0; document.getElementById("metricInactiveCategories").textContent = stats.inactive || 0; document.getElementById("metricEmptyCategories").textContent = stats.empty || 0; }).catch(function() {});
   }
 
   document.addEventListener("DOMContentLoaded", init);

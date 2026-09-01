@@ -50,6 +50,23 @@ const DEFAULT_SETTINGS = [
     group: 'operations',
     label: 'Maintenance Mode',
   },
+  { key: 'minimum_order_amount', value: 0, type: 'number', group: 'orders', label: 'Minimum Order Amount' },
+  { key: 'order_cancellation_enabled', value: true, type: 'boolean', group: 'orders', label: 'Order Cancellation' },
+  { key: 'cancellation_window_minutes', value: 15, type: 'number', group: 'orders', label: 'Cancellation Window (minutes)' },
+  { key: 'default_preparation_time', value: 15, type: 'number', group: 'orders', label: 'Default Preparation Time (minutes)' },
+  { key: 'payment_telebirr_enabled', value: true, type: 'boolean', group: 'payments', label: 'Telebirr Payments' },
+  { key: 'payment_chapa_enabled', value: true, type: 'boolean', group: 'payments', label: 'Chapa Payments' },
+  { key: 'payment_cbe_birr_enabled', value: false, type: 'boolean', group: 'payments', label: 'CBE Birr Payments' },
+  { key: 'payment_provider', value: 'chapa', type: 'string', group: 'payments', label: 'Default Payment Provider' },
+  { key: 'payment_status_mode', value: 'automatic', type: 'string', group: 'payments', label: 'Payment Status Mode' },
+  { key: 'default_language', value: 'en', type: 'string', group: 'language', label: 'Default System Language' },
+  { key: 'notify_new_orders', value: true, type: 'boolean', group: 'notifications', label: 'New Order Notifications' },
+  { key: 'notify_payments', value: true, type: 'boolean', group: 'notifications', label: 'Payment Notifications' },
+  { key: 'notify_low_stock', value: true, type: 'boolean', group: 'notifications', label: 'Low Stock Notifications' },
+  { key: 'notify_user_accounts', value: true, type: 'boolean', group: 'notifications', label: 'User Account Notifications' },
+  { key: 'session_timeout_minutes', value: 60, type: 'number', group: 'security', label: 'Session Timeout (minutes)' },
+  { key: 'login_max_attempts', value: 5, type: 'number', group: 'security', label: 'Maximum Login Attempts' },
+  { key: 'two_factor_enabled', value: false, type: 'boolean', group: 'security', label: 'Two-Factor Authentication' },
 ];
 
 async function ensureDefaultSettings() {

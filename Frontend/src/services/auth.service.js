@@ -5,7 +5,7 @@
 
 import api from "../js/api.js";
 
-class AuthService {
+export class AuthService {
 
     async login(credentials) {
         const response = await api.post(
@@ -107,8 +107,12 @@ class AuthService {
 
     hasRole(role) {
         const user = this.getCurrentUser();
-
-        return user?.role === role;
+        const currentRole = String(user?.role || '').toLowerCase();
+        const requestedRole = String(role || '').toLowerCase();
+        if (requestedRole === 'foodmaker' || requestedRole === 'kitchen_staff' || requestedRole === 'staff') {
+            return currentRole === 'kitchen' || currentRole === 'foodmaker' || currentRole === 'kitchen_staff' || currentRole === 'staff';
+        }
+        return currentRole === requestedRole;
     }
 
     isAdmin() {
@@ -116,12 +120,9 @@ class AuthService {
     }
 
     isFoodMaker() {
-        return this.hasRole("foodmaker");
+        return this.hasRole("kitchen");
     }
 
-    isStudent() {
-        return this.hasRole("student");
-    }
 }
 
 const authService = new AuthService();

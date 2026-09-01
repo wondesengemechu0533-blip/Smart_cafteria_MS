@@ -1,6 +1,6 @@
-import { AuthService } from "../services/auth.service.js";
+import authService from "../services/auth.service.js";
 import { Storage } from "../js/utils/storage.js";
-import { CONFIG } from "../js/config.js";
+import { STORAGE_KEYS } from "../js/config.js";
 
 /**
  * Top Navigation Bar Component
@@ -9,8 +9,8 @@ export function renderNavbar(containerId = "navbar-container") {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const user = AuthService.getCurrentUser();
-    const cart = Storage.get(CONFIG.KEYS.CART, []);
+    const user = authService.getCurrentUser();
+    const cart = Storage.get(STORAGE_KEYS.cart, []);
     const cartCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
 
     const userNavHtml = user ? `
@@ -30,9 +30,9 @@ export function renderNavbar(containerId = "navbar-container") {
                 </a>
             </div>
             <div class="nav-links">
-                <a href="../student/menu.html">Menu</a>
-                <a href="../student/order-tracking.html">Track Order</a>
-                <a href="../student/cart.html" class="cart-link">
+                <a href="../customer/menu.html">Menu</a>
+                <a href="../customer/order-tracking.html">Track Order</a>
+                <a href="../customer/cart.html" class="cart-link">
                     🛒 Cart <span class="cart-badge">${cartCount}</span>
                 </a>
             </div>
@@ -45,6 +45,6 @@ export function renderNavbar(containerId = "navbar-container") {
     // Bind Logout event
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => AuthService.logout());
+        logoutBtn.addEventListener("click", () => authService.logout());
     }
 }

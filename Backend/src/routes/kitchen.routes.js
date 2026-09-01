@@ -8,12 +8,18 @@ const {
     markOrderReady,
     markOrderServed,
     rejectOrder,
-    getKitchenStats
+    getKitchenStats,
+    getMenuAvailability,
+    updateItemAvailability,
+    reportStockIssue,
+    getStockAlerts,
+    getOrderDetails,
+    updateItemPreparationStatus,
+    addPreparationDelay
 } = require('../controllers/kitchen.controller');
 
-// 
-
-//  ALL ROUTES REQUIRE KITCHEN ROLE
+// ============================================================
+// ALL ROUTES REQUIRE KITCHEN ROLE
 // ============================================================
 router.use(protect);
 router.use(authorize('kitchen'));
@@ -22,7 +28,6 @@ router.use(authorize('kitchen'));
  * @route   GET /api/kitchen/dashboard
  * @desc    Get kitchen dashboard data
  * @access  Private/Kitchen
-
  * 
  * Frontend: kitchen/dashboard.html → Load dashboard
  */
@@ -38,6 +43,14 @@ router.get('/dashboard', getKitchenDashboard);
  */
 router.get('/orders', getKitchenOrders);
 
+/**
+ * @route   GET /api/kitchen/orders/:orderId/details
+ * @desc    Get detailed order view with item-level status
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/order-details.html → Show full order
+ */
+router.get('/orders/:orderId/details', getOrderDetails);
 
 /**
  * @route   GET /api/kitchen/stats
@@ -53,9 +66,7 @@ router.get('/stats', getKitchenStats);
  * @desc    Accept order
  * @access  Private/Kitchen
  * 
- * Frontend: kitchen/dashboard.html 
-
-→ Accept order
+ * Frontend: kitchen/dashboard.html → Accept order
  */
 router.patch('/orders/:orderId/accept', acceptOrder);
 
@@ -69,7 +80,6 @@ router.patch('/orders/:orderId/accept', acceptOrder);
 router.patch('/orders/:orderId/ready', markOrderReady);
 
 /**
-
  * @route   PATCH /api/kitchen/orders/:orderId/serve
  * @desc    Mark order as served
  * @access  Private/Kitchen
@@ -83,11 +93,72 @@ router.patch('/orders/:orderId/serve', markOrderServed);
  * @desc    Reject/cancel order
  * @access  Private/Kitchen
  * 
- * Frontend: kitchen/dashboard.html 
-
-→ Reject order
+ * Frontend: kitchen/dashboard.html → Reject order
  * Body: { reason }
  */
 router.patch('/orders/:orderId/reject', rejectOrder);
+
+/**
+ * @route   PATCH /api/kitchen/orders/:orderId/items/:itemId/status
+ * @desc    Update item-level preparation status
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/order-details.html → Update item status
+ * Body: { itemStatus }
+ */
+router.patch('/orders/:orderId/items/:itemId/status', updateItemPreparationStatus);
+
+/**
+ * @route   PATCH /api/kitchen/orders/:orderId/delay
+ * @desc    Add preparation delay reason
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/dashboard.html → Report delay
+ * Body: { reason }
+ */
+router.patch('/orders/:orderId/delay', addPreparationDelay);
+
+// ============================================================
+// FOOD AVAILABILITY MANAGEMENT
+// ============================================================
+
+/**
+ * @route   GET /api/kitchen/menu-availability
+ * @desc    Get all menu items with availability status
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/availability.html → Display menu items
+ */
+router.get('/menu-availability', getMenuAvailability);
+
+/**
+ * @route   PATCH /api/kitchen/menu/:itemId/availability
+ * @desc    Toggle item availability
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/availability.html → Toggle item
+ * Body: { isAvailable, reason }
+ */
+router.patch('/menu/:itemId/availability', updateItemAvailability);
+
+/**
+ * @route   GET /api/kitchen/stock-alerts
+ * @desc    Get active stock alerts
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/stock-alerts.html → Display alerts
+ * Query Params: status
+ */
+router.get('/stock-alerts', getStockAlerts);
+
+/**
+ * @route   POST /api/kitchen/stock-alerts
+ * @desc    Report a stock/ingredient issue
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/stock-alerts.html → Report issue
+ * Body: { itemId, itemName, alertType, severity, reason }
+ */
+router.post('/stock-alerts', reportStockIssue);
 
 module.exports = router;

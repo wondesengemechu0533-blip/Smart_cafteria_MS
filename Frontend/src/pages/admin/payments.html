@@ -35,19 +35,19 @@
 
             <!-- STATS CARDS -->
             <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
                         <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-sack-dollar"></i>
+                            <i class="fa-solid fa-receipt"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Total Revenue</span>
-                            <h2 class="metric-value" id="metricTotalRevenue">0 ETB</h2>
+                            <span class="metric-label">Total Payments</span>
+                            <h2 class="metric-value" id="metricTotalPayments">0</h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
                         <div class="metric-icon bg-green">
                             <i class="fa-solid fa-check-circle"></i>
                         </div>
@@ -57,8 +57,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
+                        <div class="metric-icon bg-red">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Failed</span>
+                            <h2 class="metric-value" id="metricFailedPayments">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
                         <div class="metric-icon bg-orange">
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
@@ -68,14 +79,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-times-circle"></i>
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
+                        <div class="metric-icon bg-blue">
+                            <i class="fa-solid fa-arrow-rotate-left"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Failed</span>
-                            <h2 class="metric-value" id="metricFailedPayments">0</h2>
+                            <span class="metric-label">Refunded</span>
+                            <h2 class="metric-value" id="metricRefundedPayments">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-md-4">
+                    <div class="metric-card">
+                        <div class="metric-icon bg-purple">
+                            <i class="fa-solid fa-money-bill"></i>
+                        </div>
+                        <div class="metric-content">
+                            <span class="metric-label">Net Revenue</span>
+                            <h2 class="metric-value" id="metricNetRevenue">ETB 0</h2>
                         </div>
                     </div>
                 </div>
@@ -83,21 +105,78 @@
 
             <!-- FILTERS & SEARCH -->
             <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa-solid fa-filter"></i> Search & Filter</h3>
+                </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <input type="text" id="paymentSearchInput" class="form-control" placeholder="Search by transaction ID, order ID, customer...">
+                            <input type="text" id="paymentSearchInput" class="form-control" placeholder="Search by Payment ID, Order ID...">
                         </div>
                         <div class="col-md-2">
-<select id="paymentMethodFilter" class="form-select">
-<option value="">All Methods</option>
-<option value="CHAPA">Chapa</option>
-<option value="TELEBIRR">Telebirr</option>
-<option value="CBE_BIRR">CBE Birr</option>
-</select>
+                            <select id="paymentStatusFilter" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="PAID">Paid</option>
+                                <option value="FAILED">Failed</option>
+                                <option value="REFUNDED">Refunded</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
                         </div>
                         <div class="col-md-2">
-<select id="paymentStatusFilter" class="form-select">
+                            <select id="paymentMethodFilter" class="form-select">
+                                <option value="">All Methods</option>
+                                <option value="CHAPA">Chapa</option>
+                                <option value="TELEBIRR">Telebirr</option>
+                                <option value="CBE_BIRR">CBE Birr</option>
+                                <option value="CARD">Card</option>
+                                <option value="CASH">Cash</option>
+                                <option value="BANK_TRANSFER">Bank Transfer</option>
+                                <option value="WALLET">Wallet</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="paymentDateRangeFilter" class="form-select">
+                                <option value="">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="last7">Last 7 Days</option>
+                                <option value="last30">Last 30 Days</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select id="paymentSortSelect" class="form-select">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="amount-desc">Amount (High to Low)</option>
+                                <option value="amount-asc">Amount (Low to High)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-secondary w-100" id="resetPaymentFiltersBtn">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                        <div class="col-md-12" id="customDateRangeContainer" style="display:none; margin-top: 10px;">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label class="form-label">From Date</label>
+                                    <input type="date" id="paymentDateFrom" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">To Date</label>
+                                    <input type="date" id="paymentDateTo" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button class="btn btn-primary w-100" id="applyDateRangeBtn">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 <option value="">All Status</option>
 <option value="PAID">Paid</option>
 <option value="PENDING">Pending</option>
@@ -158,8 +237,9 @@
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
                     <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary" id="paymentPrevPageBtn" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                        <button class="btn btn-sm btn-outline-secondary" id="paymentNextPageBtn" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" id="paymentPrevPageBtn"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                        <span id="paymentPageInfo">Page 1</span>
+                        <button class="btn btn-sm btn-outline-secondary" id="paymentNextPageBtn">Next <i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>

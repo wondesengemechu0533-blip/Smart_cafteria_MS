@@ -72,6 +72,13 @@
             font-weight: 600;
             text-transform: uppercase;
         }
+        .kds-nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
         .kds-nav-btn {
             background-color: #374151;
             color: #ffffff;
@@ -81,9 +88,88 @@
             font-weight: 600;
             font-size: 0.9rem;
             transition: background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
         }
         .kds-nav-btn:hover {
             background-color: #4b5563;
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        .kds-nav-btn.active {
+            background-color: #f97316;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background-color: #4b5563;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu-custom {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .dropdown-menu-custom.active {
+            display: block;
+        }
+
+        .dropdown-menu-custom a,
+        .dropdown-menu-custom button {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            color: #333;
+            text-decoration: none;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .dropdown-menu-custom a:hover,
+        .dropdown-menu-custom button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-menu-custom a:first-child,
+        .dropdown-menu-custom button:first-child {
+            border-radius: 6px 6px 0 0;
+        }
+
+        .dropdown-menu-custom a:last-child,
+        .dropdown-menu-custom button:last-child {
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #e5e5e5;
+            margin: 4px 0;
         }
         .stats-grid {
             display: grid;
@@ -166,13 +252,52 @@
             <h1>Kitchen Display System</h1>
             <span class="kds-badge" id="stationBadge">Station 1</span>
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <a href="orders.html" class="kds-nav-btn">
-                <i class="fa-solid fa-list-check"></i> Manage Full Queue
+
+        <!-- Main Navigation Menu -->
+        <div class="kds-nav-menu">
+            <!-- Dashboard -->
+            <a href="dashboard.html" class="kds-nav-btn active">
+                <i class="fa-solid fa-tachometer-alt"></i> Dashboard
             </a>
-            <button id="logoutBtn" class="kds-nav-btn" style="border:none; cursor:pointer;" title="Logout">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
+
+            <!-- Queue Management -->
+            <a href="orders.html" class="kds-nav-btn">
+                <i class="fa-solid fa-list-check"></i> Full Queue
+            </a>
+
+            <!-- Food Availability -->
+            <a href="availability.html" class="kds-nav-btn">
+                <i class="fa-solid fa-burger"></i> Availability
+            </a>
+
+            <!-- Stock Alerts -->
+            <a href="stock-alerts.html" class="kds-nav-btn">
+                <i class="fa-solid fa-triangle-exclamation"></i> Stock Alerts
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <!-- User Menu -->
+            <div class="user-menu">
+                <div class="user-dropdown">
+                    <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
+                        <i class="fa-solid fa-user-circle"></i>
+                        <span id="userName">Profile</span>
+                    </button>
+                    <div class="dropdown-menu-custom" id="userDropdownMenu">
+                        <a href="#" onclick="viewProfile()">
+                            <i class="fa-solid fa-id-card"></i> My Profile
+                        </a>
+                        <a href="#" onclick="viewCurrentShift()">
+                            <i class="fa-solid fa-clock"></i> Current Shift
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button onclick="logout()">
+                            <i class="fa-solid fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -226,5 +351,77 @@
     <script type="module" src="../../js/auth.js"></script>
     <script type="module" src="../../js/socket.js"></script>
     <script type="module" src="./kitchen.js"></script>
+
+    <!-- Navigation & User Menu Script -->
+    <script>
+        // Toggle User Dropdown Menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userDropdownMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userDropdownMenu');
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            if (!userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userMenu.classList.remove('active');
+            }
+        });
+
+        // Load user name
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = localStorage.getItem('userName') || localStorage.getItem('name') || 'User';
+            document.getElementById('userName').textContent = userName.split(' ')[0]; // First name only
+        });
+
+        // View Profile
+        function viewProfile() {
+            // Navigate to user profile page or show modal
+            alert('Profile page coming soon');
+            document.getElementById('userDropdownMenu').classList.remove('active');
+        }
+
+        // View Current Shift
+        function viewCurrentShift() {
+            // Fetch and display current shift info
+            const token = localStorage.getItem('token');
+            fetch('http://localhost:5000/api/v1/kitchen-staff/shifts/current', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.shift) {
+                    const shift = data.shift;
+                    alert(`
+Current Shift:
+Type: ${shift.shiftType}
+Start: ${new Date(shift.startTime).toLocaleString()}
+End: ${new Date(shift.endTime).toLocaleString()}
+Status: ${shift.status.toUpperCase()}
+${shift.clockInTime ? `Clocked In: ${new Date(shift.clockInTime).toLocaleTimeString()}` : 'Not clocked in'}
+                    `);
+                } else {
+                    alert('No active shift scheduled');
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching shift:', err);
+                alert('Could not load shift information');
+            });
+            document.getElementById('userDropdownMenu').classList.remove('active');
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = '../common/login.html';
+            }
+        }
+    </script>
 </body>
 </html>

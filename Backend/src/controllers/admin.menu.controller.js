@@ -1,21 +1,12 @@
 const mongoose = require('mongoose');
 const MenuItem = require('../models/MenuItem');
 const Category = require('../models/Category');
+const StockTransaction = require('../models/StockTransaction');
 const { MESSAGES, HTTP_STATUS } = require('../config/constants');
 const { processImageValue, deleteUploadedImage } = require('../utils/imageUpload');
 const { logAction } = require('../utils/audit');
 
-const VALID_CATEGORIES = [
-  'breakfast',
-  'mains',
-  'main-meals',
-  'fasting',
-  'beverages',
-  'snacks',
-  'Lunch',
-  'Dinner',
-  'Drinks'
-];
+const VALID_CATEGORIES = ['breakfast', 'main-meals', 'fasting', 'beverages', 'snacks'];
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -31,14 +22,21 @@ function sanitize(item) {
     preparationTime: item.preparationTime,
     availability: item.availability,
     isAvailable: item.isAvailable,
+    isActive: item.isActive,
+    stockQuantity: item.stockQuantity,
+    lowStockThreshold: item.lowStockThreshold,
+    availabilityStatus: item.availabilityStatus,
+    isPopular: item.isPopular,
+    isRecommended: item.isRecommended,
+    showOnHomepage: item.showOnHomepage,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt
   };
 }
 
 function assertValidCategory(category) {
-  if (!category || !VALID_CATEGORIES.includes(category)) {
-    const error = new Error(`Invalid category. Allowed: ${VALID_CATEGORIES.join(', ')}`);
+  if (!category || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(String(category))) {
+    const error = new Error('Invalid category identifier. Use letters, numbers, and hyphens');
     error.statusCode = HTTP_STATUS.BAD_REQUEST;
     throw error;
   }
@@ -181,7 +179,13 @@ exports.createMenuItem = async (req, res) => {
       icon,
       preparationTime,
       available,
-      isAvailable
+      isAvailable,
+      stockQuantity = 0,
+      lowStockThreshold = 5,
+      isActive = true,
+      isPopular = false,
+      isRecommended = false,
+      showOnHomepage = false
     } = req.body;
 
     const nameEn = name && (name.en !== undefined ? name.en : name);
@@ -196,6 +200,8 @@ exports.createMenuItem = async (req, res) => {
     let categoryValue;
     try {
       assertValidCategory(category);
+      const categoryRecord = await Category.findOne({ id: String(category).toLowerCase(), isActive: true });
+      if (!categoryRecord) throw Object.assign(new Error('Category does not exist or is inactive'), { statusCode: HTTP_STATUS.BAD_REQUEST });
       categoryValue = category;
     } catch (e) {
       return res.status(e.statusCode || HTTP_STATUS.BAD_REQUEST).json({ success: false, error: e.message });
@@ -218,6 +224,7 @@ exports.createMenuItem = async (req, res) => {
     const avail =
       available !== undefined ? Boolean(available) : isAvailable !== undefined ? Boolean(isAvailable) : true;
 
+    const stock = Math.max(0, Number(stockQuantity) || 0);
     const item = await MenuItem.create({
       name: { en: String(nameEn).trim(), am: String(nameAm).trim() },
       category: categoryValue,
@@ -231,7 +238,12 @@ exports.createMenuItem = async (req, res) => {
       preparationTime: preparationTime || 10,
       availability: avail,
       isAvailable: avail
+      , isActive: Boolean(isActive), stockQuantity: stock, lowStockThreshold: Math.max(0, Number(lowStockThreshold) || 0),
+      availabilityStatus: !Boolean(isActive) || !avail ? 'UNAVAILABLE' : stock > 0 ? 'AVAILABLE' : 'OUT_OF_STOCK',
+      isPopular: Boolean(isPopular), isRecommended: Boolean(isRecommended), showOnHomepage: Boolean(showOnHomepage)
     });
+
+    if (stock > 0) await StockTransaction.create({ foodId: item._id, previousQuantity: 0, quantityChanged: stock, newQuantity: stock, action: 'ADD', performedBy: req.user.id });
 
     await logAction({
       req,
@@ -348,6 +360,20 @@ exports.updateMenuItem = async (req, res) => {
       item.availability = Boolean(isAvailable);
     }
 
+    if (stockQuantity !== undefined) {
+      const stock = Number(stockQuantity);
+      if (!Number.isInteger(stock) || stock < 0) return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Stock quantity must be a non-negative integer' });
+      const previous = item.stockQuantity || 0;
+      item.stockQuantity = stock;
+      item.availabilityStatus = stock === 0 ? 'OUT_OF_STOCK' : item.availability === false ? 'UNAVAILABLE' : 'AVAILABLE';
+      if (stock !== previous) await StockTransaction.create({ foodId: item._id, previousQuantity: previous, quantityChanged: stock - previous, newQuantity: stock, action: 'SET', performedBy: req.user.id });
+    }
+    if (lowStockThreshold !== undefined) item.lowStockThreshold = Math.max(0, Number(lowStockThreshold) || 0);
+    if (isActive !== undefined) item.isActive = Boolean(isActive);
+    if (isPopular !== undefined) item.isPopular = Boolean(isPopular);
+    if (isRecommended !== undefined) item.isRecommended = Boolean(isRecommended);
+    if (showOnHomepage !== undefined) item.showOnHomepage = Boolean(showOnHomepage);
+
     await item.save();
 
     await logAction({
@@ -389,6 +415,7 @@ exports.toggleAvailability = async (req, res) => {
 
     item.availability = boolAvailable;
     item.isAvailable = boolAvailable;
+    item.availabilityStatus = boolAvailable && (item.stockQuantity || 0) > 0 ? 'AVAILABLE' : boolAvailable ? 'OUT_OF_STOCK' : 'UNAVAILABLE';
     await item.save();
 
     await logAction({
@@ -449,18 +476,50 @@ exports.deleteMenuItem = async (req, res) => {
 exports.getMenuStats = async (req, res) => {
   try {
     const totalItems = await MenuItem.countDocuments();
+    const activeItems = await MenuItem.countDocuments({ isActive: true });
     const availableItems = await MenuItem.countDocuments({ availability: true, isAvailable: true });
     const outOfStockItems = await MenuItem.countDocuments({
       $or: [{ availability: false }, { isAvailable: false }]
     });
     const totalCategories = await Category.countDocuments();
+    const lowStockItems = await MenuItem.countDocuments({ isActive: true, $expr: { $lte: ['$stockQuantity', '$lowStockThreshold'] }, stockQuantity: { $gt: 0 } });
+    const popularItems = await MenuItem.countDocuments({ isPopular: true });
+    const recommendedItems = await MenuItem.countDocuments({ isRecommended: true });
+    const homepageItems = await MenuItem.countDocuments({ showOnHomepage: true });
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
-      stats: { totalItems, availableItems, outOfStockItems, totalCategories }
+      stats: { totalItems, activeItems, inactiveItems: totalItems - activeItems, availableItems, outOfStockItems, lowStockItems, popularItems, recommendedItems, homepageItems, totalCategories }
     });
   } catch (error) {
     console.error('❌ Admin Get Menu Stats Error:', error);
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
   }
+};
+
+exports.updateStock = async (req, res) => {
+  try {
+    const action = String(req.body.action || 'ADD').toUpperCase();
+    const quantity = Number(req.body.quantity);
+    if (!Number.isInteger(quantity) || quantity < 0) return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Quantity must be a non-negative integer' });
+    const current = await MenuItem.findById(req.params.id);
+    if (!current) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Food not found' });
+    const nextQuantity = action === 'SET' ? quantity : current.stockQuantity + (action === 'REDUCE' || action === 'ORDER' ? -quantity : quantity);
+    if (nextQuantity < 0) return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: 'Stock cannot become negative' });
+    const item = await MenuItem.findOneAndUpdate(
+      { _id: req.params.id, stockQuantity: current.stockQuantity },
+      action === 'SET' ? { $set: { stockQuantity: nextQuantity } } : { $inc: { stockQuantity: action === 'REDUCE' || action === 'ORDER' ? -quantity : quantity } },
+      { new: true }
+    );
+    if (!item) return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: 'Stock changed; please retry' });
+    item.availabilityStatus = item.stockQuantity === 0 ? 'OUT_OF_STOCK' : item.availability === false ? 'UNAVAILABLE' : 'AVAILABLE';
+    await item.save();
+    await StockTransaction.create({ foodId: item._id, previousQuantity: current.stockQuantity, quantityChanged: item.stockQuantity - current.stockQuantity, newQuantity: item.stockQuantity, action, performedBy: req.user.id });
+    res.json({ success: true, item: sanitize(item) });
+  } catch (error) { res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR }); }
+};
+
+exports.getStockHistory = async (req, res) => {
+  const transactions = await StockTransaction.find({ foodId: req.params.id }).sort({ createdAt: -1 }).limit(100).populate('performedBy', 'name email');
+  res.json({ success: true, transactions });
 };

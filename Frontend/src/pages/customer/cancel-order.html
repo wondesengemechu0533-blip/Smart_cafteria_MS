@@ -1200,10 +1200,7 @@
 
         import { getCartCount } from '../../js/cart.js';
 
-        import {
-            getOrderById,
-            canCancelOrder
-        } from '../../js/orders.js';
+        import api from '../../js/api.js';
 
         import {
             requestCancellation,
@@ -1384,6 +1381,38 @@
         const orderId =
             urlParams.get('id');
 
+
+        // =========================================================
+        // Load Order From Backend API
+        // =========================================================
+
+        let order = null;
+
+        if (orderId) {
+
+            try {
+
+                const data =
+                    await api.get(
+                        `/orders/${encodeURIComponent(orderId)}`
+                    );
+
+                order =
+                    data?.order || null;
+
+            } catch (error) {
+
+                console.error(
+                    'Failed to load order:',
+                    error
+                );
+
+                order = null;
+
+            }
+
+        }
+
  
         // =========================================================
         // DOM References
@@ -1482,21 +1511,11 @@
 
         }
 
-        else {
-
-            // =====================================================
-            // Get Order
-            // =====================================================
-
-            const order =
-                getOrderById(orderId);
-
+        else if (!order) {
 
             // =====================================================
             // Order Not Found
             // =====================================================
-
-            if (!order) {
 
                 container.innerHTML = `
 
@@ -1546,16 +1565,20 @@
 
                 `;
 
-            }
-
-            else {
 
                 // =================================================
                 // Check if Cancellable
                 // =================================================
 
                 const cancellable =
-                    canCancelOrder(orderId);
+                    !['CANCELLED', 'COMPLETED', 'SERVED']
+                        .includes(
+                            String(
+                                order.status ||
+                                order.orderStatus ||
+                                ''
+                            ).toUpperCase()
+                        );
 
 
                 // =================================================
@@ -1617,7 +1640,7 @@
                             </p>
 
                             <a
-                                href="order-tracking.html?id=${order.id}"
+                                href="order-tracking.html?id=${order.orderId || order.id}"
                                 class="btn btn-primary"
                                 style="
                                     margin-top:16px;
@@ -1710,7 +1733,7 @@
                                     </span>
 
                                     <span class="value">
-                                        #${order.id}
+                                        #${order.orderId || order.id}
                                     </span>
 
                                 </div>
@@ -2082,8 +2105,6 @@
                 }
 
             }
-
-        }
 
 
         // =========================================================

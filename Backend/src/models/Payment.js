@@ -9,6 +9,11 @@ const mongoose = require("mongoose");
  */
 const PaymentSchema = new mongoose.Schema(
   {
+    paymentNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
@@ -26,12 +31,12 @@ const PaymentSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
+      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR", "CASH", "BANK_TRANSFER"],
       required: true,
     },
     method: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
+      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR", "CASH", "BANK_TRANSFER", "WALLET", "CARD"],
       required: true,
     },
     currency: {
@@ -40,7 +45,7 @@ const PaymentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "PAID", "FAILED", "CANCELLED"],
+      enum: ["PENDING", "PAID", "FAILED", "CANCELLED", "REFUNDED"],
       default: "PENDING",
     },
     transactionId: {
@@ -77,9 +82,43 @@ const PaymentSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    failedAt: {
+      type: Date,
+      default: null,
+    },
+    refundedAt: {
+      type: Date,
+      default: null,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
     paymentDate: {
       type: Date,
       default: Date.now,
+    },
+    refundAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    refundStatus: {
+      type: String,
+      enum: ["NONE", "PENDING", "REFUNDED", "FAILED"],
+      default: "NONE",
+    },
+    refundReason: {
+      type: String,
+      default: null,
+    },
+    refundReference: {
+      type: String,
+      default: null,
+    },
+    providerEventId: {
+      type: String,
+      default: null,
     },
   },
   {
@@ -87,11 +126,14 @@ const PaymentSchema = new mongoose.Schema(
   },
 );
 
-// Generate transaction ID before saving
+// Generate transaction ID and payment number before saving
 PaymentSchema.pre("save", function () {
   if (!this.transactionId) {
     const prefix = this.provider.toUpperCase();
     this.transactionId = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+  if (!this.paymentNumber) {
+    this.paymentNumber = `PAY-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
   }
 });
 
@@ -100,5 +142,9 @@ PaymentSchema.index({ method: 1 });
 PaymentSchema.index({ reference: 1 });
 PaymentSchema.index({ providerReference: 1 });
 PaymentSchema.index({ paymentDate: -1 });
+PaymentSchema.index({ orderId: 1 });
+PaymentSchema.index({ userId: 1 });
+PaymentSchema.index({ providerEventId: 1 });
+PaymentSchema.index({ paymentNumber: 1 });
 
 module.exports = mongoose.model("Payment", PaymentSchema);

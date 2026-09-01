@@ -64,7 +64,7 @@
     // Users
     if (d.users) {
       setText("statTotalUsers", d.users.total || 0);
-      setText("statStudents", d.users.students || 0);
+      setText("statCustomers", d.users.customers || 0);
       setText("statKitchenStaff", d.users.kitchenStaff || 0);
       setText("statAdmins", d.users.admins || 0);
     }
@@ -468,7 +468,7 @@
       // Users
       csv.push(["Users"]);
       csv.push(["Total Users", d.users?.total || 0]);
-      csv.push(["Students", d.users?.students || 0]);
+      csv.push(["Customers", d.users?.customers || 0]);
       csv.push(["Kitchen Staff", d.users?.kitchenStaff || 0]);
       csv.push(["Admins", d.users?.admins || 0]);
       csv.push([]);

@@ -27,7 +27,7 @@ exports.getDashboardStats = async (req, res) => {
 
     const [
       totalUsers,
-      students,
+      customers,
       kitchenStaff,
       admins,
       totalMenu,
@@ -49,9 +49,9 @@ exports.getDashboardStats = async (req, res) => {
       chartSeries,
     ] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ role: "STUDENT" }),
-      User.countDocuments({ role: { $in: ["kitchen", "KITCHEN_STAFF"] } }),
-      User.countDocuments({ role: { $in: ["admin", "ADMIN"] } }),
+      User.countDocuments({ role: "customer" }),
+      User.countDocuments({ role: "kitchen" }),
+      User.countDocuments({ role: "admin" }),
       MenuItem.countDocuments(),
       MenuItem.countDocuments({ availability: true, isAvailable: true }),
       MenuItem.countDocuments({ $or: [{ availability: false }, { isAvailable: false }] }),
@@ -107,7 +107,7 @@ exports.getDashboardStats = async (req, res) => {
     res.status(HTTP_STATUS.OK).json({
       success: true,
       data: {
-        users: { total: totalUsers, students, kitchenStaff, admins },
+        users: { total: totalUsers, customers, kitchenStaff, admins },
         menu: { total: totalMenu, available: availableMenu, unavailable: unavailableMenu },
         orders: {
           total: totalOrders,

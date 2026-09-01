@@ -1,0 +1,652 @@
+{
+  "info": {
+    "_postman_id": "kitchen-staff-api-v1",
+    "name": "🍳 Kitchen Staff API",
+    "description": "Complete Kitchen Staff Management System API Collection\n\nIncludes:\n- Authentication\n- Order Management\n- Food Availability\n- Stock Alerts\n- Shift Management\n- Analytics & Reports",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "25831557"
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('token', jsonData.token);",
+                  "    pm.environment.set('userId', jsonData.user.id);",
+                  "    pm.environment.set('userName', jsonData.user.name);",
+                  "    console.log('✅ Token saved:', jsonData.token.substring(0, 20) + '...');",
+                  "}",
+                  "pm.test('Status code is 200', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kitchen@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard & Orders",
+      "item": [
+        {
+          "name": "Get Kitchen Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Get All Kitchen Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Details (Item-Level Tracking)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/details",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "details"]
+            }
+          }
+        },
+        {
+          "name": "Accept Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Order accepted successfully', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().order.status).to.equal('preparing');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Update Item Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemStatus\": \"ready\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/items/{{itemId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "items", "{{itemId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Mark Order as Ready",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "ready"]
+            }
+          }
+        },
+        {
+          "name": "Mark Order as Served",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/serve",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "serve"]
+            }
+          }
+        },
+        {
+          "name": "Report Order Delay",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Waiting for burger ingredients from supplier\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/delay",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "delay"]
+            }
+          }
+        },
+        {
+          "name": "Reject Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Item out of stock\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/orders/{{orderId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "orders", "{{orderId}}", "reject"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🍽️ Food Availability",
+      "item": [
+        {
+          "name": "Get Menu Availability",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/menu-availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "menu-availability"]
+            }
+          }
+        },
+        {
+          "name": "Mark Item Unavailable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAvailable\": false,\n  \"reason\": \"Sold out for today\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/menu/{{itemId}}/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "menu", "{{itemId}}", "availability"]
+            }
+          }
+        },
+        {
+          "name": "Mark Item Available",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/menu/{{itemId}}/availability",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "menu", "{{itemId}}", "availability"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚠️ Stock Alerts",
+      "item": [
+        {
+          "name": "Get Stock Alerts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/stock-alerts?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "stock-alerts"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Report Stock Issue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemId\": \"{{itemId}}\",\n  \"itemName\": \"Burger\",\n  \"alertType\": \"out_of_stock\",\n  \"severity\": \"high\",\n  \"reason\": \"Beef supplier delayed delivery\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/stock-alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "stock-alerts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 Kitchen Staff Shifts",
+      "item": [
+        {
+          "name": "Get Current Shift",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts/current",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts", "current"]
+            }
+          }
+        },
+        {
+          "name": "Get All Shifts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts"]
+            }
+          }
+        },
+        {
+          "name": "Clock In",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts/{{shiftId}}/clock-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts", "{{shiftId}}", "clock-in"]
+            }
+          }
+        },
+        {
+          "name": "Clock Out",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts/{{shiftId}}/clock-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts", "{{shiftId}}", "clock-out"]
+            }
+          }
+        },
+        {
+          "name": "Start Break",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Lunch break\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts/{{shiftId}}/break/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts", "{{shiftId}}", "break", "start"]
+            }
+          }
+        },
+        {
+          "name": "End Break",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen-staff/shifts/{{shiftId}}/break/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen-staff", "shifts", "{{shiftId}}", "break", "end"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 Analytics & Reports",
+      "item": [
+        {
+          "name": "Get Kitchen Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Detailed Kitchen Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/stats/detailed",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "stats", "detailed"]
+            }
+          }
+        },
+        {
+          "name": "Generate Daily Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/reports/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "reports", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get Kitchen Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Get Order Preparation Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/reports/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "reports", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Staff Performance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kitchen/staff/{{staffId}}/performance",
+              "host": ["{{baseUrl}}"],
+              "path": ["kitchen", "staff", "{{staffId}}", "performance"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "test-order-001",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "shiftId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staffId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

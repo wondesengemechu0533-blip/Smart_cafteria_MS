@@ -550,6 +550,22 @@ button, input, select, textarea {
 .status-completed { background: var(--color-success-light); color: var(--color-success-text); }
 .status-cancelled { background: var(--color-danger-light); color: var(--color-danger-text); }
 
+/* Generic order-badge (used by cancellations, orders, payments, feedback) */
+.order-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill);
+  font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.02em;
+  white-space: nowrap; line-height: 1; text-transform: capitalize;
+}
+.order-badge.pend { background: var(--color-warning-light); color: var(--color-warning-text); }
+.order-badge.cmp { background: var(--color-success-light); color: var(--color-success-text); }
+.order-badge.cxl { background: var(--color-danger-light); color: var(--color-danger-text); }
+.order-badge.info { background: var(--color-info-light); color: var(--color-info-text); }
+.order-badge.muted { background: var(--color-neutral-light); color: var(--color-neutral); }
+.order-badge.avail-on { background: var(--color-success-light); color: var(--color-success-text); }
+.order-badge.avail-off { background: var(--color-danger-light); color: var(--color-danger-text); }
+.order-badge.suspended-badge { background: var(--color-warning-light); color: var(--color-warning-text); }
+
 /* Action Badges for Activity Log */
 .action-badge {
   display: inline-flex; align-items: center; justify-content: center;
@@ -658,7 +674,8 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 }
 .modal-overlay.open { display: flex; }
 
-.modal {
+.modal-overlay > .modal {
+  display: block; position: relative; inset: auto; height: auto; overflow: visible;
   background: #fff; border-radius: var(--radius-xl); width: 100%;
   max-width: 560px; box-shadow: var(--shadow-xl);
   animation: modal-in var(--transition-base) ease;
@@ -677,6 +694,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 .modal-close:hover { color: var(--color-danger); background: var(--color-danger-light); }
 .modal-body { padding: var(--space-5); }
 .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border-color); background: #f9fafb; border-bottom-left-radius: var(--radius-xl); border-bottom-right-radius: var(--radius-xl); }
+.settings-subtitle { margin: 0 0 var(--space-4); font-size: var(--text-base); color: #111827; }
 
 /* --- Toasts --- */
 .toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--space-2); }

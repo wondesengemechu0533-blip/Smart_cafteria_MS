@@ -60,7 +60,11 @@ const server = http.createServer((req, res) => {
         res.end('');
         return;
     }
-    if (urlPath === '/') urlPath = DEFAULT_PAGE;
+    if (urlPath === '/') {
+        res.writeHead(302, { Location: DEFAULT_PAGE, 'Cache-Control': 'no-cache' });
+        res.end();
+        return;
+    }
 
     // Rewrite legacy "/frontend/..." / "/Frontend/..." paths so that
     // links pointing at the Frontend subfolder still resolve correctly

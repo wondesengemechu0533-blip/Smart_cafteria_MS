@@ -21,6 +21,11 @@ exports.getAllMenuItems = async (req, res) => {
       filter.availability = available === 'true';
       filter.isAvailable = available === 'true';
     }
+    filter.isActive = true;
+    if (available === undefined) {
+      filter.availabilityStatus = 'AVAILABLE';
+      filter.stockQuantity = { $gt: 0 };
+    }
     if (search) {
       filter.$or = [
         { 'name.en': { $regex: search, $options: 'i' } },
@@ -223,10 +228,6 @@ exports.createMenuItem = async (req, res) => {
     }
     if (!name.en || !name.am) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Both English and Amharic names are required' });
-    }
-    const validCategories = ['breakfast', 'mains', 'main-meals', 'fasting', 'beverages', 'snacks', 'Lunch', 'Dinner', 'Drinks'];
-    if (!validCategories.includes(category)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Invalid category' });
     }
     if (price < 0) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Price cannot be negative' });

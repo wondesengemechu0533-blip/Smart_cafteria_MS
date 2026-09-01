@@ -1,59 +1,94 @@
-<<<<<<< HEAD
 /**
  * Smart Cafeteria Ordering System
  * File: frontend/src/js/order-cancellation.js
+ *
+ * Customer-facing cancellation request helpers.
+ *   - requestCancellation(orderId, reason, details)
+ *   - getCancellationReasons(lang)
+ *   - delegated [data-cancel-order] click handling
  */
 
-import orderCancellationService
-    from "../services/order-cancellation.service.js";
+import api from "../services/order-cancellation.service.js";
+
+const CANCELLATION_REASONS_EN = [
+    { value: "CUSTOMER_CHANGED_MIND", label: "I changed my mind" },
+    { value: "ORDERED_BY_MISTAKE", label: "I ordered by mistake" },
+    { value: "LONG_PREPARATION_TIME", label: "Preparation is taking too long" },
+    { value: "FOOD_UNAVAILABLE", label: "The food is unavailable" },
+    { value: "PAYMENT_ISSUE", label: "Payment issue" },
+    { value: "DUPLICATE_ORDER", label: "Duplicate order" },
+    { value: "CAFETERIA_ISSUE", label: "Cafeteria issue" },
+    { value: "OTHER", label: "Other" }
+];
+
+const CANCELLATION_REASONS_AM = [
+    { value: "CUSTOMER_CHANGED_MIND", label: "ሀሳቤ ተቀየረ" },
+    { value: "ORDERED_BY_MISTAKE", label: "በስህተት አዘዝኩ" },
+    { value: "LONG_PREPARATION_TIME", label: "ዝግጅቱ ጊዜ ወስዷል" },
+    { value: "FOOD_UNAVAILABLE", label: "ምግቡ አልተገኘም" },
+    { value: "PAYMENT_ISSUE", label: "የክፍያ ችግር" },
+    { value: "DUPLICATE_ORDER", label: "ደጋግሞ የታዘዘ ትዕዛዝ" },
+    { value: "CAFETERIA_ISSUE", label: "የካፍቴሪያ ችግር" },
+    { value: "OTHER", label: "ሌላ" }
+];
+
+/**
+ * Return the list of selectable cancellation reasons for a locale.
+ * @param {string} [lang='en'] 'en' | 'am'
+ * @returns {Array<{value: string, label: string}>}
+ */
+export function getCancellationReasons(lang = "en") {
+    return lang === "am" ? CANCELLATION_REASONS_AM : CANCELLATION_REASONS_EN;
+}
+
+/**
+ * Submit a cancellation request for an order.
+ * @param {string} orderId  - human-friendly order id (e.g. ET-xxxx)
+ * @param {string} reason   - one of the CANCELLATION_REASONS values
+ * @param {string} [details] - optional explanation
+ * @returns {Promise<object>} { success, message, cancellation }
+ */
+export async function requestCancellation(orderId, reason, details = "") {
+    if (!orderId) throw new Error("Order ID is required.");
+    if (!reason) throw new Error("A cancellation reason is required.");
+    return api.post("/cancellations/request", {
+        orderId,
+        reason,
+        details
+    });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     initializeCancellation();
 });
 
 function initializeCancellation() {
-    document.addEventListener("click", async event => {
+    document.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-cancel-order]");
-
         if (!button) return;
-
-        // Prevent double clicks if already processing
         if (button.dataset.processing === "true" || button.disabled) return;
 
         const orderId = button.dataset.cancelOrder;
-
         if (!orderId) return;
 
-        const confirmed = confirm(
-            "Are you sure you want to cancel this order?"
-        );
-
+        const confirmed = confirm("Are you sure you want to cancel this order?");
         if (!confirmed) return;
 
+        const originalText = button.textContent || "Cancel Order";
         try {
             button.dataset.processing = "true";
             button.disabled = true;
-            const originalText = button.textContent;
             button.textContent = "Cancelling...";
 
-            await orderCancellationService.cancelOrder(
-                orderId,
-                "Cancelled by customer"
-            );
+            await requestCancellation(orderId, "CUSTOMER_CHANGED_MIND", "Cancelled by customer");
 
-            alert("Order cancelled successfully.");
-
+            alert("Cancellation request submitted successfully.");
             window.location.reload();
-
         } catch (error) {
-            alert(error.message);
-
+            alert(error.message || "Failed to submit cancellation request");
             button.dataset.processing = "false";
             button.disabled = false;
-            button.textContent = originalText || "Cancel Order";
+            button.textContent = originalText;
         }
     });
 }
-=======
-// This Folder is Empty!
->>>>>>> c9275e6e95495801102644943b7daafcf9e40368

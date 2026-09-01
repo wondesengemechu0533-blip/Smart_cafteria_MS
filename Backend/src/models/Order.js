@@ -69,9 +69,27 @@ const OrderSchema = new mongoose.Schema(
           required: true,
           min: 0,
         },
+        foodNameSnapshot: { type: String, default: '' },
+        foodDescriptionSnapshot: { type: String, default: '' },
+        categoryNameSnapshot: { type: String, default: '' },
+        foodImageSnapshot: { type: String, default: null },
+        subtotal: { type: Number, min: 0, default: 0 },
         notes: {
           type: String,
           default: "",
+        },
+        itemStatus: {
+          type: String,
+          enum: ["pending", "preparing", "ready", "served"],
+          default: "pending",
+        },
+        preparationStartedAt: {
+          type: Date,
+          default: null,
+        },
+        preparationCompletedAt: {
+          type: Date,
+          default: null,
         },
       },
     ],
@@ -188,9 +206,40 @@ const OrderSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    inventoryRestored: { type: Boolean, default: false },
+    refundStatus: {
+      type: String,
+      enum: ["NOT_REQUIRED", "REFUND_REQUESTED", "REFUND_APPROVED", "REFUND_PROCESSING", "REFUNDED", "REFUND_FAILED"],
+      default: "NOT_REQUIRED",
+    },
+    refundAmount: { type: Number, default: 0, min: 0 },
+    refundReference: { type: String, default: null },
     notes: {
       type: String,
       default: "",
+    },
+    estimatedCompletionTime: {
+      type: Date,
+      default: null,
+    },
+    preparationDelayReason: {
+      type: String,
+      default: null,
+    },
+    kitchenStaffAssigned: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    priority: {
+      type: String,
+      enum: ["normal", "rush", "vip"],
+      default: "normal",
+    },
+    qualityCheckStatus: {
+      type: String,
+      enum: ["pending", "passed", "failed"],
+      default: null,
     },
   },
   {

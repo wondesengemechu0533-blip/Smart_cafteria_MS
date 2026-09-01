@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Kitchen</title>
+    <link rel="stylesheet" href="../../css/kitchen-common.css">
+    <link rel="stylesheet" href="../../css/order-details.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+        }
+
+        .order-title {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .order-title h1 {
+            font-size: 28px;
+            color: #333;
+        }
+
+        .order-title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .order-status {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-preparing { background: #cfe2ff; color: #084298; }
+        .status-ready { background: #d1e7dd; color: #0f5132; }
+        .status-served { background: #d1e7dd; color: #0f5132; }
+
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-rush { background: #f8d7da; color: #842029; }
+        .priority-vip { background: #ffc107; color: #000; }
+        .priority-normal { background: #e2e3e5; color: #383d41; }
+
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .customer-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-notes {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .item-quantity {
+            background: #007bff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .item-status-select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            background: #007bff;
+            border-radius: 50%;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .timeline-text {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-ready {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-ready:hover {
+            background: #218838;
+        }
+
+        .btn-serve {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-serve:hover {
+            background: #138496;
+        }
+
+        .btn-delay {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-delay:hover {
+            background: #e0a800;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .summary {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-row label {
+            color: #666;
+        }
+
+        .summary-row.total {
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .customer-info {
+                grid-template-columns: 1fr;
+            }
+
+            .item-card {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+
+        <div class="header">
+            <div class="order-title">
+                <h1>Order Details</h1>
+                <p id="orderNumber">Loading...</p>
+            </div>
+            <div class="order-status">
+                <span class="status-badge" id="statusBadge">PENDING</span>
+                <span class="priority-badge" id="priorityBadge">NORMAL</span>
+            </div>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Customer Information</div>
+                <div class="customer-info">
+                    <div class="info-item">
+                        <span class="info-label">Name</span>
+                        <span class="info-value" id="customerName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value" id="customerPhone">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Order Type</span>
+                        <span class="info-value" id="orderType">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Table Number</span>
+                        <span class="info-value" id="tableNumber">-</span>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">Order Items</div>
+                <div class="items-list" id="itemsList">
+                    <!-- Items will be inserted here -->
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">Order Summary</div>
+                <div class="summary">
+                    <div class="summary-row">
+                        <label>Subtotal</label>
+                        <span id="subtotal">Br 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <label>Service Fee</label>
+                        <span id="serviceFee">Br 0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <label>Total Amount</label>
+                        <span id="totalAmount">Br 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Timeline</div>
+                <div class="timeline" id="timeline">
+                    <!-- Timeline will be inserted here -->
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">Actions</div>
+                <div class="actions" id="actionsContainer">
+                    <!-- Actions will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delay Modal -->
+    <div class="modal" id="delayModal">
+        <div class="modal-content">
+            <div class="modal-header">Report Delay</div>
+            <form id="delayForm">
+                <div class="form-group">
+                    <label for="delayReason">Reason for Delay</label>
+                    <textarea id="delayReason" placeholder="Enter reason for delay..." required></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeDelayModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../js/kitchen/order-details.js"></script>
+</body>
+</html>

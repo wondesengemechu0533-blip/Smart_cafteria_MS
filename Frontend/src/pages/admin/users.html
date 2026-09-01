@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - Smart Cafeteria</title>
+    <title data-i18n="admin_users_page_title">User Management - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,6 +13,12 @@
 
     <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
+
+    <style>
+        .suspended-badge { background-color: #f59e0b; color: #fff; }
+        .row-inactive td { opacity: 0.7; }
+        .text-muted { font-size: 0.8em; color: #94a3b8; display: block; margin-top: 2px; }
+    </style>
 </head>
 <body class="admin-body">
 
@@ -23,11 +29,11 @@
         <main class="admin-main">
             <div class="page-header">
                 <div>
-                    <h1>User Management</h1>
-                    <p class="subtitle">Manage all users in the system</p>
+                    <h1 data-i18n="admin_users_title">User Management</h1>
+                    <p class="subtitle" data-i18n="admin_users_subtitle">Manage all users in the system</p>
                 </div>
                 <div class="page-actions">
-                    <button class="btn btn-primary" id="openAddUserModalBtn">
+                    <button class="btn btn-primary" id="openAddUserModalBtn" data-i18n="add_user">
                         <i class="fa-solid fa-plus"></i> Add User
                     </button>
                 </div>
@@ -41,7 +47,7 @@
                             <i class="fa-solid fa-users"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Total Users</span>
+                            <span class="metric-label" data-label-key="total_users" data-i18n="total_users">Total Users</span>
                             <h2 class="metric-value" id="metricTotalUsers">0</h2>
                         </div>
                     </div>
@@ -49,11 +55,11 @@
                 <div class="col-xl-3 col-md-6">
                     <div class="metric-card" data-nav="users.html">
                         <div class="metric-icon bg-blue">
-                            <i class="fa-solid fa-user-graduate"></i>
+                            <i class="fa-solid fa-user"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Active Students</span>
-                            <h2 class="metric-value" id="metricActiveStudents">0</h2>
+                            <span class="metric-label" data-label-key="active_customers" data-i18n="active_customers">Active Customers</span>
+                            <h2 class="metric-value" id="metricActiveCustomers">0</h2>
                         </div>
                     </div>
                 </div>
@@ -63,7 +69,7 @@
                             <i class="fa-solid fa-kitchen-set"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Staff</span>
+                            <span class="metric-label" data-label-key="staff" data-i18n="staff">Staff</span>
                             <h2 class="metric-value" id="metricStaff">0</h2>
                         </div>
                     </div>
@@ -74,7 +80,7 @@
                             <i class="fa-solid fa-user-slash"></i>
                         </div>
                         <div class="metric-content">
-                            <span class="metric-label">Blocked Users</span>
+                            <span class="metric-label" data-label-key="blocked_users" data-i18n="blocked_users">Blocked Users</span>
                             <h2 class="metric-value" id="metricBlockedUsers">0</h2>
                         </div>
                     </div>
@@ -86,27 +92,27 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name, email, phone...">
+                            <input type="text" id="userSearchInput" class="form-control" data-i18n-placeholder="admin_user_search" placeholder="Search by name, email, phone...">
                         </div>
                         <div class="col-md-3">
                             <select id="roleFilter" class="form-select">
-                                <option value="">All Roles</option>
-                                <option value="STUDENT">Student</option>
-                                <option value="STAFF">Staff</option>
-                                <option value="KITCHEN_STAFF">Kitchen Staff</option>
-                                <option value="ADMIN">Admin</option>
+                                <option value="" data-i18n="all_roles">All Roles</option>
+                                <option value="customer" data-i18n="role_customer">Customer</option>
+                                <option value="kitchen" data-i18n="role_kitchen">Kitchen Staff</option>
+                                <option value="admin" data-i18n="role_admin">Admin</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <select id="statusFilter" class="form-select">
-                                <option value="">All Status</option>
-                                <option value="ACTIVE">Active</option>
-                                <option value="BLOCKED">Blocked</option>
+                                <option value="" data-i18n="all_status">All Status</option>
+                                <option value="ACTIVE" data-i18n="status_active">Active</option>
+                                <option value="BLOCKED" data-i18n="status_blocked">Blocked</option>
+                                <option value="SUSPENDED" data-i18n="status_suspended">Suspended</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <button class="btn btn-secondary w-100" id="resetFiltersBtn">
-                                <i class="fa-solid fa-rotate-left"></i> Reset
+                                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="reset">Reset</span>
                             </button>
                         </div>
                     </div>
@@ -116,19 +122,19 @@
             <!-- USERS TABLE -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title"><i class="fa-solid fa-list"></i> All Users</h3>
+                    <h3 class="card-title"><i class="fa-solid fa-list"></i> <span data-i18n="all_users">All Users</span></h3>
                     <span class="badge bg-secondary" id="paginationInfo">Page 1 of 1 (0 users)</span>
                 </div>
                 <div class="table-wrapper">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>User</th>
-                                <th>Role</th>
-                                <th>Balance</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
+                                <th data-i18n="user_col_user">User</th>
+                                <th data-i18n="user_col_role">Role</th>
+                                <th data-i18n="user_col_balance">Balance</th>
+                                <th data-i18n="user_col_status">Status</th>
+                                <th data-i18n="user_col_joined">Joined</th>
+                                <th data-i18n="user_col_actions">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -150,7 +156,7 @@
     <div class="modal-overlay" id="userModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Add New User</h3>
+                <h3 class="modal-title" id="modalTitle" data-i18n="add_user">Add New User</h3>
                 <button class="modal-close" data-close-modal="userModal">&times;</button>
             </div>
             <form id="userForm">
@@ -158,39 +164,38 @@
                 <div class="modal-body">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="userName" class="form-label">Full Name <span class="required">*</span></label>
+                            <label for="userName" class="form-label"><span data-i18n="full_name">Full Name</span> <span class="required">*</span></label>
                             <input type="text" name="name" id="userName" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="userEmail" class="form-label">Email Address <span class="required">*</span></label>
+                            <label for="userEmail" class="form-label"><span data-i18n="email_address">Email Address</span> <span class="required">*</span></label>
                             <input type="email" name="email" id="userEmail" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="userPhone" class="form-label">Phone (09XXXXXXXX) <span class="required">*</span></label>
+                            <label for="userPhone" class="form-label"><span data-i18n="phone_hint">Phone (09XXXXXXXX)</span> <span class="required">*</span></label>
                             <input type="tel" name="phone" id="userPhone" class="form-control" pattern="(09|07)[0-9]{8}" placeholder="09XXXXXXXX" required>
                         </div>
                         <div class="form-group">
-                            <label for="userRole" class="form-label">Role <span class="required">*</span></label>
+                            <label for="userRole" class="form-label"><span data-i18n="user_col_role">Role</span> <span class="required">*</span></label>
                             <select name="role" id="userRole" class="form-select" required>
-                                <option value="STUDENT">Student</option>
-                                <option value="STAFF">Staff</option>
-                                <option value="KITCHEN_STAFF">Kitchen Staff</option>
-                                <option value="ADMIN">Admin</option>
+                                <option value="customer" data-i18n="role_customer">Customer</option>
+                                <option value="kitchen" data-i18n="role_kitchen">Kitchen Staff</option>
+                                <option value="admin" data-i18n="role_admin">Admin</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="userBalance" class="form-label">Wallet Balance (ETB)</label>
+                            <label for="userBalance" class="form-label" data-i18n="wallet_balance">Wallet Balance (ETB)</label>
                             <input type="number" name="balance" id="userBalance" class="form-control" min="0" value="0">
                         </div>
                         <div class="form-group">
-                            <label for="userPassword" id="passwordLabel" class="form-label">Password <span class="required">*</span></label>
+                            <label for="userPassword" id="passwordLabel" class="form-label"><span data-i18n="password">Password</span> <span class="required">*</span></label>
                             <input type="password" name="password" id="userPassword" class="form-control" autocomplete="new-password">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-close-modal="userModal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="saveUserBtn">Save User</button>
+                    <button type="button" class="btn btn-secondary" data-close-modal="userModal" data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn" data-i18n="save">Save User</button>
                 </div>
             </form>
         </div>
@@ -200,28 +205,28 @@
     <div class="modal-overlay" id="viewUserModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">User Details</h3>
+                <h3 class="modal-title" data-i18n="user_details">User Details</h3>
                 <button class="modal-close" data-close-modal="viewUserModal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="detail-hero">
                     <div class="avatar detail-avatar" id="detailAvatar">U</div>
                     <div>
-                        <h4 id="detailName">â€”</h4>
-                        <div id="detailRoleWrap">â€”</div>
+                        <h4 id="detailName">&mdash;</h4>
+                        <div id="detailRoleWrap">&mdash;</div>
                     </div>
                 </div>
                 <div class="detail-grid">
-                    <div class="detail-item"><span>User ID</span><strong id="detailId">â€”</strong></div>
-                    <div class="detail-item"><span>Email</span><strong id="detailEmail">â€”</strong></div>
-                    <div class="detail-item"><span>Phone</span><strong id="detailPhone">â€”</strong></div>
-                    <div class="detail-item"><span>Balance</span><strong id="detailBalance">0 ETB</strong></div>
-                    <div class="detail-item"><span>Status</span><strong id="detailStatus">â€”</strong></div>
-                    <div class="detail-item"><span>Joined</span><strong id="detailJoined">â€”</strong></div>
+                    <div class="detail-item"><span data-i18n="user_id">User ID</span><strong id="detailId">&mdash;</strong></div>
+                    <div class="detail-item"><span data-i18n="email_address">Email</span><strong id="detailEmail">&mdash;</strong></div>
+                    <div class="detail-item"><span data-i18n="phone_number">Phone</span><strong id="detailPhone">&mdash;</strong></div>
+                    <div class="detail-item"><span data-i18n="wallet_balance">Balance</span><strong id="detailBalance">0 ETB</strong></div>
+                    <div class="detail-item"><span data-i18n="user_col_status">Status</span><strong id="detailStatus">&mdash;</strong></div>
+                    <div class="detail-item"><span data-i18n="joined">Joined</span><strong id="detailJoined">&mdash;</strong></div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-close-modal="viewUserModal">Close</button>
+                <button type="button" class="btn btn-secondary" data-close-modal="viewUserModal" data-i18n="close">Close</button>
             </div>
         </div>
     </div>
@@ -230,24 +235,75 @@
     <div class="modal-overlay" id="assignRoleModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Assign Role</h3>
+                <h3 class="modal-title" data-i18n="change_role">Assign Role</h3>
                 <button class="modal-close" data-close-modal="assignRoleModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="form-text" style="margin-bottom:1rem;">Change role for <strong id="assignRoleName">â€”</strong></p>
+                <p class="form-text" style="margin-bottom:1rem;"><span data-i18n="change_role_for">Change role for</span> <strong id="assignRoleName">&mdash;</strong></p>
                 <div class="form-group">
-                    <label for="assignRoleSelect" class="form-label">Role</label>
+                    <label for="assignRoleSelect" class="form-label" data-i18n="user_col_role">Role</label>
                     <select id="assignRoleSelect" class="form-select">
-                        <option value="STUDENT">Student</option>
-                        <option value="STAFF">Staff</option>
-                        <option value="KITCHEN_STAFF">Kitchen Staff</option>
-                        <option value="ADMIN">Admin</option>
+                        <option value="customer" data-i18n="role_customer">Customer</option>
+                        <option value="kitchen" data-i18n="role_kitchen">Kitchen Staff</option>
+                        <option value="admin" data-i18n="role_admin">Admin</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-close-modal="assignRoleModal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmAssignRoleBtn">Save Role</button>
+                <button type="button" class="btn btn-secondary" data-close-modal="assignRoleModal" data-i18n="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAssignRoleBtn" data-i18n="save_role">Save Role</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CHANGE STATUS MODAL ===== -->
+    <div class="modal-overlay" id="statusModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="change_status">Change Account Status</h3>
+                <button class="modal-close" data-close-modal="statusModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="form-text" style="margin-bottom:1rem;"><span data-i18n="change_status_for">Change status for</span> <strong id="statusUserName">&mdash;</strong></p>
+                <div class="form-group">
+                    <label for="statusSelect" class="form-label" data-i18n="user_col_status">Status</label>
+                    <select id="statusSelect" class="form-select">
+                        <option value="ACTIVE" data-i18n="status_active">Active</option>
+                        <option value="BLOCKED" data-i18n="status_blocked">Blocked</option>
+                        <option value="SUSPENDED" data-i18n="status_suspended">Suspended</option>
+                    </select>
+                </div>
+                <input type="hidden" id="resetPwdUserId2">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close-modal="statusModal" data-i18n="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusBtn" data-i18n="save_status">Save Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RESET PASSWORD MODAL ===== -->
+    <div class="modal-overlay" id="resetPasswordModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" data-i18n="reset_password">Reset Password</h3>
+                <button class="modal-close" data-close-modal="resetPasswordModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="form-text" style="margin-bottom:1rem;"><span data-i18n="reset_password_for">Reset password for</span> <strong id="resetPwdUserName">&mdash;</strong></p>
+                <input type="hidden" id="resetPwdUserId">
+                <div class="form-group mb-3">
+                    <label for="resetPwdNewPassword" class="form-label" data-i18n="new_password">New Password</label>
+                    <input type="password" id="resetPwdNewPassword" class="form-control" autocomplete="new-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="resetPwdConfirmPassword" class="form-label" data-i18n="confirm_password">Confirm Password</label>
+                    <input type="password" id="resetPwdConfirmPassword" class="form-control" autocomplete="new-password" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-close-modal="resetPasswordModal" data-i18n="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmResetPwdBtn" data-i18n="reset_password_btn">Reset Password</button>
             </div>
         </div>
     </div>
@@ -260,13 +316,9 @@
     <script src="../../js/users.js"></script>
 
     <script>
-        // Page-specific initialization
         function initPageSpecific() {
             // users.js handles initialization via its own DOMContentLoaded
-            // This function is called by admin-layout.js after layout is rendered
         }
     </script>
 </body>
 </html>
-
-

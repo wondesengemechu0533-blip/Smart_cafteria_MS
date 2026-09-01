@@ -23,7 +23,7 @@
         <main class="admin-main">
             <div class="page-header">
                 <div>
-                    <h1>Categories</h1>
+                    <h1>Category Management</h1>
                     <p class="subtitle">Manage menu categories and their visibility.</p>
                 </div>
                 <div class="page-actions">
@@ -31,6 +31,13 @@
                         <i class="fa-solid fa-plus"></i> Add Category
                     </button>
                 </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3"><div class="metric-card"><div class="metric-icon bg-indigo"><i class="fa-solid fa-layer-group"></i></div><div class="metric-content"><span class="metric-label">Total Categories</span><h2 class="metric-value" id="metricTotalCategories">0</h2></div></div></div>
+                <div class="col-md-3"><div class="metric-card"><div class="metric-icon bg-green"><i class="fa-solid fa-check"></i></div><div class="metric-content"><span class="metric-label">Active</span><h2 class="metric-value" id="metricActiveCategories">0</h2></div></div></div>
+                <div class="col-md-3"><div class="metric-card"><div class="metric-icon bg-red"><i class="fa-solid fa-ban"></i></div><div class="metric-content"><span class="metric-label">Inactive</span><h2 class="metric-value" id="metricInactiveCategories">0</h2></div></div></div>
+                <div class="col-md-3"><div class="metric-card"><div class="metric-icon bg-orange"><i class="fa-solid fa-folder-open"></i></div><div class="metric-content"><span class="metric-label">Empty Categories</span><h2 class="metric-value" id="metricEmptyCategories">0</h2></div></div></div>
             </div>
 
             <!-- FILTER TOOLBAR -->
@@ -46,6 +53,7 @@
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
                         </select>
+                        <select id="sortFilter" class="form-select"><option value="created">Newest</option><option value="name">Name</option><option value="foods">Food Count</option><option value="updated">Updated</option></select>
                         <button class="btn btn-secondary" id="resetFiltersBtn" title="Reset filters">
                             <i class="fa-solid fa-filter-circle-xmark"></i> Reset
                         </button>
@@ -57,7 +65,7 @@
                         <thead>
                             <tr>
                                 <th>Category</th>
-                                <th>Type</th>
+                                <th>Foods</th>
                                 <th>Status</th>
                                 <th>Description</th>
                                 <th>Created</th>
@@ -100,6 +108,7 @@
                             <label for="categoryIcon" class="form-label">Icon</label>
                             <input type="text" name="icon" id="categoryIcon" class="form-control" placeholder="fa-solid fa-utensils">
                         </div>
+                        <div class="form-group"><label for="categoryImageUrl" class="form-label">Image URL</label><input type="url" id="categoryImageUrl" class="form-control" placeholder="https://example.com/category.jpg"></div>
                         <div class="form-group">
                             <label for="categoryDescription" class="form-label">Description</label>
                             <textarea name="description" id="categoryDescription" class="form-control" rows="3" placeholder="Optional description"></textarea>
@@ -121,6 +130,8 @@
             </form>
         </div>
     </div>
+
+    <div class="modal-overlay" id="categoryDetailsModal"><div class="modal modal-lg"><div class="modal-header"><h3 class="modal-title">Category Details</h3><button class="modal-close" data-close-modal="categoryDetailsModal">&times;</button></div><div class="modal-body"><div class="detail-hero"><div class="avatar" id="categoryDetailIcon">🍽️</div><div><h4 id="categoryDetailName">-</h4><p id="categoryDetailDescription">-</p></div></div><div class="detail-grid"><div class="detail-item"><span>Status</span><strong id="categoryDetailStatus">-</strong></div><div class="detail-item"><span>Foods</span><strong id="categoryDetailCount">0</strong></div><div class="detail-item"><span>Created</span><strong id="categoryDetailCreated">-</strong></div><div class="detail-item"><span>Updated</span><strong id="categoryDetailUpdated">-</strong></div></div><div class="table-wrapper"><table class="admin-table"><thead><tr><th>Food</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead><tbody id="categoryDetailFoods"></tbody></table></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-close-modal="categoryDetailsModal">Close</button></div></div></div>
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>

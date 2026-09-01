@@ -22,10 +22,9 @@ const ROLES = {
     CUSTOMER: 'customer',
     KITCHEN: 'kitchen',
     ADMIN: 'admin',
-    STUDENT: 'STUDENT',
-    STAFF: 'STAFF',
-    ADMIN_UPPER: 'ADMIN',
-    KITCHEN_STAFF: 'KITCHEN_STAFF'
+    STAFF: 'kitchen',
+    ADMIN_UPPER: 'admin',
+    KITCHEN_STAFF: 'kitchen'
 };
 const HTTP_STATUS = {
     OK: 200,
@@ -46,9 +45,30 @@ const FEEDBACK_STATUS = {
 };
 
 const CANCELLATION_STATUS = {
+    // Stored on Order.cancellationStatus (lowercase, backward-compatible)
     PENDING: 'pending',
     APPROVED: 'approved',
     REJECTED: 'rejected'
+};
+
+// Cancellation workflow statuses stored on the standalone Cancellation model.
+const CANCELLATION_FLOW_STATUS = {
+    REQUESTED: 'REQUESTED',
+    APPROVED: 'APPROVED',
+    REJECTED: 'REJECTED',
+    CANCELLED: 'CANCELLED',
+    PROCESSING: 'PROCESSING',
+    COMPLETED: 'COMPLETED'
+};
+
+// Refund lifecycle (stored on Cancellation + Order.refundStatus)
+const REFUND_STATUS = {
+    NOT_REQUIRED: 'NOT_REQUIRED',
+    REFUND_REQUESTED: 'REFUND_REQUESTED',
+    REFUND_APPROVED: 'REFUND_APPROVED',
+    REFUND_PROCESSING: 'REFUND_PROCESSING',
+    REFUNDED: 'REFUNDED',
+    REFUND_FAILED: 'REFUND_FAILED'
 };
 
 module.exports = {
@@ -59,5 +79,7 @@ module.exports = {
     HTTP_STATUS,
     MESSAGES,
     FEEDBACK_STATUS,
-    CANCELLATION_STATUS
+    CANCELLATION_STATUS,
+    CANCELLATION_FLOW_STATUS,
+    REFUND_STATUS
 };

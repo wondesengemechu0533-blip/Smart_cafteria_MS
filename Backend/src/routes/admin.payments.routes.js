@@ -4,7 +4,10 @@ const { protect, authorize } = require('../middleware/auth');
 const {
   getAllPayments,
   getPaymentStats,
-  getPaymentById
+  getPaymentById,
+  getPaymentHistory,
+  getOrderPayment,
+  refundPayment
 } = require('../controllers/admin.payment.controller');
 
 // All routes require admin role
@@ -35,5 +38,23 @@ router.get('/stats', getPaymentStats);
  * @desc    Payment detail (read-only)
  */
 router.get('/:id', getPaymentById);
+
+/**
+ * @route   GET /api/v1/admin/payments/:id/history
+ * @desc    Payment event history/audit log
+ */
+router.get('/:id/history', getPaymentHistory);
+
+/**
+ * @route   POST /api/v1/admin/payments/:id/refund
+ * @desc    Process a refund for a payment
+ */
+router.post('/:id/refund', refundPayment);
+
+/**
+ * @route   GET /api/v1/admin/orders/:orderId/payment
+ * @desc    Get payment for a specific order
+ */
+router.get('/orders/:orderId/payment', getOrderPayment);
 
 module.exports = router;

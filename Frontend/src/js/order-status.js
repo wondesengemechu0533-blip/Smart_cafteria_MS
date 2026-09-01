@@ -140,12 +140,17 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
     } else if (normalizedStatus !== "completed" && normalizedStatus !== "ready") {
-        // Show Cancel Button for any active, non-completed order
+        // Show Cancel Button for any active, non-completed order.
+        // Route through the formal cancellation request flow (admin review).
         if (cancelWrapper) {
             cancelWrapper.innerHTML = `
-                <button class="btn btn-outline-danger" onclick="cancelOrderFromStatusPage('${currentId}')" style="width: 100%; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: transparent; cursor: pointer; font-weight: 600;">
+                <a
+                    href="cancel-order.html?id=${encodeURIComponent(currentId)}"
+                    class="btn btn-outline-danger"
+                    style="width: 100%; display: inline-block; text-align: center; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: transparent; cursor: pointer; font-weight: 600; text-decoration: none; box-sizing: border-box;"
+                >
                     <i class="fa-solid fa-ban"></i> Cancel Order
-                </button>
+                </a>
             `;
         }
     } else if (cancelWrapper) {

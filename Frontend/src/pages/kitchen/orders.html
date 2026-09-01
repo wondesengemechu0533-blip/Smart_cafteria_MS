@@ -146,9 +146,18 @@
                 <span>Kitchen Display System</span>
             </div>
         </div>
-        <div class="nav-right">
+        <div class="nav-right" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <a href="dashboard.html" class="btn">
-                <i class="fa-solid fa-grip"></i> Grid View
+                <i class="fa-solid fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="availability.html" class="btn">
+                <i class="fa-solid fa-burger"></i> Availability
+            </a>
+            <a href="stock-alerts.html" class="btn">
+                <i class="fa-solid fa-triangle-exclamation"></i> Alerts
+            </a>
+            <a href="#" class="btn" onclick="toggleUserMenu(); return false;">
+                <i class="fa-solid fa-user-circle"></i> <span id="userName">User</span>
             </a>
         </div>
     </header>
@@ -205,6 +214,19 @@
     <script src="/src/js/api.js"></script>
     <script src="/src/js/auth.js"></script>
     <script src="/src/pages/kitchen/kitchen.js"></script>
+
+    <!-- Navigation Script -->
+    <script>
+        // Load user name
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = localStorage.getItem('userName') || localStorage.getItem('name') || 'User';
+            document.getElementById('userName').textContent = userName.split(' ')[0]; // First name only
+        });
+
+        function toggleUserMenu() {
+            alert('User menu coming soon');
+        }
+    </script>
 
     <script type="module" src="../../js/utils/i18n.js"></script>
 </body>

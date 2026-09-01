@@ -263,3 +263,132 @@ exports.getPaymentById = async (req, res) => {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
   }
 };
+
+/**
+ * @desc    Get payment history/event log
+ * @route   GET /api/v1/admin/payments/:id/history
+ * @access  Private/Admin
+ */
+exports.getPaymentHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Payment not found' });
+    }
+
+    const PaymentEventLog = require('../models/PaymentEventLog');
+    const history = await PaymentEventLog.find({ paymentId: id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      history: history.map((evt) => ({
+        id: evt._id,
+        eventType: evt.eventType,
+        status: evt.status,
+        reason: evt.reason,
+        createdAt: evt.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error('Error fetching payment history:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: 'Failed to fetch history' });
+  }
+};
+
+/**
+ * @desc    Get payment for an order
+ * @route   GET /api/v1/admin/orders/:orderId/payment
+ * @access  Private/Admin
+ */
+exports.getOrderPayment = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!isValidObjectId(orderId)) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Payment not found' });
+    }
+
+    const payment = await Payment.findOne({ orderId }).lean();
+    if (!payment) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'No payment found for this order' });
+    }
+
+    const order = await Order.findById(payment.orderId).lean();
+    const user = await User.findById(payment.userId).select('name email phone').lean();
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      payment: serializePayment(payment, order, user),
+    });
+  } catch (error) {
+    console.error('Error fetching order payment:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: 'Failed to fetch payment' });
+  }
+};
+
+/**
+ * @desc    Process a refund for a payment
+ * @route   POST /api/v1/admin/payments/:id/refund
+ * @access  Private/Admin
+ */
+exports.refundPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, reason } = req.body;
+
+    if (!isValidObjectId(id)) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Payment not found' });
+    }
+
+    const payment = await Payment.findById(id);
+    if (!payment) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Payment not found' });
+    }
+
+    // Validate refund amount
+    const refundableAmount = payment.amount - (payment.refundAmount || 0);
+    if (amount > refundableAmount) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: `Refund amount exceeds available refundable amount (${refundableAmount} ETB)`,
+      });
+    }
+
+    // Update payment
+    payment.refundAmount = (payment.refundAmount || 0) + amount;
+    if (payment.refundAmount >= payment.amount) {
+      payment.status = 'REFUNDED';
+      payment.refundedAt = new Date();
+    }
+    payment.refundStatus = 'PENDING';
+    payment.refundReason = reason || 'Refund requested';
+    payment.refundReference = `REF-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    await payment.save();
+
+    // Log refund event
+    const PaymentEventLog = require('../models/PaymentEventLog');
+    await PaymentEventLog.create({
+      paymentId: payment._id,
+      orderId: payment.orderId,
+      userId: payment.userId,
+      eventType: 'PAYMENT_REFUND_INITIATED',
+      status: payment.status,
+      amount: amount,
+      reason: reason,
+      performedBy: req.user?.id,
+    });
+
+    const order = await Order.findById(payment.orderId).lean();
+    const user = await User.findById(payment.userId).select('name email phone').lean();
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Refund initiated successfully',
+      payment: serializePayment(payment, order, user),
+    });
+  } catch (error) {
+    console.error('Error processing refund:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: 'Failed to process refund' });
+  }
+};

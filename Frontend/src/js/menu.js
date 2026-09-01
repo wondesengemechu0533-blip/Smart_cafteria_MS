@@ -10,6 +10,8 @@
  * - Cart badge
  */
 
+import api from "./api.js";
+
 document.addEventListener("DOMContentLoaded", function () {
 
     // =========================================================
@@ -830,3 +832,52 @@ document.addEventListener("DOMContentLoaded", function () {
     filterMenu();
 
 });
+
+export function getAllMenuItems() {
+    return Array.from(document.querySelectorAll(".food-card")).map(function (card) {
+        return { id: card.dataset.id, category: card.dataset.category };
+    });
+}
+
+/**
+ * Fetch a single menu item with full details from the backend API.
+ * GET /menu/:id -> { id, name:{en,am}, category, price, description:{en,am},
+ *                  icon, image, preparationTime, availability, isAvailable }
+ */
+export async function getMenuItemById(id) {
+    if (!id) return null;
+    const data = await api.get(`/menu/${encodeURIComponent(id)}`);
+    return data?.item || null;
+}
+
+/**
+ * Fetch related menu items (same category) from the backend API.
+ * GET /menu/:id/related?limit=n -> { items: [...] }
+ */
+export async function getRelatedItems(itemId, limit = 4) {
+    if (!itemId) return [];
+    const data = await api.get(`/menu/${encodeURIComponent(itemId)}/related?limit=${limit}`);
+    return data?.items || [];
+}
+
+/**
+ * Fetch a category by its id (e.g. "breakfast") from the backend API
+ * and return it with a localized `name`.
+ * GET /categories -> { categories: [...] }
+ */
+export async function getCategoryById(categoryId, language = "en") {
+    if (!categoryId) return null;
+    const data = await api.get("/categories");
+    const categories = data?.categories || [];
+    const lang = language || "en";
+    const category = categories.find(function (c) {
+        return String(c.id).toLowerCase() === String(categoryId).toLowerCase();
+    });
+    if (!category) return null;
+    return {
+        id: category.id,
+        icon: category.icon,
+        image: category.image,
+        name: (category.name && (category.name[lang] || category.name.en)) || category.id
+    };
+}

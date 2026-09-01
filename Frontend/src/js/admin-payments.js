@@ -6,9 +6,10 @@
  *   GET /admin/payments        (list / search / filter / paginate)
  *   GET /admin/payments/stats  (metric cards)
  *   GET /admin/payments/:id    (payment detail)
+ *   GET /admin/payments/:id/history (audit trail)
+ *   POST /admin/payments/:id/refund (process refund)
  *
- * There are intentionally NO update/delete actions: only verified
- * Chapa / Telebirr callbacks may set paymentStatus = PAID.
+ * Supports full refund management with audit trail.
  *
  * Requires window.AdminAPI (admin-api.js) loaded first.
  * ================================================================
@@ -22,8 +23,11 @@
     search: "",
     method: "",
     status: "",
-    date: "",
-    sort: "newest"
+    dateRange: "",
+    dateFrom: "",
+    dateTo: "",
+    sort: "newest",
+    currentPaymentId: null
   };
 
   function money(value) {
@@ -35,6 +39,7 @@
     var cls = "order-badge";
     switch (String(paymentStatus || "").toUpperCase()) {
       case "PAID": cls += " cmp"; break;
+      case "REFUNDED": cls += " cmp"; break;
       case "FAILED": cls += " cxl"; break;
       case "CANCELLED": cls += " cxl"; break;
       default: cls += " pend"; break;
@@ -50,6 +55,42 @@
   function refText(value) {
     var v = value || "—";
     return '<span class="mono-ref">' + window.esc(v) + "</span>";
+  }
+
+  function getDateRange() {
+    var today = new Date();
+    var from = null, to = null;
+
+    switch (state.dateRange) {
+      case "today":
+        from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        to = new Date(from);
+        to.setDate(to.getDate() + 1);
+        break;
+      case "yesterday":
+        from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        to = new Date(from);
+        to.setDate(to.getDate() + 1);
+        break;
+      case "last7":
+        from = new Date(today);
+        from.setDate(from.getDate() - 7);
+        to = new Date(today);
+        to.setDate(to.getDate() + 1);
+        break;
+      case "last30":
+        from = new Date(today);
+        from.setDate(from.getDate() - 30);
+        to = new Date(today);
+        to.setDate(to.getDate() + 1);
+        break;
+      case "custom":
+        if (state.dateFrom) from = new Date(state.dateFrom);
+        if (state.dateTo) to = new Date(state.dateTo);
+        break;
+    }
+
+    return { from: from ? from.toISOString().split("T")[0] : null, to: to ? to.toISOString().split("T")[0] : null };
   }
 
   /* ============================================================
@@ -70,15 +111,22 @@
    * ============================================================ */
   async function loadStats() {
     try {
-      var data = await window.AdminAPI.get("/admin/payments/stats");
+      var dateRange = getDateRange();
+      var params = {};
+      if (dateRange.from) params.dateFrom = dateRange.from;
+      if (dateRange.to) params.dateTo = dateRange.to;
+
+      var data = await window.AdminAPI.get("/admin/payments/reports/summary", params);
       var stats = data.stats || {};
-      document.getElementById("metricTotalRevenue").textContent =
-        money(stats.totalRevenue) + " ETB";
-      document.getElementById("metricSuccessfulPayments").textContent = stats.successfulPayments || 0;
-      document.getElementById("metricPendingPayments").textContent = stats.pendingPayments || 0;
+
+      document.getElementById("metricTotalPayments").textContent = stats.totalPayments || 0;
+      document.getElementById("metricSuccessfulPayments").textContent = stats.paidPayments || 0;
       document.getElementById("metricFailedPayments").textContent = stats.failedPayments || 0;
+      document.getElementById("metricPendingPayments").textContent = stats.pendingPayments || 0;
+      document.getElementById("metricRefundedPayments").textContent = stats.refundedPayments || 0;
+      document.getElementById("metricNetRevenue").textContent = "ETB " + money(stats.netRevenue || 0);
     } catch (e) {
-      // stats are supplementary
+      console.error("Error loading stats:", e);
     }
   }
 
@@ -89,15 +137,20 @@
     tbody.innerHTML = '<tr><td colspan="9" class="table-empty">Loading payments...</td></tr>';
 
     try {
-      var data = await window.AdminAPI.get("/admin/payments", {
+      var dateRange = getDateRange();
+      var params = {
         page: state.page,
         limit: state.limit,
-        search: state.search,
-        method: state.method,
-        status: state.status,
-        date: state.date,
         sort: state.sort
-      });
+      };
+
+      if (state.search) params.search = state.search;
+      if (state.method) params.method = state.method;
+      if (state.status) params.status = state.status;
+      if (dateRange.from) params.dateFrom = dateRange.from;
+      if (dateRange.to) params.dateTo = dateRange.to;
+
+      var data = await window.AdminAPI.get("/admin/payments", params);
 
       window.__paymentsCache = data.payments || [];
       renderPayments(window.__paymentsCache);
@@ -128,24 +181,23 @@
     }
 
     tbody.innerHTML = payments.map(function (payment) {
-      var customerLines = "<strong>" + window.esc(payment.customerName || "—") + "</strong>" +
-        (payment.customerPhone ? "<small>" + window.esc(payment.customerPhone) + "</small>" : "");
+      var customerLines = "<strong>" + window.esc(payment.customer?.name || "—") + "</strong>";
+      if (payment.customer?.phone) {
+        customerLines += "<small>" + window.esc(payment.customer.phone) + "</small>";
+      }
 
       return (
         "<tr>" +
-        '<td><div class="user-cell"><div class="order-id-cell">' +
-          "<strong>" + window.esc(payment.orderId || "—") + "</strong>" +
-        "</div></div></td>" +
+        '<td>' + window.esc(payment.paymentNumber || "—") + '</td>' +
+        '<td><strong>' + window.esc(payment.order?.orderId || "—") + '</strong></td>' +
         '<td><div class="user-cell"><div class="user-avatar">' +
-          window.esc((payment.customerName || "?").charAt(0)) +
+          window.esc((payment.customer?.name || "?").charAt(0)) +
           "</div><div>" + customerLines + "</div></div></td>" +
-        "<td>" + methodLabel(payment.method) + "</td>" +
-        "<td><strong>" + money(payment.amount) + "</strong> " +
-          window.esc(payment.currency || "ETB") + "</td>" +
-        "<td>" + paymentBadge(payment.paymentStatus) + "</td>" +
-        "<td>" + refText(payment.transactionId) + "</td>" +
-        "<td>" + refText(payment.providerReference) + "</td>" +
+        "<td><strong>" + money(payment.amount) + "</strong></td>" +
+        "<td>" + methodLabel(payment.paymentMethod) + "</td>" +
+        "<td>" + paymentBadge(payment.status) + "</td>" +
         "<td>" + window.AdminAPI.formatDateTime(payment.paymentDate) + "</td>" +
+        "<td>" + refText(payment.transactionId) + "</td>" +
         "<td>" +
           '<div class="table-actions">' +
             '<button class="action-btn" data-action="view" data-id="' + payment.id + '" title="View payment details"><i class="fa-solid fa-eye"></i></button>' +
@@ -163,25 +215,58 @@
   }
 
   /* ============================================================
-   * PAYMENT DETAILS
+   * PAYMENT DETAILS & HISTORY
    * ============================================================ */
   function renderPaymentItems(items) {
     var tbody = document.getElementById("modalPaymentItemsBody");
     if (!items || !items.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="table-empty">No items</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="table-empty">No items</td></tr>';
       return;
     }
-    tbody.innerHTML = items.map(function (item) {
-      var sub = (Number(item.price) || 0) * (Number(item.quantity) || 0);
-      return (
-        "<tr>" +
-        "<td>" + window.esc(item.name) + "</td>" +
-        "<td>" + money(item.price) + " ETB</td>" +
-        "<td>" + (item.quantity || 0) + "</td>" +
-        "<td>" + money(sub) + " ETB</td>" +
-        "</tr>"
-      );
-    }).join("");
+    if (tbody) {
+      tbody.innerHTML = items.map(function (item) {
+        var sub = (Number(item.price) || 0) * (Number(item.quantity) || 0);
+        return (
+          "<tr>" +
+          "<td>" + window.esc(item.name) + "</td>" +
+          "<td>" + money(item.price) + " ETB</td>" +
+          "<td>" + (item.quantity || 0) + "</td>" +
+          "<td>" + money(sub) + " ETB</td>" +
+          "</tr>"
+        );
+      }).join("");
+    }
+  }
+
+  async function loadPaymentHistory(paymentId) {
+    var historyContainer = document.getElementById("modalPaymentHistory");
+    if (!historyContainer) return;
+
+    historyContainer.innerHTML = '<p>Loading history...</p>';
+
+    try {
+      var data = await window.AdminAPI.get("/admin/payments/" + paymentId + "/history");
+      var history = data.history || [];
+
+      if (!history.length) {
+        historyContainer.innerHTML = '<p class="text-muted">No history events found.</p>';
+        return;
+      }
+
+      historyContainer.innerHTML = '<div class="timeline">' + history.map(function (evt) {
+        return '<div class="timeline-item">' +
+          '<div class="timeline-marker"></div>' +
+          '<div class="timeline-content">' +
+            '<strong>' + window.esc(evt.eventType) + '</strong><br>' +
+            '<small>Status: ' + window.esc(evt.status || "—") + '</small><br>' +
+            (evt.reason ? '<small>Reason: ' + window.esc(evt.reason) + '</small><br>' : '') +
+            '<small class="text-muted">' + window.AdminAPI.formatDateTime(evt.createdAt) + '</small>' +
+          '</div>' +
+        '</div>';
+      }).join("") + '</div>';
+    } catch (error) {
+      historyContainer.innerHTML = '<p class="text-danger">Failed to load history: ' + window.esc(error.message) + '</p>';
+    }
   }
 
   async function viewPaymentDetails(id, cached) {
@@ -197,34 +282,77 @@
     }
     if (!payment) return;
 
+    state.currentPaymentId = id;
+
     var order = payment.order || {};
+    var customer = payment.customer || {};
 
-    document.getElementById("modalPaymentOrderId").textContent = payment.orderId || "#0000";
-    document.getElementById("modalPaymentCustomer").textContent = payment.customerName || "—";
-    document.getElementById("modalPaymentCustomerPhone").textContent = payment.customerPhone || "—";
-    document.getElementById("modalPaymentCustomerEmail").textContent =
-      (payment.customer && payment.customer.email) || "—";
-    document.getElementById("modalPaymentMethod").textContent = payment.method || "—";
-    document.getElementById("modalPaymentStatus").innerHTML = paymentBadge(payment.paymentStatus);
-    document.getElementById("modalPaymentAmount").textContent =
-      money(payment.amount) + " " + (payment.currency || "ETB");
+    document.getElementById("modalPaymentNumber").textContent = payment.paymentNumber || "#0000";
+    document.getElementById("modalPaymentStatus").innerHTML = paymentBadge(payment.status);
+    document.getElementById("modalPaymentAmount").textContent = money(payment.amount) + " ETB";
+    document.getElementById("modalPaymentCurrency").textContent = payment.currency || "ETB";
+    document.getElementById("modalPaymentMethod").textContent = payment.paymentMethod || "—";
+    document.getElementById("modalPaymentProvider").textContent = payment.provider || "—";
     document.getElementById("modalPaymentTransactionId").textContent = payment.transactionId || "—";
-    document.getElementById("modalPaymentProviderReference").textContent = payment.providerReference || "—";
-    document.getElementById("modalPaymentDate").textContent =
-      window.AdminAPI.formatDateTime(payment.paymentDate);
-    document.getElementById("modalPaymentPaidAt").textContent =
-      payment.paidAt ? window.AdminAPI.formatDateTime(payment.paidAt) : "—";
+    document.getElementById("modalPaymentPaidAt").textContent = payment.paidAt ? window.AdminAPI.formatDateTime(payment.paidAt) : "—";
+    document.getElementById("modalPaymentDate").textContent = window.AdminAPI.formatDateTime(payment.paymentDate);
+    document.getElementById("modalRefundAmount").textContent = money(payment.refundAmount) + " ETB";
 
-    document.getElementById("modalPaymentOrderType").textContent = order.orderType || "—";
-    document.getElementById("modalPaymentTableNumber").textContent = order.tableNumber || "—";
-    document.getElementById("modalPaymentOrderStatus").textContent = order.orderStatus || "—";
+    document.getElementById("modalOrderId").textContent = order.id || "—";
+    document.getElementById("modalOrderStatus").textContent = order.status || "—";
+    document.getElementById("modalOrderItems").textContent = (order.itemCount || 0);
+    document.getElementById("modalOrderTotal").textContent = money(order.totalAmount) + " ETB";
 
-    renderPaymentItems(order.items);
-    document.getElementById("modalPaymentSubtotal").textContent = money(order.subtotal) + " ETB";
-    document.getElementById("modalPaymentServiceFee").textContent = money(order.serviceFee) + " ETB";
-    document.getElementById("modalPaymentTotal").textContent = money(order.totalAmount) + " ETB";
+    document.getElementById("modalCustomerName").textContent = customer.name || "—";
+    document.getElementById("modalCustomerEmail").textContent = customer.email || "—";
+    document.getElementById("modalCustomerPhone").textContent = customer.phone || "—";
+
+    // Load and display payment history
+    await loadPaymentHistory(id);
+
+    // Setup refund button
+    var refundBtn = document.getElementById("refundPaymentBtn");
+    if (refundBtn) {
+      refundBtn.onclick = function () { processRefund(id); };
+    }
 
     openModal("paymentDetailsModal");
+  }
+
+  async function processRefund(paymentId) {
+    var amountInput = document.getElementById("refundAmountInput");
+    var reasonInput = document.getElementById("refundReasonInput");
+
+    if (!amountInput || !reasonInput) return;
+
+    var amount = Number(amountInput.value);
+    var reason = reasonInput.value.trim();
+
+    if (!amount || amount <= 0) {
+      if (window.AdminToast) window.AdminToast.error("Please enter a valid refund amount");
+      return;
+    }
+
+    if (!reason) {
+      if (window.AdminToast) window.AdminToast.error("Please provide a refund reason");
+      return;
+    }
+
+    try {
+      var response = await window.AdminAPI.post("/admin/payments/" + paymentId + "/refund", {
+        amount: amount,
+        reason: reason
+      });
+
+      if (window.AdminToast) window.AdminToast.success(response.message || "Refund processed successfully");
+      amountInput.value = "";
+      reasonInput.value = "";
+      
+      // Reload payment details
+      await viewPaymentDetails(paymentId);
+    } catch (error) {
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to process refund");
+    }
   }
 
   /* ============================================================
@@ -244,18 +372,19 @@
       });
     });
 
-    document.querySelectorAll(".amodal-overlay").forEach(function (overlay) {
+    document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
       overlay.addEventListener("click", function (e) {
         if (e.target === overlay) overlay.classList.remove("open");
       });
     });
 
+    // Search with debounce
     var searchInput = document.getElementById("paymentSearchInput");
+    var searchTimeout;
     if (searchInput) {
-      var debounceTimer = null;
       searchInput.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function () {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () {
           state.search = searchInput.value.trim();
           state.page = 1;
           loadPayments();
@@ -263,6 +392,7 @@
       });
     }
 
+    // Filters
     var methodFilter = document.getElementById("paymentMethodFilter");
     if (methodFilter) {
       methodFilter.addEventListener("change", function () {
@@ -281,10 +411,26 @@
       });
     }
 
-    var dateFilter = document.getElementById("paymentDateFilter");
-    if (dateFilter) {
-      dateFilter.addEventListener("change", function () {
-        state.date = dateFilter.value;
+    var dateRangeFilter = document.getElementById("paymentDateRangeFilter");
+    var customDateContainer = document.getElementById("customDateRangeContainer");
+    if (dateRangeFilter) {
+      dateRangeFilter.addEventListener("change", function () {
+        state.dateRange = dateRangeFilter.value;
+        if (customDateContainer) {
+          customDateContainer.style.display = state.dateRange === "custom" ? "block" : "none";
+        }
+        state.page = 1;
+        loadPayments();
+      });
+    }
+
+    var applyDateRangeBtn = document.getElementById("applyDateRangeBtn");
+    if (applyDateRangeBtn) {
+      applyDateRangeBtn.addEventListener("click", function () {
+        var dateFrom = document.getElementById("paymentDateFrom");
+        var dateTo = document.getElementById("paymentDateTo");
+        state.dateFrom = dateFrom ? dateFrom.value : "";
+        state.dateTo = dateTo ? dateTo.value : "";
         state.page = 1;
         loadPayments();
       });
@@ -305,15 +451,21 @@
         if (searchInput) searchInput.value = "";
         if (methodFilter) methodFilter.value = "";
         if (statusFilter) statusFilter.value = "";
-        if (dateFilter) dateFilter.value = "";
+        if (dateRangeFilter) dateRangeFilter.value = "";
+        if (customDateContainer) customDateContainer.style.display = "none";
         if (sortSelect) sortSelect.value = "newest";
+
         state.search = "";
         state.method = "";
         state.status = "";
-        state.date = "";
+        state.dateRange = "";
+        state.dateFrom = "";
+        state.dateTo = "";
         state.sort = "newest";
         state.page = 1;
+
         loadPayments();
+        loadStats();
       });
     }
 

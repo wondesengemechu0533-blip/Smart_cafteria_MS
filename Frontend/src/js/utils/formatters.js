@@ -20,3 +20,8 @@ export const Formatters = {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 };
+
+// Convenience named exports (many modules import these directly)
+export const formatCurrency = Formatters.formatCurrency;
+export const formatTime = Formatters.formatTime;
+export const formatDate = Formatters.formatDate;

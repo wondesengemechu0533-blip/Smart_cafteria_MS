@@ -8,8 +8,8 @@ const {
   getSettings,
   updateSetting,
   getActivityLogs,
-  changePassword,
 } = require("../controllers/admin.controller");
+const { changePassword } = require("../controllers/auth.controller");
 
 // ============================================================
 //  ALL ROUTES REQUIRE ADMIN ROLE

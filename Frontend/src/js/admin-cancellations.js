@@ -2,11 +2,15 @@
  * ==========================================================================
  * SMART CAFETERIA ORDERING SYSTEM - ADMIN CANCELLATIONS
  * ==========================================================================
- * Admin cancellation request management driven by the backend API:
- *   GET    /cancellations/stats            (stats)
- *   GET    /cancellations?status=&search=  (list)
- *   PATCH  /cancellations/:orderId/approve (approve)
- *   PATCH  /cancellations/:orderId/reject  (reject)
+ * Admin cancellation management driven by the backend API:
+ *   GET   /cancellations/stats                         (stats)
+ *   GET   /cancellations?search=&status=&paymentStatus=&refundStatus=&sort=&page=&limit=
+ *   GET   /cancellations/:id                           (detail)
+ *   PATCH /cancellations/:id/approve                   (approve)
+ *   PATCH /cancellations/:id/reject                    (reject)
+ *   POST  /cancellations/:id/refund/request            (request refund)
+ *   POST  /cancellations/:id/refund/confirm            (confirm refund - provider)
+ *   POST  /cancellations/:id/refund/fail               (mark refund failed)
  *
  * Requires window.AdminAPI (admin-api.js) loaded first.
  * ============================================================================
@@ -18,7 +22,28 @@
     page: 1,
     limit: 10,
     status: "all",
+    paymentStatus: "all",
+    refundStatus: "all",
+    sort: "newest",
     search: ""
+  };
+
+  var STATUS_META = {
+    REQUESTED: { cls: "pend", label: "Requested" },
+    APPROVED: { cls: "info", label: "Approved" },
+    REJECTED: { cls: "cxl", label: "Rejected" },
+    CANCELLED: { cls: "cxl", label: "Cancelled" },
+    PROCESSING: { cls: "info", label: "Processing" },
+    COMPLETED: { cls: "cmp", label: "Completed" }
+  };
+
+  var REFUND_META = {
+    NOT_REQUIRED: { cls: "muted", label: "Not Required" },
+    REFUND_REQUESTED: { cls: "pend", label: "Refund Requested" },
+    REFUND_APPROVED: { cls: "info", label: "Refund Approved" },
+    REFUND_PROCESSING: { cls: "info", label: "Processing" },
+    REFUNDED: { cls: "cmp", label: "Refunded" },
+    REFUND_FAILED: { cls: "cxl", label: "Refund Failed" }
   };
 
   function money(value) {
@@ -41,14 +66,22 @@
     if (e.key === "Escape") closeAllModals();
   });
 
-  function statusBadge(status) {
-    var s = String(status || "pending").toLowerCase();
-    var cls = "order-badge";
-    var label = s.charAt(0).toUpperCase() + s.slice(1);
-    if (s === "pending") cls += " pend";
-    else if (s === "approved") cls += " cmp";
-    else if (s === "rejected") cls += " cxl";
-    return '<span class="' + cls + '">' + label + '</span>';
+  function badge(meta, value) {
+    var key = String(value || "").toUpperCase();
+    var m = meta[key] || { cls: "", label: value || "—" };
+    return '<span class="order-badge ' + m.cls + '">' + m.label + "</span>";
+  }
+
+  function statusBadge(status) { return badge(STATUS_META, status); }
+  function refundBadge(refundStatus) { return badge(REFUND_META, refundStatus); }
+
+  function paymentBadge(paymentStatus) {
+    var s = String(paymentStatus || "").toUpperCase();
+    var cls = "pend";
+    var label = s || "—";
+    if (s === "PAID" || s === "REFUNDED") { cls = "cmp"; }
+    else if (s === "FAILED" || s === "CANCELLED") { cls = "cxl"; }
+    return '<span class="order-badge ' + cls + '">' + label + "</span>";
   }
 
   async function loadStats() {
@@ -60,21 +93,20 @@
       var pendingEl = document.getElementById("statPendingCancellations");
       var refundedEl = document.getElementById("statRefundedToday");
       var refundAmountEl = document.getElementById("statTotalRefunds");
+      var completedEl = document.getElementById("statCompletedCancellations");
+      var refundFailedEl = document.getElementById("statRefundFailed");
 
-      var total = s.totalCancellations || 0;
-      var pending = s.pendingApproval || 0;
-      var refundedToday = s.refundedToday || 0;
-      var totalRefunds = s.totalRefundAmount || 0;
-
-      if (totalEl) totalEl.textContent = total;
-      if (pendingEl) pendingEl.textContent = pending;
-      if (refundedEl) refundedEl.textContent = refundedToday;
-      if (refundAmountEl) refundAmountEl.innerHTML = money(totalRefunds) + " <small>ETB</small>";
+      if (totalEl) totalEl.textContent = s.totalCancellations || 0;
+      if (pendingEl) pendingEl.textContent = s.pendingApproval || 0;
+      if (refundedEl) refundedEl.textContent = s.refunded || 0;
+      if (completedEl) completedEl.textContent = s.completed || 0;
+      if (refundFailedEl) refundFailedEl.textContent = s.refundFailed || 0;
+      if (refundAmountEl) refundAmountEl.innerHTML = money(s.totalRefundAmount) + " <small>ETB</small>";
 
       var sidebarBadge = document.getElementById("sidebarRefundBadge");
       if (sidebarBadge) {
-        sidebarBadge.textContent = pending;
-        sidebarBadge.style.display = pending > 0 ? "inline-block" : "none";
+        sidebarBadge.textContent = s.totalCancellations || 0;
+        sidebarBadge.style.display = (s.totalCancellations || 0) > 0 ? "inline-block" : "none";
       }
     } catch (e) {
       /* stats are non-critical */
@@ -85,25 +117,20 @@
     var tbody = document.getElementById("cancellationsTableBody");
     if (!tbody || !window.AdminAPI) return;
 
-    tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Loading cancellations...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="table-empty">Loading cancellations...</td></tr>';
 
     try {
       var data = await window.AdminAPI.get("/cancellations", {
         page: state.page,
         limit: state.limit,
-        status: state.status
+        status: state.status,
+        paymentStatus: state.paymentStatus,
+        refundStatus: state.refundStatus,
+        sort: state.sort,
+        search: state.search || undefined
       });
 
       var items = data.cancellations || [];
-
-      if (state.search) {
-        var term = state.search.toLowerCase();
-        items = items.filter(function(c) {
-          return String(c.orderId || "").toLowerCase().indexOf(term) !== -1 ||
-                 String(c.customerName || "").toLowerCase().indexOf(term) !== -1 ||
-                 String(c.reason || "").toLowerCase().indexOf(term) !== -1;
-        });
-      }
 
       state.total = data.total || items.length;
       state.pages = Math.max(Math.ceil(state.total / state.limit), 1);
@@ -111,7 +138,7 @@
       renderCancellations(items);
       renderPagination();
     } catch (error) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Failed to load cancellations: ' + window.esc(error.message || "Server error") + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="table-empty">Failed to load cancellations: ' + window.esc(error.message || "Server error") + "</td></tr>";
     }
   }
 
@@ -120,28 +147,32 @@
     if (!tbody) return;
 
     if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No cancellation requests found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="table-empty">No cancellation records found.</td></tr>';
       return;
     }
 
     tbody.innerHTML = items.map(function(c) {
-      var customer = c.customerName || (c.user && c.user.name) || "—";
+      var customer = c.customerName || (c.customer && c.customer.name) || "—";
       return (
         "<tr>" +
-        '<td><strong>' + window.esc(c.orderId || "—") + '</strong></td>' +
-        '<td>' + window.esc(customer) + '<br><small class="table-muted">' + window.esc(c.customerPhone || (c.user && c.user.phone) || "") + '</small></td>' +
-        '<td>' + window.esc(c.reason || "—") + '</td>' +
-        '<td>' + money(c.totalAmount) + ' ETB</td>' +
-        '<td>' + statusBadge(c.status) + '</td>' +
-        '<td>' + window.AdminAPI.formatDateTime(c.requestedAt) + '</td>' +
+        '<td><strong>' + window.esc(c.cancellationNumber || "—") + "</strong></td>" +
+        '<td><strong>' + window.esc(c.orderId || "—") + "</strong></td>" +
+        '<td>' + window.esc(customer) + '<br><small class="table-muted">' + window.esc(c.customerPhone || (c.customer && c.customer.phone) || "") + '</small></td>' +
+        '<td>' + window.esc(c.reason || "—") + "</td>" +
+        '<td>' + money(c.orderAmount) + " ETB</td>" +
+        '<td>' + paymentBadge(c.paymentStatus) + "</td>" +
+        '<td>' + refundBadge(c.refundStatus) + "</td>" +
+        '<td>' + window.AdminAPI.formatDateTime(c.requestedAt) + "</td>" +
         '<td>' +
         '<div class="table-actions">' +
-          '<button class="action-btn" data-action="view" data-id="' + window.esc(c.orderId || c.id) + '" title="View details"><i class="fa-solid fa-eye"></i></button>' +
-          '<button class="action-btn" data-action="approve" data-id="' + window.esc(c.orderId || c.id) + '" title="Approve"><i class="fa-solid fa-check"></i></button>' +
-          '<button class="action-btn danger" data-action="reject" data-id="' + window.esc(c.orderId || c.id) + '" title="Reject"><i class="fa-solid fa-times"></i></button>' +
-        '</div>' +
-        '</td>' +
-        '</tr>'
+          '<button class="action-btn" data-action="view" data-id="' + window.esc(c.id || c.orderId) + '" title="View details"><i class="fa-solid fa-eye"></i></button>' +
+          (c.status === "REQUESTED"
+            ? '<button class="action-btn" data-action="approve" data-id="' + window.esc(c.id || c.orderId) + '" title="Approve"><i class="fa-solid fa-check"></i></button>' +
+              '<button class="action-btn danger" data-action="reject" data-id="' + window.esc(c.id || c.orderId) + '" title="Reject"><i class="fa-solid fa-times"></i></button>'
+            : "") +
+        "</div>" +
+        "</td>" +
+        "</tr>"
       );
     }).join("");
   }
@@ -162,20 +193,33 @@
     loadCancellations();
   }
 
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
   function viewCancellation(c) {
     closeAllModals();
 
+    setText("modalCancNumber", c.cancellationNumber || "—");
     setText("modalCancellationOrderId", c.orderId || "—");
-    setText("modalCancCustomer", c.customerName || (c.user && c.user.name) || "—");
-    setText("modalCancPhone", c.customerPhone || (c.user && c.user.phone) || "—");
-    setText("modalCancEmail", (c.user && c.user.email) || "—");
+    setText("modalCancCustomer", c.customerName || (c.customer && c.customer.name) || "—");
+    setText("modalCancPhone", c.customerPhone || (c.customer && c.customer.phone) || "—");
+    setText("modalCancEmail", (c.customer && c.customer.email) || "—");
     setText("modalCancOrderType", c.orderType || "—");
     setText("modalCancTableNumber", c.tableNumber || "—");
     setText("modalCancOrderStatus", c.orderStatus || "—");
-    setText("modalCancPaymentStatus", c.paymentStatus || "—");
-    setText("modalCancAmount", money(c.totalAmount) + " ETB");
+    var paymentEl = document.getElementById("modalCancPaymentStatus");
+    if (paymentEl) paymentEl.innerHTML = paymentBadge(c.paymentStatus);
+    var refundEl = document.getElementById("modalCancRefundStatus");
+    if (refundEl) refundEl.innerHTML = refundBadge(c.refundStatus);
+    setText("modalCancRefundAmount", money(c.refundAmount) + " ETB");
+    setText("modalCancRefundReference", c.refundReference || "—");
+    setText("modalCancAmount", money(c.orderAmount) + " ETB");
     setText("modalCancReason", c.reason || "—");
     setText("modalCancRequestedAt", window.AdminAPI.formatDateTime(c.requestedAt));
+    setText("modalCancProcessedAt", c.approvedAt || c.rejectedAt || c.completedAt ? window.AdminAPI.formatDateTime(c.approvedAt || c.rejectedAt || c.completedAt) : "—");
+    setText("modalCancAdminNoteValue", c.adminNote || "—");
     var statusEl = document.getElementById("modalCancStatus");
     if (statusEl) statusEl.innerHTML = statusBadge(c.status);
 
@@ -188,60 +232,96 @@
         itemsBody.innerHTML = items.map(function(i) {
           var subtotal = (Number(i.price) || 0) * (Number(i.quantity) || 0);
           return '<tr>' +
-            '<td>' + window.esc(i.name || "—") + '</td>' +
-            '<td>' + money(i.price) + ' ETB</td>' +
-            '<td>' + (i.quantity || 0) + '</td>' +
-            '<td>' + money(subtotal) + ' ETB</td>' +
-            '</tr>';
+            "<td>" + window.esc(i.name || "—") + "</td>" +
+            "<td>" + money(i.price) + " ETB</td>" +
+            "<td>" + (i.quantity || 0) + "</td>" +
+            "<td>" + money(subtotal) + " ETB</td>" +
+            "</tr>";
         }).join("");
       }
     }
 
-    var subtotal = Number(c.totalAmount) || 0;
-    var serviceFee = 0;
-    var total = subtotal + serviceFee;
+    var subtotal = Number(c.orderSubtotal) || 0;
+    var serviceFee = Number(c.serviceFee) || 0;
+    var total = Number(c.orderAmount) || 0;
     setText("modalCancSubtotal", money(subtotal) + " ETB");
     setText("modalCancServiceFee", money(serviceFee) + " ETB");
     setText("modalCancTotal", money(total) + " ETB");
 
     var noteEl = document.getElementById("cancAdminNote");
-    if (noteEl) noteEl.value = (c.details && c.details !== c.reason) ? c.details : "";
+    if (noteEl) noteEl.value = "";
+
+    var id = c.id || c.orderId;
     var approveBtn = document.getElementById("approveCancellationBtn");
     var rejectBtn = document.getElementById("rejectCancellationBtn");
-    if (approveBtn) approveBtn.dataset.orderId = c.orderId || "";
-    if (rejectBtn) rejectBtn.dataset.orderId = c.orderId || "";
+    var refundRequestBtn = document.getElementById("requestRefundBtn");
+    var refundConfirmBtn = document.getElementById("confirmRefundBtn");
+    var refundFailBtn = document.getElementById("refundFailBtn");
+    if (approveBtn) approveBtn.dataset.id = id || "";
+    if (rejectBtn) rejectBtn.dataset.id = id || "";
+    if (refundRequestBtn) refundRequestBtn.dataset.id = id || "";
+    if (refundConfirmBtn) refundConfirmBtn.dataset.id = id || "";
+    if (refundFailBtn) refundFailBtn.dataset.id = id || "";
+
+    var canAct = c.status === "REQUESTED";
+    if (approveBtn) approveBtn.style.display = canAct ? "inline-flex" : "none";
+    if (rejectBtn) rejectBtn.style.display = canAct ? "inline-flex" : "none";
+
+    var refundState = String(c.refundStatus || "").toUpperCase();
+    var showRefundGroup = ["REFUND_REQUESTED", "REFUND_APPROVED", "REFUND_PROCESSING"].indexOf(refundState) !== -1;
+    if (refundRequestBtn) refundRequestBtn.style.display = refundState === "REFUND_FAILED" ? "inline-flex" : "none";
+    if (refundConfirmBtn) refundConfirmBtn.style.display = showRefundGroup ? "inline-flex" : "none";
+    if (refundFailBtn) refundFailBtn.style.display = showRefundGroup ? "inline-flex" : "none";
 
     openModal("cancellationDetailsModal");
   }
 
-  function setText(id, value) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = value;
+  function findCancellation(id) {
+    return (window.__cancellationsCache || []).find(function(c) { return String(c.id) === String(id) || String(c.orderId) === String(id); });
   }
 
-  function findCancellation(orderId) {
-    return (window.__cancellationsCache || []).find(function(c) { return c.orderId === orderId; });
-  }
-
-  async function processCancellation(orderId, action) {
-    if (!orderId) return;
+  async function processCancellation(id, action) {
+    if (!id) return;
     var noteEl = document.getElementById("cancAdminNote");
     var adminNote = noteEl ? noteEl.value.trim() : "";
-    if (action === "reject" && !adminNote) {
-      adminNote = "Cancellation request rejected";
-    }
+    var isRefundAction = ["request", "confirm", "fail"].indexOf(action) !== -1;
 
     if (action === "approve") {
-      if (!window.confirm('Approve cancellation for order #' + orderId + '? The customer will be refunded.')) return;
-    } else {
-      if (!window.confirm('Reject cancellation for order #' + orderId + '?')) return;
+      if (!window.confirm("Approve cancellation? The order will be cancelled and a refund will be processed if payment was successful.")) return;
+    } else if (action === "reject") {
+      if (!window.confirm("Reject cancellation? The order will remain active.")) return;
+    } else if (action === "confirm") {
+      if (!window.confirm("Confirm refund with the payment provider? This permanently marks the refund as completed.")) return;
+    } else if (action === "fail") {
+      if (!window.confirm("Mark refund as failed?")) return;
+    } else if (action === "request") {
+      if (!window.confirm("Request refund for this order?")) return;
     }
 
     try {
-      var endpoint = "/cancellations/" + encodeURIComponent(orderId) + "/" + action;
-      await window.AdminAPI.patch(endpoint, { adminNote: adminNote });
+      if (action === "approve") {
+        await window.AdminAPI.patch("/cancellations/" + encodeURIComponent(id) + "/approve", { adminNote: adminNote });
+      } else if (action === "reject") {
+        await window.AdminAPI.patch("/cancellations/" + encodeURIComponent(id) + "/reject", {
+          adminNote: adminNote || "Cancellation request rejected"
+        });
+      } else if (action === "request") {
+        await window.AdminAPI.post("/cancellations/" + encodeURIComponent(id) + "/refund/request", {});
+      } else if (action === "confirm") {
+        await window.AdminAPI.post("/cancellations/" + encodeURIComponent(id) + "/refund/confirm", {
+          providerReference: "SIM-" + Date.now()
+        });
+      } else if (action === "fail") {
+        await window.AdminAPI.post("/cancellations/" + encodeURIComponent(id) + "/refund/fail", { error: "Marked failed by admin" });
+      }
+
       if (window.AdminToast) {
-        window.AdminToast.success(action === "approve" ? "Cancellation approved and refund processed" : "Cancellation rejected");
+        var msg = action === "approve" ? "Cancellation approved" :
+                  action === "reject" ? "Cancellation rejected" :
+                  action === "request" ? "Refund requested" :
+                  action === "confirm" ? "Refund confirmed and completed" :
+                  action === "fail" ? "Refund marked as failed" : "Updated";
+        window.AdminToast.success(msg);
       }
       closeModal("cancellationDetailsModal");
       loadStats();
@@ -274,13 +354,46 @@
       });
     }
 
+    var paymentFilter = document.getElementById("cancellationPaymentFilter");
+    if (paymentFilter) {
+      paymentFilter.addEventListener("change", function() {
+        state.paymentStatus = paymentFilter.value;
+        state.page = 1;
+        loadCancellations();
+      });
+    }
+
+    var refundFilter = document.getElementById("cancellationRefundFilter");
+    if (refundFilter) {
+      refundFilter.addEventListener("change", function() {
+        state.refundStatus = refundFilter.value;
+        state.page = 1;
+        loadCancellations();
+      });
+    }
+
+    var sortSelect = document.getElementById("cancellationSortSelect");
+    if (sortSelect) {
+      sortSelect.addEventListener("change", function() {
+        state.sort = sortSelect.value;
+        state.page = 1;
+        loadCancellations();
+      });
+    }
+
     var resetBtn = document.getElementById("resetCancellationFiltersBtn");
     if (resetBtn) {
       resetBtn.addEventListener("click", function() {
         if (searchInput) searchInput.value = "";
         if (statusFilter) statusFilter.value = "all";
+        if (paymentFilter) paymentFilter.value = "all";
+        if (refundFilter) refundFilter.value = "all";
+        if (sortSelect) sortSelect.value = "newest";
         state.search = "";
         state.status = "all";
+        state.paymentStatus = "all";
+        state.refundStatus = "all";
+        state.sort = "newest";
         state.page = 1;
         loadCancellations();
       });
@@ -292,9 +405,16 @@
     if (nextBtn) nextBtn.addEventListener("click", function() { changePage(1); });
 
     var approveBtn = document.getElementById("approveCancellationBtn");
-    if (approveBtn) approveBtn.addEventListener("click", function() { processCancellation(approveBtn.dataset.orderId, "approve"); });
+    if (approveBtn) approveBtn.addEventListener("click", function() { processCancellation(approveBtn.dataset.id, "approve"); });
     var rejectBtn = document.getElementById("rejectCancellationBtn");
-    if (rejectBtn) rejectBtn.addEventListener("click", function() { processCancellation(rejectBtn.dataset.orderId, "reject"); });
+    if (rejectBtn) rejectBtn.addEventListener("click", function() { processCancellation(rejectBtn.dataset.id, "reject"); });
+
+    var refundRequestBtn = document.getElementById("requestRefundBtn");
+    if (refundRequestBtn) refundRequestBtn.addEventListener("click", function() { processCancellation(refundRequestBtn.dataset.id, "request"); });
+    var refundConfirmBtn = document.getElementById("confirmRefundBtn");
+    if (refundConfirmBtn) refundConfirmBtn.addEventListener("click", function() { processCancellation(refundConfirmBtn.dataset.id, "confirm"); });
+    var refundFailBtn = document.getElementById("refundFailBtn");
+    if (refundFailBtn) refundFailBtn.addEventListener("click", function() { processCancellation(refundFailBtn.dataset.id, "fail"); });
 
     var tbody = document.getElementById("cancellationsTableBody");
     if (tbody) {
@@ -312,8 +432,8 @@
         }
 
         if (action === "view") viewCancellation(c);
-        else if (action === "approve") processCancellation(c.orderId, "approve");
-        else if (action === "reject") processCancellation(c.orderId, "reject");
+        else if (action === "approve") processCancellation(c.id || c.orderId, "approve");
+        else if (action === "reject") processCancellation(c.id || c.orderId, "reject");
       });
     }
   }
