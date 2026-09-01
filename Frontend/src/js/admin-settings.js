@@ -335,6 +335,23 @@
       populateNotifications(map);
       populateAppearance(map);
     } catch (e) { showAlert('Failed to load settings: ' + e.message, 'error'); }
+
+    // Re-apply toggle styling after settings are loaded from backend
+    document.querySelectorAll('.toggle-checkbox').forEach(cb => {
+      const label = cb.nextElementSibling;
+      if (!label) return;
+      if (cb.checked) {
+        label.classList.remove('bg-gray-300');
+        label.classList.add('bg-emerald-500');
+        cb.classList.remove('border-gray-300');
+        cb.classList.add('border-emerald-500');
+      } else {
+        label.classList.remove('bg-emerald-500');
+        label.classList.add('bg-gray-300');
+        cb.classList.remove('border-emerald-500');
+        cb.classList.add('border-gray-300');
+      }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
