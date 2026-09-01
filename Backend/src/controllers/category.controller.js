@@ -18,12 +18,17 @@ exports.getAllCategories = async (req, res) => {
         return {
           id: cat.id,
           name: cat.name,
+          slug: cat.slug,
           icon: cat.icon,
           imageUrl: cat.imageUrl,
           description: cat.description,
           isActive: cat.isActive,
           itemCount: count,
-          sortOrder: cat.sortOrder
+          sortOrder: cat.sortOrder,
+          isFeatured: cat.isFeatured,
+          showOnHomepage: cat.showOnHomepage,
+          availabilityTime: cat.availabilityTime,
+          notes: cat.notes,
         };
       })
     );
@@ -59,11 +64,19 @@ exports.getCategoryById = async (req, res) => {
       category: {
         id: category.id,
         name: category.name,
+        slug: category.slug,
         icon: category.icon,
+        imageUrl: category.imageUrl,
         description: category.description,
         isActive: category.isActive,
         itemCount: count,
-        sortOrder: category.sortOrder
+        sortOrder: category.sortOrder,
+        isFeatured: category.isFeatured,
+        showOnHomepage: category.showOnHomepage,
+        availabilityTime: category.availabilityTime,
+        notes: category.notes,
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt,
       }
     });
   } catch (error) {
@@ -80,7 +93,7 @@ exports.getCategoryById = async (req, res) => {
  */
 exports.createCategory = async (req, res) => {
   try {
-    const { id, name, icon, description, isActive } = req.body;
+    const { id, name, slug, icon, imageUrl, description, isActive, sortOrder, isFeatured, showOnHomepage, availabilityTime, notes } = req.body;
     if (!id || !name) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Category ID and name are required' });
     }
@@ -93,10 +106,16 @@ exports.createCategory = async (req, res) => {
     const category = await Category.create({
       id: id.toLowerCase(),
       name: { en: name.en || name, am: name.am || name },
+      slug: slug || id.toLowerCase(),
       icon: icon || '🍽️',
+      imageUrl: imageUrl || null,
       description: { en: description?.en || '', am: description?.am || '' },
       isActive: isActive !== undefined ? isActive : true,
-      sortOrder: await Category.countDocuments()
+      sortOrder: sortOrder !== undefined ? sortOrder : await Category.countDocuments(),
+      isFeatured: isFeatured === true,
+      showOnHomepage: showOnHomepage === true,
+      availabilityTime: availabilityTime || { enabled: false, startTime: '', endTime: '' },
+      notes: notes || '',
     });
 
     res.status(HTTP_STATUS.CREATED).json({
@@ -104,10 +123,16 @@ exports.createCategory = async (req, res) => {
       category: {
         id: category.id,
         name: category.name,
+        slug: category.slug,
         icon: category.icon,
+        imageUrl: category.imageUrl,
         description: category.description,
         isActive: category.isActive,
-        sortOrder: category.sortOrder
+        sortOrder: category.sortOrder,
+        isFeatured: category.isFeatured,
+        showOnHomepage: category.showOnHomepage,
+        availabilityTime: category.availabilityTime,
+        notes: category.notes,
       }
     });
   } catch (error) {
@@ -124,7 +149,7 @@ exports.createCategory = async (req, res) => {
  */
 exports.updateCategory = async (req, res) => {
   try {
-    const { name, icon, description, isActive } = req.body;
+    const { name, slug, icon, imageUrl, description, isActive, sortOrder, isFeatured, showOnHomepage, availabilityTime, notes } = req.body;
     const category = await Category.findOne({ id: req.params.id });
     if (!category) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
@@ -132,11 +157,18 @@ exports.updateCategory = async (req, res) => {
     if (name) {
       category.name = { en: name.en || category.name.en, am: name.am || category.name.am };
     }
+    if (slug !== undefined) category.slug = slug;
     if (icon) category.icon = icon;
+    if (imageUrl !== undefined) category.imageUrl = imageUrl;
     if (description) {
       category.description = { en: description.en || category.description.en, am: description.am || category.description.am };
     }
     if (isActive !== undefined) category.isActive = isActive;
+    if (sortOrder !== undefined) category.sortOrder = sortOrder;
+    if (isFeatured !== undefined) category.isFeatured = isFeatured;
+    if (showOnHomepage !== undefined) category.showOnHomepage = showOnHomepage;
+    if (availabilityTime) category.availabilityTime = availabilityTime;
+    if (notes !== undefined) category.notes = notes;
 
     await category.save();
     res.status(HTTP_STATUS.OK).json({
@@ -144,10 +176,16 @@ exports.updateCategory = async (req, res) => {
       category: {
         id: category.id,
         name: category.name,
+        slug: category.slug,
         icon: category.icon,
+        imageUrl: category.imageUrl,
         description: category.description,
         isActive: category.isActive,
-        sortOrder: category.sortOrder
+        sortOrder: category.sortOrder,
+        isFeatured: category.isFeatured,
+        showOnHomepage: category.showOnHomepage,
+        availabilityTime: category.availabilityTime,
+        notes: category.notes,
       }
     });
   } catch (error) {

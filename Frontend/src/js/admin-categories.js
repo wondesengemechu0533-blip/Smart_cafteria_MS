@@ -46,6 +46,14 @@
     return String(d || "");
   }
 
+  function formatTimeRange(availTime) {
+    if (!availTime || !availTime.enabled) return "Always available";
+    if (availTime.startTime && availTime.endTime) {
+      return availTime.startTime + " — " + availTime.endTime;
+    }
+    return "Enabled (no times set)";
+  }
+
   document.addEventListener("click", function(e) {
     var closeBtn = e.target.closest("[data-close-modal]");
     if (closeBtn) closeModal(closeBtn.getAttribute("data-close-modal"));
@@ -94,9 +102,12 @@
     tbody.innerHTML = categories.map(function (cat) {
       var isActive = cat.isActive !== false;
       var icon = cat.icon || "fa-solid fa-tag";
+      var badges = "";
+      if (cat.isFeatured) badges += ' <span class="badge badge-warning">Featured</span>';
+      if (cat.showOnHomepage) badges += ' <span class="badge badge-info">Homepage</span>';
       return (
         "<tr>" +
-        '<td><strong>' + window.esc(categoryName(cat)) + '</strong><br><small class="table-muted">' + window.esc(icon) + '</small></td>' +
+        '<td><strong>' + window.esc(categoryName(cat)) + '</strong><br><small class="table-muted">' + window.esc(icon) + badges + '</small></td>' +
         '<td><strong>' + Number(cat.itemCount || 0) + '</strong>' + (Number(cat.itemCount || 0) === 0 ? '<br><small class="table-muted">No foods yet</small>' : '') + '</td>' +
         '<td>' + (isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>') + '</td>' +
         '<td>' + window.esc(categoryDescription(cat) || "-") + '</td>' +
@@ -134,55 +145,72 @@
     closeAllModals();
     var form = document.getElementById("categoryForm");
     if (form) form.reset();
-    var idEl = document.getElementById("categoryId");
-    if (idEl) idEl.value = "";
-    var titleEl = document.getElementById("categoryModalTitle");
-    if (titleEl) titleEl.textContent = "Add New Category";
-    var saveBtn = document.getElementById("saveCategoryBtn");
-    if (saveBtn) saveBtn.textContent = "Save Category";
-    var activeEl = document.getElementById("categoryIsActive");
-    if (activeEl) activeEl.checked = true;
+    document.getElementById("categoryId").value = "";
+    document.getElementById("categoryModalTitle").textContent = "Add New Category";
+    document.getElementById("saveCategoryBtn").textContent = "Save Category";
+    document.getElementById("categoryIsActive").checked = true;
+    document.getElementById("categoryIsFeatured").checked = false;
+    document.getElementById("categoryShowOnHomepage").checked = false;
+    document.getElementById("categoryAvailEnabled").checked = false;
+    document.getElementById("categorySortOrder").value = 0;
+    document.getElementById("categoryNotes").value = "";
+    document.getElementById("categoryAvailStart").value = "";
+    document.getElementById("categoryAvailEnd").value = "";
+    document.getElementById("availabilityTimeRow").style.display = "none";
     openModal("categoryModal");
   }
 
   function openEditCategoryModal(category) {
     if (!category) return;
     closeAllModals();
-    var form = document.getElementById("categoryForm");
-    if (form) form.reset();
-    var idEl = document.getElementById("categoryId");
-    if (idEl) idEl.value = category.id || "";
-    var nameEl = document.getElementById("categoryName");
-    if (nameEl) nameEl.value = categoryName(category);
-    var iconEl = document.getElementById("categoryIcon");
-    if (iconEl) iconEl.value = category.icon || "fa-solid fa-tag";
-    var imageEl = document.getElementById("categoryImageUrl");
-    if (imageEl) imageEl.value = category.imageUrl || "";
-    var descEl = document.getElementById("categoryDescription");
-    if (descEl) descEl.value = categoryDescription(category);
-    var activeEl = document.getElementById("categoryIsActive");
-    if (activeEl) activeEl.checked = category.isActive !== false;
-    var titleEl = document.getElementById("categoryModalTitle");
-    if (titleEl) titleEl.textContent = "Edit Category";
-    var saveBtn = document.getElementById("saveCategoryBtn");
-    if (saveBtn) saveBtn.textContent = "Update Category";
+    document.getElementById("categoryForm").reset();
+    document.getElementById("categoryId").value = category.id || "";
+    document.getElementById("categoryName").value = categoryName(category);
+    document.getElementById("categorySlug").value = category.slug || "";
+    document.getElementById("categoryIcon").value = category.icon || "fa-solid fa-tag";
+    document.getElementById("categoryImageUrl").value = category.imageUrl || "";
+    document.getElementById("categoryDescription").value = categoryDescription(category);
+    document.getElementById("categoryIsActive").checked = category.isActive !== false;
+    document.getElementById("categorySortOrder").value = category.sortOrder || 0;
+    document.getElementById("categoryIsFeatured").checked = category.isFeatured === true;
+    document.getElementById("categoryShowOnHomepage").checked = category.showOnHomepage === true;
+    document.getElementById("categoryNotes").value = category.notes || "";
+
+    var avail = category.availabilityTime || {};
+    document.getElementById("categoryAvailEnabled").checked = avail.enabled === true;
+    document.getElementById("categoryAvailStart").value = avail.startTime || "";
+    document.getElementById("categoryAvailEnd").value = avail.endTime || "";
+    document.getElementById("availabilityTimeRow").style.display = avail.enabled ? "grid" : "none";
+
+    document.getElementById("categoryModalTitle").textContent = "Edit Category";
+    document.getElementById("saveCategoryBtn").textContent = "Update Category";
     openModal("categoryModal");
   }
 
   async function handleCategoryFormSubmit(event) {
     event.preventDefault();
 
-    var idEl = document.getElementById("categoryId");
-    var id = idEl ? idEl.value : "";
+    var id = document.getElementById("categoryId").value;
+    var availEnabled = document.getElementById("categoryAvailEnabled").checked;
     var payload = {
-      name: (document.getElementById("categoryName") || {}).value || "",
-      icon: ((document.getElementById("categoryIcon") || {}).value || "fa-solid fa-tag").trim(),
-      imageUrl: ((document.getElementById("categoryImageUrl") || {}).value || "").trim(),
-      description: (document.getElementById("categoryDescription") || {}).value || "",
-      isActive: !!(document.getElementById("categoryIsActive") || {}).checked
+      name: document.getElementById("categoryName").value.trim(),
+      slug: document.getElementById("categorySlug").value.trim() || document.getElementById("categoryName").value.trim().toLowerCase().replace(/\s+/g, "-"),
+      icon: (document.getElementById("categoryIcon").value || "fa-solid fa-tag").trim(),
+      imageUrl: (document.getElementById("categoryImageUrl").value || "").trim(),
+      description: document.getElementById("categoryDescription").value,
+      isActive: document.getElementById("categoryIsActive").checked,
+      sortOrder: parseInt(document.getElementById("categorySortOrder").value, 10) || 0,
+      isFeatured: document.getElementById("categoryIsFeatured").checked,
+      showOnHomepage: document.getElementById("categoryShowOnHomepage").checked,
+      availabilityTime: {
+        enabled: availEnabled,
+        startTime: availEnabled ? document.getElementById("categoryAvailStart").value : "",
+        endTime: availEnabled ? document.getElementById("categoryAvailEnd").value : "",
+      },
+      notes: document.getElementById("categoryNotes").value,
     };
 
-    if (!payload.name.trim()) {
+    if (!payload.name) {
       if (window.AdminToast) window.AdminToast.error("Category name is required");
       return;
     }
@@ -241,6 +269,13 @@
 
     var form = document.getElementById("categoryForm");
     if (form) form.addEventListener("submit", handleCategoryFormSubmit);
+
+    var availToggle = document.getElementById("categoryAvailEnabled");
+    if (availToggle) {
+      availToggle.addEventListener("change", function() {
+        document.getElementById("availabilityTimeRow").style.display = availToggle.checked ? "grid" : "none";
+      });
+    }
 
     var searchInput = document.getElementById("categorySearchInput");
     if (searchInput) {
@@ -303,14 +338,24 @@
 
         if (action === "view") {
           var details = await window.AdminAPI.get("/admin/categories/" + encodeURIComponent(category.id));
-          document.getElementById("categoryDetailIcon").textContent = category.icon || "🍽️";
-          document.getElementById("categoryDetailName").textContent = categoryName(category);
-          document.getElementById("categoryDetailDescription").textContent = categoryDescription(category) || "No description";
-          document.getElementById("categoryDetailStatus").textContent = category.isActive ? "Active" : "Inactive";
+          var cat = details.category || category;
+          document.getElementById("categoryDetailIcon").textContent = cat.icon || "🍽️";
+          document.getElementById("categoryDetailName").textContent = categoryName(cat);
+          document.getElementById("categoryDetailDescription").textContent = categoryDescription(cat) || "No description";
+          document.getElementById("categoryDetailId").textContent = cat.id || "-";
+          document.getElementById("categoryDetailSlug").textContent = cat.slug || cat.id || "-";
+          document.getElementById("categoryDetailStatus").textContent = cat.isActive ? "Active" : "Inactive";
           document.getElementById("categoryDetailCount").textContent = (details.foods || []).length;
-          document.getElementById("categoryDetailCreated").textContent = window.AdminAPI.formatDate(category.createdAt);
-          document.getElementById("categoryDetailUpdated").textContent = window.AdminAPI.formatDate(category.updatedAt);
-          document.getElementById("categoryDetailFoods").innerHTML = (details.foods || []).map(function(food) { return '<tr><td>' + window.esc(food.name.en || food.name) + '</td><td>' + Number(food.price || 0) + ' ETB</td><td>' + Number(food.stockQuantity || 0) + '</td><td>' + window.esc(food.availabilityStatus || "-") + '</td></tr>'; }).join("") || '<tr><td colspan="4">No foods have been added to this category yet.</td></tr>';
+          document.getElementById("categoryDetailSortOrder").textContent = cat.sortOrder || 0;
+          document.getElementById("categoryDetailFeatured").textContent = cat.isFeatured ? "Yes" : "No";
+          document.getElementById("categoryDetailHomepage").textContent = cat.showOnHomepage ? "Yes" : "No";
+          document.getElementById("categoryDetailAvailTime").textContent = formatTimeRange(cat.availabilityTime);
+          document.getElementById("categoryDetailNotes").textContent = cat.notes || "—";
+          document.getElementById("categoryDetailCreated").textContent = window.AdminAPI.formatDate(cat.createdAt);
+          document.getElementById("categoryDetailUpdated").textContent = window.AdminAPI.formatDate(cat.updatedAt);
+          document.getElementById("categoryDetailFoods").innerHTML = (details.foods || []).map(function(food) {
+            return '<tr><td>' + window.esc(food.name.en || food.name) + '</td><td>' + Number(food.price || 0) + ' ETB</td><td>' + Number(food.stockQuantity || 0) + '</td><td>' + window.esc(food.availabilityStatus || "-") + '</td></tr>';
+          }).join("") || '<tr><td colspan="4">No foods have been added to this category yet.</td></tr>';
           openModal("categoryDetailsModal");
         } else if (action === "edit") openEditCategoryModal(category);
         else if (action === "toggle") toggleCategoryStatus(category);
@@ -322,7 +367,13 @@
   function init() {
     bindEvents();
     loadCategories();
-    window.AdminAPI.get("/admin/categories/stats").then(function(data) { var stats = data.stats || {}; document.getElementById("metricTotalCategories").textContent = stats.totalCategories || 0; document.getElementById("metricActiveCategories").textContent = stats.active || 0; document.getElementById("metricInactiveCategories").textContent = stats.inactive || 0; document.getElementById("metricEmptyCategories").textContent = stats.empty || 0; }).catch(function() {});
+    window.AdminAPI.get("/admin/categories/stats").then(function(data) {
+      var stats = data.stats || {};
+      document.getElementById("metricTotalCategories").textContent = stats.totalCategories || 0;
+      document.getElementById("metricActiveCategories").textContent = stats.active || 0;
+      document.getElementById("metricInactiveCategories").textContent = stats.inactive || 0;
+      document.getElementById("metricEmptyCategories").textContent = stats.empty || 0;
+    }).catch(function() {});
   }
 
   document.addEventListener("DOMContentLoaded", init);

@@ -17,14 +17,13 @@ const CategorySchema = new mongoose.Schema(
       trim: true,
     },
     name: {
-      en: {
-        type: String,
-        required: true,
-      },
-      am: {
-        type: String,
-        required: true,
-      },
+      en: { type: String, required: true },
+      am: { type: String, required: true },
+    },
+    slug: {
+      type: String,
+      default: null,
+      trim: true,
     },
     icon: {
       type: String,
@@ -43,10 +42,27 @@ const CategorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    showOnHomepage: {
+      type: Boolean,
+      default: false,
+    },
+    availabilityTime: {
+      enabled: { type: Boolean, default: false },
+      startTime: { type: String, default: "" },
+      endTime: { type: String, default: "" },
+    },
+    notes: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Get localized category name
