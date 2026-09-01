@@ -269,7 +269,7 @@
     document.getElementById("userName").value = user.name || "";
     document.getElementById("userEmail").value = user.email || "";
     document.getElementById("userPhone").value = user.phone || "";
-    document.getElementById("userRole").value = user.role || "customer";
+    document.getElementById("userRole").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
     document.getElementById("userBalance").value = user.balance || 0;
     document.getElementById("modalTitle").textContent = t("edit_user");
     document.getElementById("saveUserBtn").textContent = t("update");
@@ -355,7 +355,7 @@
   function openAssignRoleModal(user) {
     closeAllModals();
     document.getElementById("assignRoleName").textContent = (user.name || "User") + " (" + (user.email || "") + ")";
-    document.getElementById("assignRoleSelect").value = user.role || "customer";
+    document.getElementById("assignRoleSelect").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
     document.getElementById("assignRoleSelect").dataset.userId = user.id;
     openModal("assignRoleModal");
   }
