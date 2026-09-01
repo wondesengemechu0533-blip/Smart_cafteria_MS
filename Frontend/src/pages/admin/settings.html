@@ -35,7 +35,6 @@
         .input-focus:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
         .btn-gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
         .btn-gradient:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
-        .session-row:hover { background-color: #f0fdf4; }
         .alert-slide { animation: slideDown 0.4s ease-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -338,160 +337,6 @@
                 </div>
             </section>
 
-            <!-- ===== SECTION 5: ACTIVE SESSIONS & ACTIVITY LOGS ===== -->
-            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
-                <div class="px-6 py-5 border-b border-gray-100">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
-                                <i class="fa-solid fa-desktop text-indigo-600"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-semibold text-gray-900">Active Sessions & Activity Logs</h2>
-                                <p class="text-xs text-gray-500">Monitor devices and track admin activity</p>
-                            </div>
-                        </div>
-                        <button type="button" id="refreshSessionsBtn" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-all flex items-center gap-2">
-                            <i class="fa-solid fa-rotate"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <!-- Active Sessions Table -->
-                    <div class="overflow-x-auto rounded-xl border border-gray-200">
-                        <table class="w-full text-sm">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200">
-                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Device</th>
-                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Browser</th>
-                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">IP Address</th>
-                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Last Active</th>
-                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Status</th>
-                                    <th class="text-center px-5 py-3 font-semibold text-gray-600">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessionsTableBody">
-                                <!-- Session 1 -->
-                                <tr class="border-b border-gray-100 session-row transition-colors">
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                                                <i class="fa-solid fa-laptop text-emerald-600 text-xs"></i>
-                                            </div>
-                                            <span class="font-medium text-gray-900">MacBook Pro</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fa-brands fa-chrome text-blue-500"></i>
-                                            <span class="text-gray-700">Chrome 120.0</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">192.168.1.105</code>
-                                    </td>
-                                    <td class="px-5 py-4 text-gray-500 text-xs">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                                            Just now
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">
-                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Active
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <button onclick="terminateSession(this, 'MacBook Pro')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
-                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
-                                        </button>
-                                    </td>
-                                </tr>
-                                <!-- Session 2 -->
-                                <tr class="border-b border-gray-100 session-row transition-colors">
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                                <i class="fa-solid fa-desktop text-blue-600 text-xs"></i>
-                                            </div>
-                                            <span class="font-medium text-gray-900">Windows PC</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fa-brands fa-firefox text-orange-500"></i>
-                                            <span class="text-gray-700">Firefox 121.0</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">10.0.0.42</code>
-                                    </td>
-                                    <td class="px-5 py-4 text-gray-500 text-xs">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
-                                            2 hours ago
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
-                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> Idle
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <button onclick="terminateSession(this, 'Windows PC')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
-                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
-                                        </button>
-                                    </td>
-                                </tr>
-                                <!-- Session 3 -->
-                                <tr class="session-row transition-colors">
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                                <i class="fa-solid fa-mobile-screen text-purple-600 text-xs"></i>
-                                            </div>
-                                            <span class="font-medium text-gray-900">iPhone 15</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fa-brands fa-safari text-blue-400"></i>
-                                            <span class="text-gray-700">Safari 17.2</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">172.16.0.8</code>
-                                    </td>
-                                    <td class="px-5 py-4 text-gray-500 text-xs">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
-                                            1 day ago
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
-                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> Idle
-                                        </span>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <button onclick="terminateSession(this, 'iPhone 15')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
-                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- View Full Log History -->
-                    <div class="mt-4 flex justify-end">
-                        <a href="activity.html" class="inline-flex items-center gap-2 px-5 py-2.5 text-indigo-600 bg-indigo-50 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-all">
-                            <i class="fa-solid fa-arrow-right"></i> View Full Log History
-                        </a>
-                    </div>
-                </div>
-            </section>
-
             <!-- ===== BOTTOM ACTIONS ===== -->
             <div class="flex items-center justify-between mb-8">
                 <button type="button" id="resetSettingsBtn" class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-all flex items-center gap-2">
@@ -510,18 +355,7 @@
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/admin-settings.js"></script>
     <script>
-        /* ---------- Session termination ---------- */
-        function terminateSession(btn, device) {
-            if (!confirm('Terminate session for ' + device + '?')) return;
-            const row = btn.closest('tr');
-            row.style.opacity = '0.5';
-            row.style.transform = 'translateX(20px)';
-            row.style.transition = 'all 0.3s ease';
-            setTimeout(() => { row.remove(); }, 300);
-            showToast('Session terminated for ' + device, 'success');
-        }
-
-        /* ---------- Toggle switch styling fix ---------- */
+        /* ---------- Toggle switch styling ---------- */
         document.querySelectorAll('.toggle-checkbox').forEach(cb => {
             function updateToggle() {
                 const label = cb.nextElementSibling;
@@ -540,20 +374,6 @@
             updateToggle();
             cb.addEventListener('change', updateToggle);
         });
-
-        function showToast(message, type) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast ' + (type || 'success');
-            toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:12px;color:white;font-size:14px;font-weight:500;box-shadow:0 10px 40px rgba(0,0,0,0.15);animation:slideDown 0.4s ease-out;';
-            if (type === 'error') toast.style.background = '#ef4444';
-            else if (type === 'warning') toast.style.background = '#f59e0b';
-            else toast.style.background = '#10b981';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
-        }
     </script>
 </body>
 </html>

@@ -188,17 +188,6 @@
   }
 
   /* =============================================
-     5. ACTIVE SESSIONS (placeholder load)
-     ============================================= */
-  function refreshSessions() {
-    const btn = $('refreshSessionsBtn');
-    if (btn) {
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
-      setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh'; }, 1000);
-    }
-  }
-
-  /* =============================================
      SAVE ALL / RESET
      ============================================= */
   async function saveAllSettings() {
@@ -252,7 +241,6 @@
     $('twoFactorEnabled')?.addEventListener('change', save2FA);
     $('saveSystemConfigBtn')?.addEventListener('click', saveSystemConfig);
     $('saveNotificationsBtn')?.addEventListener('click', saveNotifications);
-    $('refreshSessionsBtn')?.addEventListener('click', refreshSessions);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
     $('resetSettingsBtn')?.addEventListener('click', resetSettings);
 
