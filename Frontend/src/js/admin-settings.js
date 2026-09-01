@@ -123,11 +123,15 @@
     const btn = $('changePasswordBtn');
     setLoading(btn, true);
     try {
-      await API().put('/auth/password', { currentPassword: cur, newPassword: nw, confirmPassword: cf });
+      const data = await API().put('/auth/password', { currentPassword: cur, newPassword: nw, confirmPassword: cf });
+      // Store the new token returned by backend after password change
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       $('currentPassword').value = '';
       $('newPassword').value = '';
       $('confirmPassword').value = '';
-      showAlert('Password updated successfully');
+      showAlert('Password updated successfully. Please sign out and sign back in with your new password.');
     } catch (e) { showAlert('Failed to change password: ' + e.message, 'error'); }
     finally { setLoading(btn, false); }
   }

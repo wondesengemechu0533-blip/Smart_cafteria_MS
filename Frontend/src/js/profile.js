@@ -252,7 +252,68 @@ function initProfilePage() {
     }
 
     /* ======================================================================
-       3. Global Logout Handler (Clears auth status and redirects)
+       3. Password Change Handler
+       ====================================================================== */
+    const passwordForm = document.getElementById("password-change-form");
+    if (passwordForm) {
+        passwordForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const cur = document.getElementById("current-password").value;
+            const nw = document.getElementById("new-password").value;
+            const cf = document.getElementById("confirm-password").value;
+            const alertEl = document.getElementById("password-alert");
+            const btn = document.getElementById("change-password-btn");
+
+            if (!cur || !nw || !cf) {
+                showPasswordAlert("All fields are required", "error"); return;
+            }
+            if (nw.length < 6) {
+                showPasswordAlert("New password must be at least 6 characters", "error"); return;
+            }
+            if (nw !== cf) {
+                showPasswordAlert("Passwords do not match", "error"); return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+            try {
+                const token = localStorage.getItem("auth_token");
+                const res = await fetch("http://localhost:5000/api/v1/auth/change-password", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                    body: JSON.stringify({ currentPassword: cur, newPassword: nw, confirmPassword: cf })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Failed to change password");
+                }
+                // Store new token
+                if (data.token) {
+                    localStorage.setItem("auth_token", data.token);
+                }
+                passwordForm.reset();
+                showPasswordAlert("Password updated successfully. Please sign out and sign back in with your new password.", "success");
+            } catch (err) {
+                showPasswordAlert(err.message || "Failed to change password", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
+            }
+        });
+    }
+
+    function showPasswordAlert(message, type) {
+        const el = document.getElementById("password-alert");
+        if (!el) return;
+        el.textContent = message;
+        el.className = "alert-box alert-" + type;
+        el.style.display = "block";
+        setTimeout(() => { el.style.display = "none"; }, 5000);
+    }
+
+    /* ======================================================================
+       4. Global Logout Handler (Clears auth status and redirects)
        ====================================================================== */
     const logoutLinks = document.querySelectorAll(".logout-link, .logout");
 
@@ -260,6 +321,13 @@ function initProfilePage() {
         link.addEventListener("click", (e) => {
             e.preventDefault();
             localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("current_user");
+            localStorage.removeItem("userProfile");
+            localStorage.removeItem("userName");
+            localStorage.removeItem("name");
+            localStorage.removeItem("userRole");
+            localStorage.removeItem("role");
             const redirectUrl = link.getAttribute("href") || "login.html";
             window.location.href = redirectUrl;
         });

@@ -66,8 +66,12 @@
 
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/admin/password', { currentPassword: current, newPassword: newPass, confirmPassword: confirm });
-      showAlert('Password updated successfully');
+      const data = await window.AdminAPI.put('/admin/password', { currentPassword: current, newPassword: newPass, confirmPassword: confirm });
+      // Store the new token returned by backend after password change
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      showAlert('Password updated successfully. Please sign out and sign back in with your new password.');
       document.getElementById('passwordForm').reset();
     } catch (error) {
       showAlert('Failed to update password: ' + (error.message || error), 'error');

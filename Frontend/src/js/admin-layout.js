@@ -108,6 +108,9 @@
           localStorage.removeItem('userProfile');
           localStorage.removeItem('adminLoggedIn');
           localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('current_user');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('name');
           window.location.href = '../../pages/common/login.html';
         }
       });
@@ -207,6 +210,9 @@
           localStorage.removeItem('userProfile');
           localStorage.removeItem('adminLoggedIn');
           localStorage.removeItem('isLoggedIn');
+          localStorage.removeItem('current_user');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('name');
           window.location.href = '../../pages/common/login.html';
         }
       });

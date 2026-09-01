@@ -152,6 +152,41 @@
                 </div>
 
             </form>
+
+            <!-- Password Change Section -->
+            <div class="form-divider" style="margin: 2rem 0;"></div>
+
+            <div class="content-header">
+                <h2><i class="fa-solid fa-lock"></i> Change Password</h2>
+                <p>Update your account password for security.</p>
+            </div>
+
+            <form id="password-change-form" class="profile-form">
+                <div id="password-alert" class="alert-box" style="display:none;"></div>
+
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="current-password">Current Password *</label>
+                            <input type="password" id="current-password" required placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">New Password *</label>
+                            <input type="password" id="new-password" required placeholder="Min 6 characters" minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password *</label>
+                            <input type="password" id="confirm-password" required placeholder="Re-enter new password" minlength="6">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-save" id="change-password-btn">
+                        <i class="fa-solid fa-key"></i> Update Password
+                    </button>
+                </div>
+            </form>
         </section>
 
     </main>
