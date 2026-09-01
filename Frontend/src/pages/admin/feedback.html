@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
     <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
@@ -22,9 +21,9 @@
         <aside class="admin-sidebar" id="adminSidebar"></aside>
         <main class="admin-main">
             <div class="page-header">
-                <div>
+                <div class="page-title-group">
                     <h1>Feedback</h1>
-                    <p class="subtitle">View and manage customer feedback and reviews.</p>
+                    <p class="page-subtitle">View and manage customer feedback and reviews.</p>
                 </div>
             </div>
 
@@ -98,25 +97,25 @@
                 <div class="detail-hero">
                     <div class="avatar detail-avatar" id="modalFeedbackAvatar">U</div>
                     <div>
-                        <h4 id="modalFeedbackUser">â€”</h4>
-                        <div id="modalFeedbackRole" class="form-text">â€”</div>
+                        <h4 id="modalFeedbackUser">—</h4>
+                        <div id="modalFeedbackRole" class="form-text">—</div>
                     </div>
                 </div>
 
                 <div class="detail-grid">
-                    <div class="detail-item"><span>Feedback ID</span><strong id="modalFeedbackIdVal">â€”</strong></div>
-                    <div class="detail-item"><span>Order</span><strong id="modalFeedbackOrder">â€”</strong></div>
-                    <div class="detail-item"><span>Rating</span><strong id="modalFeedbackRating">â€”</strong></div>
-                    <div class="detail-item"><span>Category</span><strong id="modalFeedbackCategory">â€”</strong></div>
-                    <div class="detail-item"><span>Dish</span><strong id="modalFeedbackDish">â€”</strong></div>
-                    <div class="detail-item"><span>Submitted</span><strong id="modalFeedbackDate">â€”</strong></div>
-                    <div class="detail-item"><span>Status</span><strong id="modalFeedbackStatus">â€”</strong></div>
+                    <div class="detail-item"><span>Feedback ID</span><strong id="modalFeedbackIdVal">—</strong></div>
+                    <div class="detail-item"><span>Order</span><strong id="modalFeedbackOrder">—</strong></div>
+                    <div class="detail-item"><span>Rating</span><strong id="modalFeedbackRating">—</strong></div>
+                    <div class="detail-item"><span>Category</span><strong id="modalFeedbackCategory">—</strong></div>
+                    <div class="detail-item"><span>Dish</span><strong id="modalFeedbackDish">—</strong></div>
+                    <div class="detail-item"><span>Submitted</span><strong id="modalFeedbackDate">—</strong></div>
+                    <div class="detail-item"><span>Status</span><strong id="modalFeedbackStatus">—</strong></div>
                 </div>
 
                 <hr class="form-divider">
 
                 <h4 class="section-heading"><i class="fa-solid fa-comment"></i> Comment</h4>
-                <p id="modalFeedbackComment" style="white-space: pre-wrap; color: #374151;">â€”</p>
+                <p id="modalFeedbackComment" class="text-muted pre-wrap">—</p>
 
                 <hr class="form-divider">
 
@@ -126,7 +125,7 @@
                     <textarea id="modalFeedbackReply" class="form-control" rows="3" placeholder="Write your response to the customer..."></textarea>
                 </div>
 
-                <div class="form-group" style="display:flex;gap:8px;align-items:center;">
+                <div class="form-group d-flex align-items-center gap-2">
                     <label class="switch">
                         <input type="checkbox" id="modalFeedbackMarkResolved">
                         <span class="switch-slider"></span>

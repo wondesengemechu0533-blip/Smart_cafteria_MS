@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
     <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
@@ -27,11 +26,11 @@
             <div class="page-header">
                 <div>
                     <h1>Dashboard Overview</h1>
-                    <p class="subtitle">Real-time statistics from MongoDB â€” updated live from the database.</p>
+                    <p class="subtitle">Real-time statistics from MongoDB — updated live from the database.</p>
                     <small class="subtitle" id="lastUpdated"></small>
                 </div>
                 <div class="page-actions">
-                    <div class="btn-group" style="gap:8px;">
+                    <div class="btn-group gap-2">
                         <button class="btn btn-secondary" id="refreshMetricsBtn" title="Refresh (R)">
                             <i class="fa-solid fa-rotate"></i> Refresh
                         </button>
@@ -421,7 +420,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title"><i class="fa-solid fa-list-check"></i> Recent Orders</h3>
                             <div class="d-flex gap-2">
-                                <input type="text" id="orderSearchInput" class="form-control form-control-sm" placeholder="Search orders..." style="width: 200px;">
+                                <input type="text" id="orderSearchInput" class="form-control form-control-sm" placeholder="Search orders..." style="width: 200px; max-width: 100%;">
                                 <a href="orders.html" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                         </div>
@@ -451,7 +450,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title"><i class="fa-solid fa-credit-card"></i> Recent Payments</h3>
                             <div class="d-flex gap-2">
-                                <input type="text" id="paymentSearchInput" class="form-control form-control-sm" placeholder="Search payments..." style="width: 200px;">
+                                <input type="text" id="paymentSearchInput" class="form-control form-control-sm" placeholder="Search payments..." style="width: 200px; max-width: 100%;">
                                 <a href="payments.html" class="btn btn-sm btn-outline-primary">View All</a>
                             </div>
                         </div>

@@ -17,6 +17,7 @@
     { id: 'orders', path: 'orders.html', icon: 'fa-receipt', label: 'Orders', group: 'management' },
     { id: 'payments', path: 'payments.html', icon: 'fa-wallet', label: 'Payments', group: 'management' },
     { id: 'cancellations', path: 'cancellations.html', icon: 'fa-hand-holding-dollar', label: 'Cancellations', group: 'management' },
+    { id: 'feedback', path: 'feedback.html', icon: 'fa-comment-dots', label: 'Feedback', group: 'management' },
     { id: 'reports', path: 'reports.html', icon: 'fa-file-invoice-dollar', label: 'Reports', group: 'analytics' },
     { id: 'activity', path: 'activity.html', icon: 'fa-list-check', label: 'Activity Logs', group: 'analytics' },
     { id: 'profile', path: 'profile.html', icon: 'fa-user-circle', label: 'Profile', group: 'system' },
@@ -25,7 +26,7 @@
 
   var SIDEBAR_GROUPS = [
     { id: 'main', label: 'MAIN', pages: ['dashboard'] },
-    { id: 'management', label: 'MANAGEMENT', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations'] },
+    { id: 'management', label: 'MANAGEMENT', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations', 'feedback'] },
     { id: 'analytics', label: 'ANALYTICS & REPORTS', pages: ['reports', 'activity'] },
     { id: 'system', label: 'SYSTEM', pages: ['profile', 'settings'] }
   ];
