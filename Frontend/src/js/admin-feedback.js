@@ -78,7 +78,7 @@
     var tbody = document.getElementById("feedbackTableBody");
     if (!tbody || !window.AdminAPI) return;
 
-    tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Loading feedback...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Loading feedback...</td></tr>';
 
     try {
       var data = await window.AdminAPI.get("/feedback", {
@@ -95,7 +95,7 @@
       renderFeedback(window.__feedbackCache);
       renderPagination();
     } catch (error) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Failed to load feedback: ' + window.esc(error.message || "Server error") + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Failed to load feedback: ' + window.esc(error.message || "Server error") + '</td></tr>';
     }
   }
 
@@ -104,7 +104,7 @@
     if (!tbody) return;
 
     if (!items.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No feedback found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No feedback found.</td></tr>';
       return;
     }
 

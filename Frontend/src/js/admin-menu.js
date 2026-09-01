@@ -145,7 +145,7 @@
     var tbody = document.getElementById("menuTableBody");
     if (!tbody || !window.AdminAPI) return;
 
-    tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Loading menu items...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Loading menu items...</td></tr>';
 
     try {
       var data = await window.AdminAPI.get("/admin/menu", {
@@ -170,7 +170,7 @@
       if (nextBtn) nextBtn.disabled = (data.page || 1) >= pages;
       state.page = data.page || 1;
     } catch (error) {
-      tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Failed to load menu: ' + window.esc(error.message || "Server error") + "</td></tr>";
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Failed to load menu: ' + window.esc(error.message || "Server error") + "</td></tr>";
     }
   }
 

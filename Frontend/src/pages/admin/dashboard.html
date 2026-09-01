@@ -86,7 +86,7 @@
                 </div>
             </div>
 
-            <!-- REAL-TIME CLOCK & AUTO-REFRESH STATUS -->
+            <!-- REAL-TIME CLOCK -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-3">
                     <span class="text-muted">Keyboard Shortcuts:</span>
@@ -97,19 +97,6 @@
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <span id="realtimeClock" class="text-muted fw-monospace">--:--:--</span>
-                    <button class="btn btn-secondary btn-sm" id="autoRefreshBtn" title="Toggle Auto-refresh (A)">
-                        <i class="fa-solid fa-play"></i> Auto-refresh OFF
-                    </button>
-                    <div class="btn-group dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" id="refreshIntervalBtn" title="Refresh Interval">
-                            <i class="fa-solid fa-clock"></i> 30s
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <button class="dropdown-item refresh-interval-btn active" data-interval="30000">30 seconds</button>
-                            <button class="dropdown-item refresh-interval-btn" data-interval="60000">1 minute</button>
-                            <button class="dropdown-item refresh-interval-btn" data-interval="300000">5 minutes</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -375,9 +362,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ALERTS PANEL -->
-            <div id="alertsContainer" class="mb-4"></div>
 
             <!-- CHARTS -->
             <div class="charts-grid mb-4">

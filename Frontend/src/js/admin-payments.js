@@ -134,7 +134,7 @@
     var tbody = document.getElementById("paymentsTableBody");
     if (!tbody || !window.AdminAPI) return;
 
-    tbody.innerHTML = '<tr><td colspan="9" class="table-empty">Loading payments...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Loading payments...</td></tr>';
 
     try {
       var dateRange = getDateRange();
@@ -166,7 +166,7 @@
       state.page = data.page || 1;
     } catch (error) {
       tbody.innerHTML =
-        '<tr><td colspan="9" class="table-empty">Failed to load payments: ' +
+        '<tr><td colspan="8" class="table-empty">Failed to load payments: ' +
         window.esc(error.message || "Server error") + "</td></tr>";
     }
   }
@@ -176,7 +176,7 @@
     if (!tbody) return;
 
     if (!payments.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="table-empty">No payments found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No payments found.</td></tr>';
       return;
     }
 
