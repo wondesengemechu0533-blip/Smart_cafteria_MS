@@ -32,6 +32,15 @@ const setupSocketIO = (io) => {
             role: socket.user?.role
         });
 
+        // Auto-join role-based rooms
+        const role = socket.user?.role;
+        if (['kitchen', 'KITCHEN_STAFF', 'STAFF', 'ADMIN'].includes(role)) {
+            socket.join('kitchen');
+        }
+        if (['admin', 'ADMIN'].includes(role)) {
+            socket.join('admin');
+        }
+
         registerOrderHandlers(io, socket);
         registerNotificationHandlers(io, socket);
 

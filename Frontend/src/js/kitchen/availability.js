@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadMenuAvailability() {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/menu-availability`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -133,7 +133,7 @@ document.getElementById('unavailableForm')?.addEventListener('submit', async (e)
     const reason = document.getElementById('unavailableReason').value;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/menu/${itemId}/availability`, {
             method: 'PATCH',
             headers: {
@@ -167,7 +167,7 @@ async function markAvailable(itemId) {
     if (!confirm('Mark this item as available?')) return;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/menu/${itemId}/availability`, {
             method: 'PATCH',
             headers: {

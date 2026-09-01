@@ -30,13 +30,22 @@ const KDS = {
 
     cacheDOM() {
         this.gridContainer = document.getElementById('kitchenTicketsGrid');
+        this.tableBody = document.getElementById('kitchenOrdersBody');
         this.pendingCountEl = document.getElementById('pendingCount');
         this.preparingCountEl = document.getElementById('preparingCount');
         this.readyCountEl = document.getElementById('readyCount');
     },
 
     bindEvents() {
-        // No filter buttons in dashboard.html, but keep for compatibility
+        const filterButtons = document.querySelectorAll('.filter-group .btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.currentFilter = button.dataset.status || 'all';
+                this.render();
+            });
+        });
     },
 
     async loadInitialOrders() {
@@ -191,49 +200,81 @@ const KDS = {
     },
 
     render() {
-        if (!this.gridContainer) return;
-
         const filtered = this.getFilteredOrders();
 
-        if (filtered.length === 0) {
-            this.gridContainer.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 32px;">
-                    No <strong>${this.currentFilter}</strong> orders found in queue.
-                </div>`;
-            return;
+        // Grid view (dashboard.html)
+        if (this.gridContainer) {
+            if (filtered.length === 0) {
+                this.gridContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 32px;">
+                        No <strong>${this.currentFilter}</strong> orders found in queue.
+                    </div>`;
+            } else {
+                this.gridContainer.innerHTML = filtered.map(order => `
+                    <div class="ticket-card ${order.status?.toLowerCase()}" data-order-id="${order.orderId}">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#${order.orderId}</span>
+                            <span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span>
+                        </div>
+                        <div class="ticket-customer">
+                            <i class="fa-solid fa-user"></i> ${order.customerName || 'Unknown'}
+                        </div>
+                        ${order.tableNumber && order.tableNumber !== 'N/A' ?
+                            `<div class="ticket-table"><i class="fa-solid fa-table"></i> Table: ${order.tableNumber}</div>` : ''}
+                        <div class="ticket-items">
+                            ${this.formatItems(order)}
+                        </div>
+                        <div class="ticket-time">
+                            <i class="fa-solid fa-clock"></i> ${this.getElapsedTime(order.createdAt || order.orderTime)} ago
+                        </div>
+                        <div class="ticket-actions-group">
+                            ${this.getActionButtonHTML(order)}
+                        </div>
+                    </div>
+                `).join('');
+
+                this.gridContainer.querySelectorAll('.js-action-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        const nextStatus = e.currentTarget.dataset.nextStatus;
+                        this.updateOrderStatus(orderId, nextStatus);
+                    });
+                });
+            }
         }
 
-        this.gridContainer.innerHTML = filtered.map(order => `
-            <div class="ticket-card ${order.status?.toLowerCase()}" data-order-id="${order.orderId}">
-                <div class="ticket-header">
-                    <span class="ticket-id">#${order.orderId}</span>
-                    <span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span>
-                </div>
-                <div class="ticket-customer">
-                    <i class="fa-solid fa-user"></i> ${order.customerName || 'Unknown'}
-                </div>
-                ${order.tableNumber && order.tableNumber !== 'N/A' ? 
-                    `<div class="ticket-table"><i class="fa-solid fa-table"></i> Table: ${order.tableNumber}</div>` : ''}
-                <div class="ticket-items">
-                    ${this.formatItems(order)}
-                </div>
-                <div class="ticket-time">
-                    <i class="fa-solid fa-clock"></i> ${this.getElapsedTime(order.createdAt || order.orderTime)} ago
-                </div>
-                <div class="ticket-actions-group">
-                    ${this.getActionButtonHTML(order)}
-                </div>
-            </div>
-        `).join('');
+        // Table view (orders.html)
+        if (this.tableBody) {
+            if (filtered.length === 0) {
+                this.tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                            No <strong>${this.currentFilter}</strong> orders found in queue.
+                        </td>
+                    </tr>`;
+            } else {
+                this.tableBody.innerHTML = filtered.map(order => {
+                    const elapsed = this.getElapsedTime(order.createdAt || order.orderTime);
+                    return `
+                        <tr data-order-id="${order.orderId}">
+                            <td><strong>#${order.orderId}</strong></td>
+                            <td>${order.customerName || 'Unknown'}</td>
+                            <td>${this.formatItems(order)}</td>
+                            <td><span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span></td>
+                            <td>${elapsed}</td>
+                            <td>${this.getActionButtonHTML(order)}</td>
+                        </tr>`;
+                }).join('');
 
-        // Bind action buttons
-        this.gridContainer.querySelectorAll('.js-action-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const orderId = e.currentTarget.dataset.id;
-                const nextStatus = e.currentTarget.dataset.nextStatus;
-                this.updateOrderStatus(orderId, nextStatus);
-            });
-        });
+                this.tableBody.querySelectorAll('.js-action-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        const nextStatus = e.currentTarget.dataset.nextStatus;
+                        this.updateOrderStatus(orderId, nextStatus);
+                    });
+                });
+            }
+        }
     },
 
     playNotificationSound() {

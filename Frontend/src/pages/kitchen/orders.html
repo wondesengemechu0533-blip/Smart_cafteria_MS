@@ -194,26 +194,16 @@
                     </tr>
                 </thead>
                 <tbody id="kitchenOrdersBody">
-                    <!-- Dynamic Order Rows Injected Here -->
-                    <tr>
-                        <td><strong>#1042</strong></td>
-                        <td>John Doe</td>
-                        <td>2x Burger, 1x Fries</td>
-                        <td><span class="badge badge-preparing">Preparing</span></td>
-                        <td>08 mins</td>
-                        <td>
-                            <button class="btn"><i class="fa-solid fa-check"></i> Mark Ready</button>
-                        </td>
-                    </tr>
+                    <!-- Dynamic Order Rows Injected by kitchen.js -->
                 </tbody>
             </table>
         </div>
     </main>
 
        <!-- JavaScript Dependencies -->
-    <script src="/src/js/api.js"></script>
-    <script src="/src/js/auth.js"></script>
-    <script src="/src/pages/kitchen/kitchen.js"></script>
+    <script type="module" src="/src/js/api.js"></script>
+    <script type="module" src="/src/js/auth.js"></script>
+    <script type="module" src="./kitchen.js"></script>
 
     <!-- Navigation Script -->
     <script>
@@ -226,41 +216,6 @@
         function toggleUserMenu() {
             alert('User menu coming soon');
         }
-
-        // Order status filter
-        const filterButtons = document.querySelectorAll('.filter-group .btn');
-        const orderRows = document.querySelectorAll('#kitchenOrdersBody tr');
-
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Update active state
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-
-                const status = button.dataset.status;
-
-                orderRows.forEach(row => {
-                    const badge = row.querySelector('.badge');
-                    if (!badge) return;
-
-                    const badgeText = badge.textContent.trim();
-                    const statusMap = {
-                        'Pending': 'Pending',
-                        'Preparing': 'Preparing',
-                        'Ready': 'Ready',
-                        'Cancelled': 'Cancelled'
-                    };
-
-                    if (status === 'all') {
-                        row.style.display = '';
-                    } else if (statusMap[status] && badgeText === statusMap[status]) {
-                        row.style.display = '';
-                    } else if (statusMap[status] && badgeText !== statusMap[status]) {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
     </script>
 
     <script type="module" src="../../js/utils/i18n.js"></script>

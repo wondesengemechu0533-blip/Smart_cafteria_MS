@@ -385,7 +385,7 @@
         // View Current Shift
         function viewCurrentShift() {
             // Fetch and display current shift info
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('auth_token');
             fetch('http://localhost:5000/api/v1/kitchen-staff/shifts/current', {
                 headers: {
                     'Authorization': `Bearer ${token}`,

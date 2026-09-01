@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadOrderDetails() {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/orders/${orderId}/details`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -196,7 +196,7 @@ function renderActions() {
 
 async function updateItemStatus(itemIndex, newStatus) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const itemId = orderData.items[itemIndex].id;
 
         const response = await fetch(`${API_BASE}/kitchen/orders/${orderId}/items/${itemId}/status`, {
@@ -230,7 +230,7 @@ async function markOrderReady() {
     if (!confirm('Mark this order as READY?')) return;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/orders/${orderId}/ready`, {
             method: 'PATCH',
             headers: {
@@ -259,7 +259,7 @@ async function markOrderServed() {
     if (!confirm('Mark this order as SERVED?')) return;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/orders/${orderId}/serve`, {
             method: 'PATCH',
             headers: {
@@ -299,7 +299,7 @@ document.getElementById('delayForm')?.addEventListener('submit', async (e) => {
     const reason = document.getElementById('delayReason').value;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/orders/${orderId}/delay`, {
             method: 'PATCH',
             headers: {
@@ -338,7 +338,7 @@ function showAlert(message, type = 'info') {
 
 async function loadCurrentUserShift() {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen-staff/shifts/current`, {
             headers: {
                 'Authorization': `Bearer ${token}`,

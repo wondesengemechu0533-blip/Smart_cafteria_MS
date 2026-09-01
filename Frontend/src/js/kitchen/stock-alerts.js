@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadStockAlerts() {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const status = document.getElementById('statusFilter').value;
 
         let url = `${API_BASE}/kitchen/stock-alerts`;
@@ -156,7 +156,7 @@ document.getElementById('reportForm')?.addEventListener('submit', async (e) => {
     const reason = document.getElementById('reason').value;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         const response = await fetch(`${API_BASE}/kitchen/stock-alerts`, {
             method: 'POST',
             headers: {
@@ -190,7 +190,7 @@ document.getElementById('reportForm')?.addEventListener('submit', async (e) => {
 
 async function acknowledgeAlert(alertId) {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         // This endpoint would need to be created in the backend
         showNotification('Alert acknowledged', 'success');
         loadStockAlerts();
@@ -205,7 +205,7 @@ async function resolveAlert(alertId) {
     if (!confirm('Mark this alert as resolved?')) return;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         // This endpoint would need to be created in the backend
         showNotification('Alert marked as resolved', 'success');
         loadStockAlerts();
