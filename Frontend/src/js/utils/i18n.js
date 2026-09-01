@@ -604,7 +604,7 @@ export const translations = {
     admin_user_role_customer: "Customer",
     admin_user_role_kitchen: "Kitchen Staff",
     admin_user_role_admin: "Admin",
-    add_user: "Add User",
+    add_user: "Add Staff",
     edit_user: "Edit User",
     view_details: "View Details",
     change_role: "Change Role",

@@ -268,6 +268,87 @@
         </div>
     </div>
 
+    <!-- ===== TOGGLE AVAILABILITY MODAL ===== -->
+    <div class="modal-overlay" id="toggleAvailModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title" id="toggleAvailTitle">Toggle Availability</h3>
+                <button class="modal-close" data-close-modal="toggleAvailModal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="confirm-icon" id="toggleAvailIconWrap">
+                    <i class="fa-solid fa-circle-question"></i>
+                </div>
+                <p class="confirm-text" id="toggleAvailMsg">Are you sure you want to change availability?</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-close-modal="toggleAvailModal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmToggleAvailBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DELETE MENU ITEM MODAL ===== -->
+    <div class="modal-overlay" id="deleteItemModal">
+        <div class="modal modal-sm">
+            <div class="modal-header modal-header-danger">
+                <h3 class="modal-title">Delete Menu Item</h3>
+                <button class="modal-close" data-close-modal="deleteItemModal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="confirm-icon danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <p class="confirm-text">Are you sure you want to delete <strong id="deleteItemName">—</strong>?</p>
+                <p class="confirm-subtext">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-close-modal="deleteItemModal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteItemBtn">
+                    <i class="fa-solid fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== UPDATE STOCK MODAL ===== -->
+    <div class="modal-overlay" id="stockModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Stock</h3>
+                <button class="modal-close" data-close-modal="stockModal">&times;</button>
+            </div>
+            <form id="stockForm">
+                <div class="modal-body">
+                    <div class="stock-hero">
+                        <img id="stockItemThumb" class="img-thumb-sm" src="" alt="">
+                        <div>
+                            <strong id="stockItemName">—</strong>
+                            <small id="stockItemCat">—</small>
+                        </div>
+                    </div>
+                    <input type="hidden" id="stockItemId">
+                    <div class="form-group mt-3">
+                        <label class="form-label">Current Stock</label>
+                        <input type="number" id="stockCurrentQty" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Stock Quantity <span class="required">*</span></label>
+                        <input type="number" id="stockNewQty" class="form-control" min="0" step="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Low Stock Threshold</label>
+                        <input type="number" id="stockThreshold" class="form-control" min="0" step="1" value="5">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-close-modal="stockModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveStockBtn">Save Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>

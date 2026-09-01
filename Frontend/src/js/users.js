@@ -231,8 +231,8 @@
     document.getElementById("userUsername").value = user.username || "";
     document.getElementById("userRole").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
     document.getElementById("userStatus").value = user.status || "ACTIVE";
-    document.getElementById("modalTitle").textContent = "Edit User";
-    document.getElementById("saveUserBtn").textContent = "Update User";
+    document.getElementById("modalTitle").textContent = "Edit Staff";
+    document.getElementById("saveUserBtn").textContent = "Update Staff";
     document.getElementById("passwordLabel").textContent = "New Password (optional)";
     document.getElementById("userPassword").required = false;
     document.getElementById("userPassword").value = "";
@@ -436,7 +436,7 @@
     } catch (error) {
       if (window.AdminToast) window.AdminToast.error(error.message || "Failed to delete user");
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = "Delete User"; }
+      if (btn) { btn.disabled = false; btn.textContent = "Delete Staff"; }
     }
   }
 
@@ -444,13 +444,13 @@
    * EVENT BINDINGS
    * ================================================================== */
   function bindEvents() {
-    // Add user button
+    // Add staff button
     var addBtn = document.getElementById("openAddUserModalBtn");
     if (addBtn) addBtn.addEventListener("click", function () {
       document.getElementById("userForm").reset();
       document.getElementById("userId").value = "";
-      document.getElementById("modalTitle").textContent = "Add New User";
-      document.getElementById("saveUserBtn").textContent = "Save User";
+      document.getElementById("modalTitle").textContent = "Add New Staff";
+      document.getElementById("saveUserBtn").textContent = "Save Staff";
       document.getElementById("passwordLabel").textContent = "Password *";
       document.getElementById("userPassword").required = true;
       document.getElementById("userPassword").value = "";
@@ -499,7 +499,7 @@
       } catch (error) {
         if (window.AdminToast) window.AdminToast.error(error.message || "Failed to save user");
       } finally {
-        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = id ? "Update User" : "Save User"; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = id ? "Update Staff" : "Save Staff"; }
       }
     });
 

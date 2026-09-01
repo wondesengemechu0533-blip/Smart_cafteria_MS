@@ -211,6 +211,7 @@
           '<div class="table-actions">' +
             '<button class="action-btn" data-action="view" data-id="' + item.id + '" title="View details"><i class="fa-solid fa-eye"></i></button>' +
             '<button class="action-btn" data-action="edit" data-id="' + item.id + '" title="Edit item (price / category / image)"><i class="fa-solid fa-pen"></i></button>' +
+            '<button class="action-btn" data-action="stock" data-id="' + item.id + '" title="Update stock quantity"><i class="fa-solid fa-box"></i></button>' +
             toggleBtn +
             '<button class="action-btn danger" data-action="delete" data-id="' + item.id + '" title="Delete item"><i class="fa-solid fa-trash"></i></button>' +
           "</div>" +
@@ -398,7 +399,7 @@
   }
 
   /* ============================================================
-   * VIEW / TOGGLE / DELETE
+   * VIEW / TOGGLE / DELETE / STOCK
    * ============================================================ */
   function viewMenuItem(item) {
     closeAllModals();
@@ -428,32 +429,97 @@
     openModal("viewItemModal");
   }
 
-  async function toggleAvailability(item) {
+  function openToggleAvailModal(item) {
+    closeAllModals();
     var available = item.availability && item.isAvailable;
-    var label = available ? "Make unavailable" + " (" + item.name.en + ")?" : "Make available" + " (" + item.name.en + ")?";
-    if (!window.confirm(label)) return;
-
-    try {
-      await window.AdminAPI.patch("/admin/menu/" + item.id + "/availability", { available: !available });
-      if (window.AdminToast) window.AdminToast.success(!available ? "Item is now available" : "Item is now unavailable");
-      loadMenuItems();
-      loadStats();
-    } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to update availability");
-    }
+    document.getElementById("toggleAvailTitle").textContent = available ? "Make Unavailable" : "Make Available";
+    document.getElementById("toggleAvailMsg").textContent =
+      "Are you sure you want to make \"" + item.name.en + "\" " + (available ? "unavailable" : "available") + "?";
+    var iconWrap = document.getElementById("toggleAvailIconWrap");
+    iconWrap.className = available ? "confirm-icon warning" : "confirm-icon success";
+    iconWrap.querySelector("i").className = available ? "fa-solid fa-circle-xmark" : "fa-solid fa-circle-check";
+    var confirmBtn = document.getElementById("confirmToggleAvailBtn");
+    confirmBtn.className = available ? "btn btn-danger" : "btn btn-success";
+    confirmBtn.textContent = available ? "Make Unavailable" : "Make Available";
+    confirmBtn.onclick = async function () {
+      try {
+        await window.AdminAPI.patch("/admin/menu/" + item.id + "/availability", { available: !available });
+        closeModal("toggleAvailModal");
+        if (window.AdminToast) window.AdminToast.success(!available ? "Item is now available" : "Item is now unavailable");
+        loadMenuItems();
+        loadStats();
+      } catch (error) {
+        if (window.AdminToast) window.AdminToast.error(error.message || "Failed to update availability");
+      }
+    };
+    openModal("toggleAvailModal");
   }
 
-  async function deleteMenuItem(item) {
-    if (!window.confirm('Delete "' + item.name.en + '" from the menu? This cannot be undone.')) return;
+  function openDeleteItemModal(item) {
+    closeAllModals();
+    document.getElementById("deleteItemName").textContent = item.name.en;
+    var confirmBtn = document.getElementById("confirmDeleteItemBtn");
+    confirmBtn.onclick = async function () {
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+      try {
+        await window.AdminAPI.del("/admin/menu/" + item.id);
+        closeModal("deleteItemModal");
+        if (window.AdminToast) window.AdminToast.success("Menu item deleted");
+        if (window.__menuCache && window.__menuCache.length === 1 && state.page > 1) state.page--;
+        loadMenuItems();
+        loadStats();
+      } catch (error) {
+        if (window.AdminToast) window.AdminToast.error(error.message || "Failed to delete menu item");
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Delete';
+      }
+    };
+    openModal("deleteItemModal");
+  }
 
+  function openStockModal(item) {
+    closeAllModals();
+    document.getElementById("stockItemId").value = item.id;
+    document.getElementById("stockItemName").textContent = item.name.en;
+    document.getElementById("stockItemCat").textContent = categoryLabel(item.category);
+    var thumb = item.image
+      ? (item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image)
+      : "";
+    var thumbEl = document.getElementById("stockItemThumb");
+    if (thumb) { thumbEl.src = thumb; thumbEl.style.display = "block"; }
+    else { thumbEl.style.display = "none"; }
+    document.getElementById("stockCurrentQty").value = item.stockQuantity || 0;
+    document.getElementById("stockNewQty").value = item.stockQuantity || 0;
+    document.getElementById("stockThreshold").value = item.lowStockThreshold || 5;
+    openModal("stockModal");
+  }
+
+  async function handleStockSubmit(e) {
+    e.preventDefault();
+    var id = document.getElementById("stockItemId").value;
+    var newQty = parseInt(document.getElementById("stockNewQty").value, 10);
+    var threshold = parseInt(document.getElementById("stockThreshold").value, 10);
+    if (isNaN(newQty) || newQty < 0) {
+      if (window.AdminToast) window.AdminToast.error("Stock quantity must be a non-negative number");
+      return;
+    }
+    var saveBtn = document.getElementById("saveStockBtn");
+    saveBtn.disabled = true;
     try {
-      await window.AdminAPI.del("/admin/menu/" + item.id);
-      if (window.AdminToast) window.AdminToast.success("Menu item deleted");
-      if (window.__menuCache && window.__menuCache.length === 1 && state.page > 1) state.page--;
+      await window.AdminAPI.put("/admin/menu/" + id, {
+        stockQuantity: newQty,
+        lowStockThreshold: threshold
+      });
+      closeModal("stockModal");
+      if (window.AdminToast) window.AdminToast.success("Stock updated successfully");
       loadMenuItems();
       loadStats();
     } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to delete menu item");
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to update stock");
+    } finally {
+      saveBtn.disabled = false;
     }
   }
 
@@ -603,10 +669,14 @@
 
         if (action === "view") viewMenuItem(item);
         else if (action === "edit") openEditItemModal(item);
-        else if (action === "toggle") toggleAvailability(item);
-        else if (action === "delete") deleteMenuItem(item);
+        else if (action === "stock") openStockModal(item);
+        else if (action === "toggle") openToggleAvailModal(item);
+        else if (action === "delete") openDeleteItemModal(item);
       });
     }
+
+    var stockForm = document.getElementById("stockForm");
+    if (stockForm) stockForm.addEventListener("submit", handleStockSubmit);
   }
 
   function init() {
