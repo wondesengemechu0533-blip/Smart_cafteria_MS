@@ -258,7 +258,8 @@
     document.getElementById("passwordLabel").textContent = t("password") + " *";
     document.getElementById("userPassword").required = true;
     document.getElementById("userPassword").value = "";
-    document.getElementById("userBalance").value = 0;
+    document.getElementById("userConfirmPassword").value = "";
+    document.getElementById("userStatus").value = "ACTIVE";
     openModal("userModal");
   }
 
@@ -269,13 +270,15 @@
     document.getElementById("userName").value = user.name || "";
     document.getElementById("userEmail").value = user.email || "";
     document.getElementById("userPhone").value = user.phone || "";
+    document.getElementById("userUsername").value = user.username || "";
     document.getElementById("userRole").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
-    document.getElementById("userBalance").value = user.balance || 0;
+    document.getElementById("userStatus").value = user.status || "ACTIVE";
     document.getElementById("modalTitle").textContent = t("edit_user");
     document.getElementById("saveUserBtn").textContent = t("update");
     document.getElementById("passwordLabel").textContent = t("new_password_optional");
     document.getElementById("userPassword").required = false;
     document.getElementById("userPassword").value = "";
+    document.getElementById("userConfirmPassword").value = "";
     openModal("userModal");
   }
 
@@ -284,8 +287,10 @@
       name: document.getElementById("userName").value.trim(),
       email: document.getElementById("userEmail").value.trim(),
       phone: document.getElementById("userPhone").value.trim(),
+      username: document.getElementById("userUsername").value.trim(),
       role: document.getElementById("userRole").value,
-      balance: parseFloat(document.getElementById("userBalance").value) || 0,
+      status: document.getElementById("userStatus").value,
+      balance: 0,
       password: document.getElementById("userPassword").value
     };
   }
@@ -296,6 +301,17 @@
     var id = document.getElementById("userId").value;
     var payload = buildUserPayload();
     if (!id && !payload.email) return;
+
+    // Password confirmation check
+    var confirmPassword = document.getElementById("userConfirmPassword").value;
+    if (!id && payload.password !== confirmPassword) {
+      if (window.AdminToast) window.AdminToast.error(t("passwords_no_match"));
+      return;
+    }
+    if (id && payload.password && payload.password !== confirmPassword) {
+      if (window.AdminToast) window.AdminToast.error(t("passwords_no_match"));
+      return;
+    }
 
     var submitBtn = document.getElementById("saveUserBtn");
     if (submitBtn) { submitBtn.disabled = true; submitBtn.dataset.originalText = submitBtn.textContent; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + t("saving") + "..."; }
@@ -312,8 +328,10 @@
           name: payload.name,
           email: payload.email,
           phone: payload.phone,
+          username: payload.username,
           role: payload.role,
-          balance: payload.balance
+          status: payload.status,
+          balance: 0
         };
         if (payload.password) updatePayload.password = payload.password;
         await window.AdminAPI.put("/admin/users/" + id, updatePayload);

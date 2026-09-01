@@ -130,7 +130,7 @@ exports.getUserById = async (req, res) => {
  */
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, phone, role, balance, password } = req.body;
+    const { name, email, phone, username, role, status, balance, password } = req.body;
 
     if (!name || !email || !phone || !role || !password) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
@@ -169,11 +169,12 @@ exports.createUser = async (req, res) => {
       name: name.trim(),
       email: email.toLowerCase(),
       phone,
+      username: username || undefined,
       password,
       role: normalizedRole,
       balance: balance || 0,
-      status: 'ACTIVE',
-      isActive: true
+      status: status || 'ACTIVE',
+      isActive: status ? status === 'ACTIVE' : true
     });
 
     await logAction({
@@ -230,7 +231,7 @@ exports.updateUser = async (req, res) => {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Invalid user id' });
     }
 
-    const { name, email, phone, role, balance, password } = req.body;
+    const { name, email, phone, username, role, status, balance, password } = req.body;
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'User not found' });
@@ -267,6 +268,19 @@ exports.updateUser = async (req, res) => {
         return res.status(HTTP_STATUS.CONFLICT).json({ success: false, error: 'User with this phone already exists' });
       }
       user.phone = phone;
+    }
+
+    if (username !== undefined) {
+      user.username = username || undefined;
+    }
+
+    if (status !== undefined) {
+      const validStatuses = ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'BLOCKED'];
+      if (!validStatuses.includes(status)) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: `Invalid status. Allowed: ${validStatuses.join(', ')}` });
+      }
+      user.status = status;
+      user.isActive = status === 'ACTIVE';
     }
 
     let previousRole = null;
