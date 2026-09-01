@@ -335,20 +335,53 @@
     var order = window.__activeOrder;
     if (!order) return;
 
-    if (!window.confirm('Cancel order ' + order.orderId + '? This cannot be undone.')) return;
-    var reason = window.prompt("Cancellation reason (optional):", "Cancelled by admin");
+    window.__pendingCancelOrder = order;
+    document.getElementById("cancelOrderId").textContent = order.orderId || "#0000";
+    document.getElementById("cancelReasonSelect").value = "Cancelled by admin";
+    document.getElementById("cancelReasonInput").value = "";
+    openModal("cancelOrderModal");
+  }
+
+  async function confirmCancelOrder() {
+    var order = window.__pendingCancelOrder;
+    if (!order) return;
+
+    var reason = document.getElementById("cancelReasonSelect").value;
+    var note = document.getElementById("cancelReasonInput").value.trim();
+    var confirmBtn = document.getElementById("confirmCancelOrderBtn");
+
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cancelling...';
 
     try {
       await window.AdminAPI.patch("/admin/orders/" + order.id + "/cancel", {
         reason: reason || "Cancelled by admin",
-        adminNote: reason || "Cancelled by admin"
+        adminNote: note || reason || "Cancelled by admin"
       });
-      closeModal("orderDetailsModal");
-      if (window.AdminToast) window.AdminToast.success("Order cancelled");
-      loadOrders();
+      closeModal("cancelOrderModal");
+      if (window.AdminToast) window.AdminToast.success("Order " + order.orderId + " cancelled");
+
+      var row = document.querySelector('[data-action="cancel"][data-id="' + order.id + '"]');
+      if (row) {
+        var tr = row.closest("tr");
+        if (tr) {
+          var statusCell = tr.querySelectorAll("td")[5];
+          if (statusCell) statusCell.innerHTML = statusBadge("CANCELLED");
+          var actionsCell = tr.querySelector(".table-actions");
+          if (actionsCell) {
+            var cancelBtnEl = actionsCell.querySelector('[data-action="cancel"]');
+            if (cancelBtnEl) cancelBtnEl.remove();
+          }
+        }
+      }
+
       loadStats();
     } catch (error) {
       if (window.AdminToast) window.AdminToast.error(error.message || "Failed to cancel order");
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Cancel Order';
+      window.__pendingCancelOrder = null;
     }
   }
 
@@ -627,6 +660,9 @@
     var cancelBtn = document.getElementById("cancelOrderBtn");
     if (cancelBtn) cancelBtn.addEventListener("click", cancelCurrentOrder);
 
+    var confirmCancelBtn = document.getElementById("confirmCancelOrderBtn");
+    if (confirmCancelBtn) confirmCancelBtn.addEventListener("click", confirmCancelOrder);
+
     var printReceiptBtn = document.getElementById("printReceiptBtn");
     if (printReceiptBtn) printReceiptBtn.addEventListener("click", printReceipt);
 
@@ -645,12 +681,11 @@
         } else if (action === "cancel") {
           var order = (window.__ordersCache || []).find(function (o) { return o.id === id; });
           if (!order) return;
-          viewOrderDetails(id, order).then(function () {
-            setTimeout(() => {
-              var cancelBtnEl = document.getElementById("cancelOrderBtn");
-              if (cancelBtnEl && cancelBtnEl.style.display !== "none") cancelBtnEl.click();
-            }, 100);
-          });
+          window.__pendingCancelOrder = order;
+          document.getElementById("cancelOrderId").textContent = order.orderId || "#0000";
+          document.getElementById("cancelReasonSelect").value = "Cancelled by admin";
+          document.getElementById("cancelReasonInput").value = "";
+          openModal("cancelOrderModal");
         }
       });
     }

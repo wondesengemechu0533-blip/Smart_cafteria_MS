@@ -294,6 +294,40 @@
         </div>
     </div>
 
+    <!-- ===== CANCEL ORDER CONFIRMATION MODAL ===== -->
+    <div class="modal-overlay" id="cancelOrderModal">
+        <div class="modal modal-sm">
+            <div class="modal-header modal-header-danger">
+                <h3 class="modal-title"><i class="fa-solid fa-ban"></i> Cancel Order</h3>
+                <button class="modal-close" data-close-modal="cancelOrderModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <p class="confirm-text">Are you sure you want to cancel order <strong id="cancelOrderId">#0000</strong>?</p>
+                <p class="confirm-subtext">This action cannot be undone. The order status will be set to CANCELLED.</p>
+                <div class="form-group mt-3">
+                    <label for="cancelReasonInput" class="form-label">Cancellation Reason</label>
+                    <select id="cancelReasonSelect" class="form-select mb-2">
+                        <option value="Cancelled by admin">Cancelled by admin</option>
+                        <option value="Customer request">Customer request</option>
+                        <option value="Out of stock">Out of stock</option>
+                        <option value="Duplicate order">Duplicate order</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="cancelReasonInput" class="form-control" placeholder="Additional notes (optional)">
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-close-modal="cancelOrderModal">Keep Order</button>
+                <button type="button" class="btn btn-danger" id="confirmCancelOrderBtn">
+                    <i class="fa-solid fa-ban"></i> Cancel Order
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>
