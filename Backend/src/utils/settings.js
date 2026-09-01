@@ -1,70 +1,55 @@
 const Setting = require('../models/Setting');
 
 const DEFAULT_SETTINGS = [
-  {
-    key: 'cafeteria_name',
-    value: 'Smart Cafeteria',
-    type: 'string',
-    group: 'general',
-    label: 'Cafeteria Name',
-  },
-  {
-    key: 'currency',
-    value: 'ETB',
-    type: 'string',
-    group: 'general',
-    label: 'Currency',
-  },
-  {
-    key: 'support_email',
-    value: 'support@smartcafeteria.com',
-    type: 'string',
-    group: 'general',
-    label: 'Support Email',
-  },
-  {
-    key: 'support_phone',
-    value: '+251 911 000 000',
-    type: 'string',
-    group: 'general',
-    label: 'Support Phone',
-  },
-  {
-    key: 'order_availability',
-    value: true,
-    type: 'boolean',
-    group: 'operations',
-    label: 'Order Availability',
-  },
-  {
-    key: 'max_order_quantity',
-    value: 10,
-    type: 'number',
-    group: 'operations',
-    label: 'Maximum Order Quantity',
-  },
-  {
-    key: 'maintenance_mode',
-    value: false,
-    type: 'boolean',
-    group: 'operations',
-    label: 'Maintenance Mode',
-  },
+  // general
+  { key: 'cafeteria_name', value: 'Smart Cafeteria', type: 'string', group: 'general', label: 'Cafeteria Name' },
+  { key: 'cafeteria_description', value: '', type: 'string', group: 'general', label: 'Cafeteria Description' },
+  { key: 'cafeteria_phone', value: '', type: 'string', group: 'general', label: 'Cafeteria Phone' },
+  { key: 'cafeteria_email', value: '', type: 'string', group: 'general', label: 'Cafeteria Email' },
+  { key: 'cafeteria_address', value: '', type: 'string', group: 'general', label: 'Cafeteria Address' },
+  { key: 'cafeteria_opening_time', value: '07:00', type: 'string', group: 'general', label: 'Opening Time' },
+  { key: 'cafeteria_closing_time', value: '22:00', type: 'string', group: 'general', label: 'Closing Time' },
+  { key: 'cafeteria_logo_url', value: '', type: 'string', group: 'general', label: 'Cafeteria Logo URL' },
+  { key: 'currency', value: 'ETB', type: 'string', group: 'general', label: 'Currency' },
+  { key: 'support_email', value: 'support@smartcafeteria.com', type: 'string', group: 'general', label: 'Support Email' },
+  { key: 'support_phone', value: '+251 911 000 000', type: 'string', group: 'general', label: 'Support Phone' },
+
+  // operations
+  { key: 'order_availability', value: true, type: 'boolean', group: 'operations', label: 'Order Availability' },
+  { key: 'max_order_quantity', value: 10, type: 'number', group: 'operations', label: 'Maximum Order Quantity' },
+  { key: 'maintenance_mode', value: false, type: 'boolean', group: 'operations', label: 'Maintenance Mode' },
+
+  // orders
   { key: 'minimum_order_amount', value: 0, type: 'number', group: 'orders', label: 'Minimum Order Amount' },
   { key: 'order_cancellation_enabled', value: true, type: 'boolean', group: 'orders', label: 'Order Cancellation' },
   { key: 'cancellation_window_minutes', value: 15, type: 'number', group: 'orders', label: 'Cancellation Window (minutes)' },
   { key: 'default_preparation_time', value: 15, type: 'number', group: 'orders', label: 'Default Preparation Time (minutes)' },
+
+  // payments
   { key: 'payment_chapa_enabled', value: true, type: 'boolean', group: 'payments', label: 'Chapa Payments' },
   { key: 'payment_provider', value: 'chapa', type: 'string', group: 'payments', label: 'Default Payment Provider' },
   { key: 'payment_status_mode', value: 'automatic', type: 'string', group: 'payments', label: 'Payment Status Mode' },
+
+  // language
   { key: 'default_language', value: 'en', type: 'string', group: 'language', label: 'Default System Language' },
+  { key: 'allow_language_switch', value: true, type: 'boolean', group: 'language', label: 'Allow Language Switching' },
+
+  // security
+  { key: 'session_timeout_minutes', value: 60, type: 'number', group: 'security', label: 'Session Timeout (minutes)' },
+  { key: 'login_max_attempts', value: 5, type: 'number', group: 'security', label: 'Maximum Login Attempts' },
+  { key: 'admin_account_enabled', value: true, type: 'boolean', group: 'security', label: 'Admin Account Enabled' },
+  { key: 'two_factor_enabled', value: false, type: 'boolean', group: 'security', label: 'Two-Factor Authentication' },
+
+  // notifications
   { key: 'notify_new_orders', value: true, type: 'boolean', group: 'notifications', label: 'New Order Notifications' },
   { key: 'notify_payments', value: true, type: 'boolean', group: 'notifications', label: 'Payment Notifications' },
   { key: 'notify_low_stock', value: true, type: 'boolean', group: 'notifications', label: 'Low Stock Notifications' },
-  { key: 'notify_user_accounts', value: true, type: 'boolean', group: 'notifications', label: 'User Account Notifications' },
-  { key: 'session_timeout_minutes', value: 60, type: 'number', group: 'security', label: 'Session Timeout (minutes)' },
-  { key: 'login_max_attempts', value: 5, type: 'number', group: 'security', label: 'Maximum Login Attempts' },
-  { key: 'two_factor_enabled', value: false, type: 'boolean', group: 'security', label: 'Two-Factor Authentication' },
+  { key: 'notify_user_accounts', value: false, type: 'boolean', group: 'notifications', label: 'User Account Notifications' },
+
+  // appearance
+  { key: 'theme', value: 'light', type: 'string', group: 'appearance', label: 'Theme' },
+  { key: 'favicon_url', value: '', type: 'string', group: 'appearance', label: 'Favicon URL' },
+  { key: 'appearance_logo_url', value: '', type: 'string', group: 'appearance', label: 'Appearance Logo URL' },
 ];
 
 async function ensureDefaultSettings() {

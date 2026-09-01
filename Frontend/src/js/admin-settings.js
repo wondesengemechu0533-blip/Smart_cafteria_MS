@@ -2,89 +2,70 @@
  * ================================================================
  * SMART CAFETERIA ORDERING SYSTEM - ADMIN SETTINGS
  * ================================================================
- * Handles: Profile, Cafeteria Info, Language, Payment, Security,
- *          Order Settings, Notifications, Appearance
+ * All sections: Profile, Cafeteria Info, Language, Payment, Security,
+ *               Orders, Notifications, Appearance
  * ================================================================
  */
 (function () {
   "use strict";
 
-  const DEFAULTS = {
-    cafeteria_name: 'Smart Cafeteria',
-    cafeteria_description: '',
-    cafeteria_phone: '',
-    cafeteria_email: '',
-    cafeteria_address: '',
-    cafeteria_opening_time: '07:00',
-    cafeteria_closing_time: '22:00',
-    cafeteria_logo_url: '',
-    currency: 'ETB',
-    default_language: 'en',
-    allow_language_switch: true,
-    payment_chapa_enabled: true,
-    payment_provider: 'chapa',
-    payment_status_mode: 'automatic',
-    session_timeout_minutes: 60,
-    login_max_attempts: 5,
-    admin_account_enabled: true,
-    two_factor_enabled: false,
-    order_availability: true,
-    maintenance_mode: false,
-    order_cancellation_enabled: true,
-    cancellation_window_minutes: 15,
-    max_order_quantity: 10,
-    minimum_order_amount: 0,
-    default_preparation_time: 15,
-    notify_new_orders: true,
-    notify_payments: true,
-    notify_low_stock: true,
-    notify_user_accounts: false,
-    theme: 'light',
-    favicon_url: '',
-    appearance_logo_url: ''
-  };
+  const API = () => window.AdminAPI;
 
-  function showAlert(message, type) {
-    const el = document.getElementById('settingsAlert');
+  function $(id) { return document.getElementById(id); }
+  function val(id, fb) { const el = $(id); return el ? (el.value || '').trim() : (fb || ''); }
+  function num(id, fb) { return Number(val(id, String(fb))) || fb; }
+  function chk(id) { const el = $(id); return el ? !!el.checked : false; }
+
+  /* ---------- alert / loading ---------- */
+  function showAlert(msg, type) {
+    const el = $('settingsAlert');
     if (!el) return;
-    el.textContent = message;
+    el.textContent = msg;
     el.className = 'alert-banner ' + (type || 'success');
     el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 4000);
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => { el.style.display = 'none'; }, 4000);
   }
 
-  function setLoading(btn, loading) {
+  function setLoading(btn, on) {
     if (!btn) return;
-    if (loading) {
+    if (on) {
       btn.disabled = true;
-      btn.dataset.originalText = btn.innerHTML;
+      btn._orig = btn.innerHTML;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     } else {
       btn.disabled = false;
-      btn.innerHTML = btn.dataset.originalText || 'Save';
+      btn.innerHTML = btn._orig || btn.innerHTML;
     }
   }
 
-  /* ---------- helpers ---------- */
-  function $(id) { return document.getElementById(id); }
-  function val(id, fallback) { const el = $(id); return el ? el.value.trim() : (fallback || ''); }
-  function num(id, fallback) { return Number(val(id, fallback)) || fallback; }
-  function checked(id) { const el = $(id); return el ? el.checked : false; }
+  /* ---------- save single setting ---------- */
+  async function saveSetting(key, value) {
+    return API().put('/admin/settings/' + encodeURIComponent(key), { value });
+  }
+
+  /* ---------- load all settings as map ---------- */
+  async function loadSettingsMap() {
+    const data = await API().get('/admin/settings');
+    const map = {};
+    if (data.success && Array.isArray(data.settings)) {
+      for (const s of data.settings) map[s.key] = s.value;
+    }
+    return map;
+  }
 
   /* =============================================
      1. ADMIN PROFILE
      ============================================= */
   async function loadProfile() {
     try {
-      const data = await window.AdminAPI.get('/auth/me');
-      const user = data.user || {};
-      $('adminProfileName').value = user.name || '';
-      $('adminProfileEmail').value = user.email || '';
-      $('adminProfilePhone').value = user.phone || '';
-      $('adminProfileAvatar').value = user.avatar || '';
-    } catch (e) {
-      showAlert('Failed to load profile: ' + (e.message || e), 'error');
-    }
+      const data = await API().get('/auth/me');
+      const u = data.user || {};
+      $('adminProfileName').value = u.name || '';
+      $('adminProfileEmail').value = u.email || '';
+      $('adminProfilePhone').value = u.phone || '';
+      $('adminProfileAvatar').value = u.avatar || '';
+    } catch (e) { showAlert('Failed to load profile: ' + e.message, 'error'); }
   }
 
   async function saveProfile(e) {
@@ -92,44 +73,40 @@
     const btn = $('saveAdminProfileBtn');
     setLoading(btn, true);
     try {
-      const data = await window.AdminAPI.put('/auth/me', {
+      const data = await API().put('/auth/me', {
         name: val('adminProfileName'),
         email: val('adminProfileEmail'),
         phone: val('adminProfilePhone'),
         avatar: val('adminProfileAvatar')
       });
-      const profile = window.AdminAPI.getProfile() || {};
+      // Sync localStorage
+      const profile = API().getProfile() || {};
       const updated = Object.assign(profile, data.user);
       localStorage.setItem('userProfile', JSON.stringify(updated));
       try {
         const cur = JSON.parse(localStorage.getItem('current_user') || '{}');
-        localStorage.setItem('current_user', JSON.stringify(Object.assign(cur, {
-          name: updated.name, email: updated.email, phone: updated.phone, avatar: updated.avatar
-        })));
+        Object.assign(cur, { name: updated.name, email: updated.email, phone: updated.phone, avatar: updated.avatar });
+        localStorage.setItem('current_user', JSON.stringify(cur));
         localStorage.setItem('userName', updated.name);
         localStorage.setItem('name', updated.name);
       } catch (_) {}
       showAlert('Admin profile saved');
-    } catch (e) {
-      showAlert('Failed to save profile: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save profile: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      2. CAFETERIA INFORMATION
      ============================================= */
-  function populateCafeteria(data) {
-    if (!data) return;
-    $('cafeteriaName').value = data.cafeteria_name || '';
-    $('cafeteriaPhone').value = data.cafeteria_phone || '';
-    $('cafeteriaEmail').value = data.cafeteria_email || '';
-    $('cafeteriaAddress').value = data.cafeteria_address || '';
-    $('cafeteriaOpeningTime').value = data.cafeteria_opening_time || '07:00';
-    $('cafeteriaClosingTime').value = data.cafeteria_closing_time || '22:00';
-    $('cafeteriaDescription').value = data.cafeteria_description || '';
-    $('cafeteriaLogoUrl').value = data.cafeteria_logo_url || '';
+  function populateCafeteria(m) {
+    $('cafeteriaName').value = m.cafeteria_name || '';
+    $('cafeteriaDescription').value = m.cafeteria_description || '';
+    $('cafeteriaPhone').value = m.cafeteria_phone || '';
+    $('cafeteriaEmail').value = m.cafeteria_email || '';
+    $('cafeteriaAddress').value = m.cafeteria_address || '';
+    $('cafeteriaOpeningTime').value = m.cafeteria_opening_time || '07:00';
+    $('cafeteriaClosingTime').value = m.cafeteria_closing_time || '22:00';
+    $('cafeteriaLogoUrl').value = m.cafeteria_logo_url || '';
   }
 
   async function saveCafeteriaInfo(e) {
@@ -137,106 +114,105 @@
     const btn = $('saveCafeInfoBtn');
     setLoading(btn, true);
     try {
-      const logoFile = $('cafeteriaLogoFile').files[0];
+      // Handle logo file → base64
       let logoUrl = val('cafeteriaLogoUrl');
+      const logoFile = $('cafeteriaLogoFile').files[0];
       if (logoFile) {
-        logoUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (ev) => resolve(ev.target.result);
-          reader.readAsDataURL(logoFile);
+        if (logoFile.size > 2 * 1024 * 1024) { showAlert('Logo must be under 2 MB', 'error'); return; }
+        logoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(logoFile);
         });
       }
-      const fields = [
-        { key: 'cafeteria_name', value: val('cafeteriaName') },
-        { key: 'cafeteria_phone', value: val('cafeteriaPhone') },
-        { key: 'cafeteria_email', value: val('cafeteriaEmail') },
-        { key: 'cafeteria_address', value: val('cafeteriaAddress') },
-        { key: 'cafeteria_opening_time', value: val('cafeteriaOpeningTime') },
-        { key: 'cafeteria_closing_time', value: val('cafeteriaClosingTime') },
-        { key: 'cafeteria_description', value: val('cafeteriaDescription') },
-        { key: 'cafeteria_logo_url', value: logoUrl }
-      ];
-      for (const f of fields) {
-        await window.AdminAPI.put('/admin/settings/' + encodeURIComponent(f.key), { value: f.value });
-      }
+      const fields = {
+        cafeteria_name: val('cafeteriaName'),
+        cafeteria_description: val('cafeteriaDescription'),
+        cafeteria_phone: val('cafeteriaPhone'),
+        cafeteria_email: val('cafeteriaEmail'),
+        cafeteria_address: val('cafeteriaAddress'),
+        cafeteria_opening_time: val('cafeteriaOpeningTime'),
+        cafeteria_closing_time: val('cafeteriaClosingTime'),
+        cafeteria_logo_url: logoUrl
+      };
+      for (const [k, v] of Object.entries(fields)) await saveSetting(k, v);
       showAlert('Cafeteria information saved');
-    } catch (e) {
-      showAlert('Failed to save cafeteria info: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save cafeteria info: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      3. LANGUAGE
      ============================================= */
+  function populateLanguage(m) {
+    $('defaultLanguage').value = m.default_language || 'en';
+    $('allowLanguageSwitch').checked = m.allow_language_switch !== false;
+  }
+
   async function saveLanguage(e) {
     e.preventDefault();
     const btn = $('saveLanguageBtn');
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/admin/settings/default_language', { value: val('defaultLanguage') });
-      await window.AdminAPI.put('/admin/settings/allow_language_switch', { value: checked('allowLanguageSwitch') });
+      await saveSetting('default_language', val('defaultLanguage'));
+      await saveSetting('allow_language_switch', chk('allowLanguageSwitch'));
       showAlert('Language settings saved');
-    } catch (e) {
-      showAlert('Failed to save language: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save language: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      4. PAYMENT SETTINGS
      ============================================= */
+  function populatePayment(m) {
+    $('paymentChapaEnabled').checked = m.payment_chapa_enabled !== false;
+    $('paymentCurrency').value = m.currency || 'ETB';
+    $('paymentProvider').value = m.payment_provider || 'chapa';
+    $('paymentStatusMode').value = m.payment_status_mode || 'automatic';
+  }
+
   async function savePayment(e) {
     e.preventDefault();
     const btn = $('savePaymentBtn');
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/admin/settings/payment_chapa_enabled', { value: checked('paymentChapaEnabled') });
-      await window.AdminAPI.put('/admin/settings/currency', { value: val('paymentCurrency') });
-      await window.AdminAPI.put('/admin/settings/payment_provider', { value: val('paymentProvider') });
-      await window.AdminAPI.put('/admin/settings/payment_status_mode', { value: val('paymentStatusMode') });
+      await saveSetting('payment_chapa_enabled', chk('paymentChapaEnabled'));
+      await saveSetting('currency', val('paymentCurrency'));
+      await saveSetting('payment_provider', val('paymentProvider'));
+      await saveSetting('payment_status_mode', val('paymentStatusMode'));
       showAlert('Payment settings saved');
-    } catch (e) {
-      showAlert('Failed to save payment settings: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save payment settings: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      5. SECURITY
      ============================================= */
+  function populateSecurity(m) {
+    $('sessionTimeout').value = m.session_timeout_minutes || 60;
+    $('loginMaxAttempts').value = m.login_max_attempts || 5;
+    $('adminAccountEnabled').checked = m.admin_account_enabled !== false;
+    $('twoFactorEnabled').checked = m.two_factor_enabled === true;
+  }
+
   async function changePassword() {
     const cur = val('currentPassword');
     const nw = val('newPassword');
     const cf = val('confirmPassword');
-    if (!cur || !nw) {
-      showAlert('Please fill in current and new password', 'error');
-      return;
-    }
-    if (nw !== cf) {
-      showAlert('New passwords do not match', 'error');
-      return;
-    }
-    if (nw.length < 6) {
-      showAlert('New password must be at least 6 characters', 'error');
-      return;
-    }
+    if (!cur || !nw) { showAlert('Fill in current and new password', 'error'); return; }
+    if (nw.length < 6) { showAlert('New password must be at least 6 characters', 'error'); return; }
+    if (nw !== cf) { showAlert('New passwords do not match', 'error'); return; }
     const btn = $('changePasswordBtn');
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/auth/password', { currentPassword: cur, newPassword: nw });
+      await API().put('/auth/password', { currentPassword: cur, newPassword: nw, confirmPassword: cf });
       $('currentPassword').value = '';
       $('newPassword').value = '';
       $('confirmPassword').value = '';
       showAlert('Password changed successfully');
-    } catch (e) {
-      showAlert('Failed to change password: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to change password: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   async function saveSecurity(e) {
@@ -244,76 +220,83 @@
     const btn = $('saveSecurityBtn');
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/admin/settings/session_timeout_minutes', { value: num('sessionTimeout', 60) });
-      await window.AdminAPI.put('/admin/settings/login_max_attempts', { value: num('loginMaxAttempts', 5) });
-      await window.AdminAPI.put('/admin/settings/admin_account_enabled', { value: checked('adminAccountEnabled') });
-      await window.AdminAPI.put('/admin/settings/two_factor_enabled', { value: checked('twoFactorEnabled') });
+      await saveSetting('session_timeout_minutes', num('sessionTimeout', 60));
+      await saveSetting('login_max_attempts', num('loginMaxAttempts', 5));
+      await saveSetting('admin_account_enabled', chk('adminAccountEnabled'));
+      await saveSetting('two_factor_enabled', chk('twoFactorEnabled'));
       showAlert('Security settings saved');
-    } catch (e) {
-      showAlert('Failed to save security: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save security: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      6. ORDER SETTINGS
      ============================================= */
+  function populateOrders(m) {
+    $('orderAvailability').checked = m.order_availability !== false;
+    $('maintenanceMode').checked = m.maintenance_mode === true;
+    $('orderCancellationEnabled').checked = m.order_cancellation_enabled !== false;
+    $('cancellationWindow').value = m.cancellation_window_minutes ?? 15;
+    $('maxOrderQuantity').value = m.max_order_quantity ?? 10;
+    $('minimumOrderAmount').value = m.minimum_order_amount ?? 0;
+    $('defaultPreparationTime').value = m.default_preparation_time ?? 15;
+  }
+
   async function saveOrderSettings(e) {
     e.preventDefault();
     const btn = $('saveOrderSettingsBtn');
     setLoading(btn, true);
     try {
-      const fields = [
-        { key: 'order_availability', value: checked('orderAvailability') },
-        { key: 'maintenance_mode', value: checked('maintenanceMode') },
-        { key: 'order_cancellation_enabled', value: checked('orderCancellationEnabled') },
-        { key: 'cancellation_window_minutes', value: num('cancellationWindow', 15) },
-        { key: 'max_order_quantity', value: num('maxOrderQuantity', 10) },
-        { key: 'minimum_order_amount', value: num('minimumOrderAmount', 0) },
-        { key: 'default_preparation_time', value: num('defaultPreparationTime', 15) }
-      ];
-      for (const f of fields) {
-        await window.AdminAPI.put('/admin/settings/' + encodeURIComponent(f.key), { value: f.value });
-      }
+      await saveSetting('order_availability', chk('orderAvailability'));
+      await saveSetting('maintenance_mode', chk('maintenanceMode'));
+      await saveSetting('order_cancellation_enabled', chk('orderCancellationEnabled'));
+      await saveSetting('cancellation_window_minutes', num('cancellationWindow', 15));
+      await saveSetting('max_order_quantity', num('maxOrderQuantity', 10));
+      await saveSetting('minimum_order_amount', num('minimumOrderAmount', 0));
+      await saveSetting('default_preparation_time', num('defaultPreparationTime', 15));
       showAlert('Order settings saved');
-    } catch (e) {
-      showAlert('Failed to save order settings: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save order settings: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      7. NOTIFICATIONS
      ============================================= */
+  function populateNotifications(m) {
+    $('notifyNewOrders').checked = m.notify_new_orders !== false;
+    $('notifyPayments').checked = m.notify_payments !== false;
+    $('notifyLowStock').checked = m.notify_low_stock !== false;
+    $('notifyUserAccounts').checked = m.notify_user_accounts === true;
+  }
+
   async function saveNotifications(e) {
     e.preventDefault();
     const btn = $('saveNotificationsBtn');
     setLoading(btn, true);
     try {
-      await window.AdminAPI.put('/admin/settings/notify_new_orders', { value: checked('notifyNewOrders') });
-      await window.AdminAPI.put('/admin/settings/notify_payments', { value: checked('notifyPayments') });
-      await window.AdminAPI.put('/admin/settings/notify_low_stock', { value: checked('notifyLowStock') });
-      await window.AdminAPI.put('/admin/settings/notify_user_accounts', { value: checked('notifyUserAccounts') });
+      await saveSetting('notify_new_orders', chk('notifyNewOrders'));
+      await saveSetting('notify_payments', chk('notifyPayments'));
+      await saveSetting('notify_low_stock', chk('notifyLowStock'));
+      await saveSetting('notify_user_accounts', chk('notifyUserAccounts'));
       showAlert('Notification settings saved');
-    } catch (e) {
-      showAlert('Failed to save notifications: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save notifications: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      8. APPEARANCE
      ============================================= */
+  function populateAppearance(m) {
+    $('themeSelect').value = m.theme || 'light';
+    $('faviconUrl').value = m.favicon_url || '';
+    $('appearanceLogoUrl').value = m.appearance_logo_url || '';
+    applyTheme(m.theme || 'light');
+  }
+
   function applyTheme(theme) {
     document.body.classList.remove('theme-light', 'theme-dark');
-    if (theme === 'dark') {
-      document.body.classList.add('theme-dark');
-    } else {
-      document.body.classList.add('theme-light');
-    }
+    if (theme === 'dark') document.body.classList.add('theme-dark');
+    else document.body.classList.add('theme-light');
     localStorage.setItem('scos_theme', theme);
   }
 
@@ -322,182 +305,155 @@
     const btn = $('saveAppearanceBtn');
     setLoading(btn, true);
     try {
-      const logoFile = $('appearanceLogoFile').files[0];
       let logoUrl = val('appearanceLogoUrl');
+      const logoFile = $('appearanceLogoFile').files[0];
       if (logoFile) {
-        logoUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (ev) => resolve(ev.target.result);
-          reader.readAsDataURL(logoFile);
+        logoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(logoFile);
         });
       }
-      await window.AdminAPI.put('/admin/settings/theme', { value: val('themeSelect') });
-      await window.AdminAPI.put('/admin/settings/favicon_url', { value: val('faviconUrl') });
-      await window.AdminAPI.put('/admin/settings/appearance_logo_url', { value: logoUrl });
+      await saveSetting('theme', val('themeSelect'));
+      await saveSetting('favicon_url', val('faviconUrl'));
+      await saveSetting('appearance_logo_url', logoUrl);
       applyTheme(val('themeSelect'));
+      // Apply favicon
+      const favEl = document.querySelector('link[rel="icon"]');
+      const favUrl = val('faviconUrl');
+      if (favEl && favUrl) favEl.href = favUrl;
       showAlert('Appearance settings saved');
-    } catch (e) {
-      showAlert('Failed to save appearance: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+    } catch (e) { showAlert('Failed to save appearance: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
-     LOAD ALL SETTINGS INTO FORMS
+     IMAGE PREVIEW HELPER
      ============================================= */
-  async function loadAllSettings() {
-    try {
-      const data = await window.AdminAPI.get('/admin/settings');
-      if (!data.success || !data.settings) return;
-      const map = {};
-      for (const s of data.settings) map[s.key] = s.value;
-
-      // Cafeteria
-      populateCafeteria(map);
-      // Language
-      $('defaultLanguage').value = map.default_language || DEFAULTS.default_language;
-      $('allowLanguageSwitch').checked = map.allow_language_switch !== false;
-      // Payment
-      $('paymentChapaEnabled').checked = map.payment_chapa_enabled !== false;
-      $('paymentCurrency').value = map.currency || DEFAULTS.currency;
-      $('paymentProvider').value = map.payment_provider || DEFAULTS.payment_provider;
-      $('paymentStatusMode').value = map.payment_status_mode || DEFAULTS.payment_status_mode;
-      // Security
-      $('sessionTimeout').value = map.session_timeout_minutes || DEFAULTS.session_timeout_minutes;
-      $('loginMaxAttempts').value = map.login_max_attempts || DEFAULTS.login_max_attempts;
-      $('adminAccountEnabled').checked = map.admin_account_enabled !== false;
-      $('twoFactorEnabled').checked = map.two_factor_enabled === true;
-      // Order
-      $('orderAvailability').checked = map.order_availability !== false;
-      $('maintenanceMode').checked = map.maintenance_mode === true;
-      $('orderCancellationEnabled').checked = map.order_cancellation_enabled !== false;
-      $('cancellationWindow').value = map.cancellation_window_minutes ?? DEFAULTS.cancellation_window_minutes;
-      $('maxOrderQuantity').value = map.max_order_quantity || DEFAULTS.max_order_quantity;
-      $('minimumOrderAmount').value = map.minimum_order_amount ?? DEFAULTS.minimum_order_amount;
-      $('defaultPreparationTime').value = map.default_preparation_time ?? DEFAULTS.default_preparation_time;
-      // Notifications
-      $('notifyNewOrders').checked = map.notify_new_orders !== false;
-      $('notifyPayments').checked = map.notify_payments !== false;
-      $('notifyLowStock').checked = map.notify_low_stock !== false;
-      $('notifyUserAccounts').checked = map.notify_user_accounts === true;
-      // Appearance
-      $('themeSelect').value = map.theme || DEFAULTS.theme;
-      $('faviconUrl').value = map.favicon_url || '';
-      $('appearanceLogoUrl').value = map.appearance_logo_url || '';
-      applyTheme(map.theme || DEFAULTS.theme);
-    } catch (e) {
-      showAlert('Failed to load settings: ' + (e.message || e), 'error');
-    }
+  function setupPreview(inputId, rowId, imgId, removeId) {
+    const input = $(inputId);
+    const row = $(rowId);
+    const img = $(imgId);
+    const rm = $(removeId);
+    if (!input || !row) return;
+    input.addEventListener('change', () => {
+      const f = input.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => { img.src = ev.target.result; row.style.display = 'flex'; };
+      r.readAsDataURL(f);
+    });
+    if (rm) rm.addEventListener('click', () => { input.value = ''; row.style.display = 'none'; img.src = ''; });
   }
 
   /* =============================================
-     RESET
-     ============================================= */
-  async function resetSettings() {
-    if (!confirm('Reset all settings to defaults? This cannot be undone.')) return;
-    const btn = $('resetSettingsBtn');
-    setLoading(btn, true);
-    try {
-      for (const key of Object.keys(DEFAULTS)) {
-        await window.AdminAPI.put('/admin/settings/' + encodeURIComponent(key), { value: DEFAULTS[key] });
-      }
-      await loadAllSettings();
-      showAlert('Settings reset to defaults');
-    } catch (e) {
-      showAlert('Failed to reset: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
-  }
-
-  /* =============================================
-     SAVE ALL
+     SAVE ALL / RESET
      ============================================= */
   async function saveAllSettings() {
     const btn = $('saveAllSettingsBtn');
     setLoading(btn, true);
     try {
+      // Cafeteria
+      let logoUrl = val('cafeteriaLogoUrl');
+      const logoFile = $('cafeteriaLogoFile').files[0];
+      if (logoFile) {
+        logoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(logoFile);
+        });
+      }
+      let appLogoUrl = val('appearanceLogoUrl');
+      const appLogoFile = $('appearanceLogoFile').files[0];
+      if (appLogoFile) {
+        appLogoUrl = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = ev => res(ev.target.result);
+          r.onerror = rej;
+          r.readAsDataURL(appLogoFile);
+        });
+      }
       const all = {
         cafeteria_name: val('cafeteriaName'),
+        cafeteria_description: val('cafeteriaDescription'),
         cafeteria_phone: val('cafeteriaPhone'),
         cafeteria_email: val('cafeteriaEmail'),
         cafeteria_address: val('cafeteriaAddress'),
         cafeteria_opening_time: val('cafeteriaOpeningTime'),
         cafeteria_closing_time: val('cafeteriaClosingTime'),
-        cafeteria_description: val('cafeteriaDescription'),
-        cafeteria_logo_url: val('cafeteriaLogoUrl'),
+        cafeteria_logo_url: logoUrl,
         default_language: val('defaultLanguage'),
-        allow_language_switch: checked('allowLanguageSwitch'),
-        payment_chapa_enabled: checked('paymentChapaEnabled'),
+        allow_language_switch: chk('allowLanguageSwitch'),
+        payment_chapa_enabled: chk('paymentChapaEnabled'),
         currency: val('paymentCurrency'),
         payment_provider: val('paymentProvider'),
         payment_status_mode: val('paymentStatusMode'),
         session_timeout_minutes: num('sessionTimeout', 60),
         login_max_attempts: num('loginMaxAttempts', 5),
-        admin_account_enabled: checked('adminAccountEnabled'),
-        two_factor_enabled: checked('twoFactorEnabled'),
-        order_availability: checked('orderAvailability'),
-        maintenance_mode: checked('maintenanceMode'),
-        order_cancellation_enabled: checked('orderCancellationEnabled'),
+        admin_account_enabled: chk('adminAccountEnabled'),
+        two_factor_enabled: chk('twoFactorEnabled'),
+        order_availability: chk('orderAvailability'),
+        maintenance_mode: chk('maintenanceMode'),
+        order_cancellation_enabled: chk('orderCancellationEnabled'),
         cancellation_window_minutes: num('cancellationWindow', 15),
         max_order_quantity: num('maxOrderQuantity', 10),
         minimum_order_amount: num('minimumOrderAmount', 0),
         default_preparation_time: num('defaultPreparationTime', 15),
-        notify_new_orders: checked('notifyNewOrders'),
-        notify_payments: checked('notifyPayments'),
-        notify_low_stock: checked('notifyLowStock'),
-        notify_user_accounts: checked('notifyUserAccounts'),
+        notify_new_orders: chk('notifyNewOrders'),
+        notify_payments: chk('notifyPayments'),
+        notify_low_stock: chk('notifyLowStock'),
+        notify_user_accounts: chk('notifyUserAccounts'),
         theme: val('themeSelect'),
         favicon_url: val('faviconUrl'),
-        appearance_logo_url: val('appearanceLogoUrl')
+        appearance_logo_url: appLogoUrl
       };
-      for (const [key, value] of Object.entries(all)) {
-        await window.AdminAPI.put('/admin/settings/' + encodeURIComponent(key), { value });
-      }
+      for (const [k, v] of Object.entries(all)) await saveSetting(k, v);
       applyTheme(val('themeSelect'));
-      showAlert('All settings saved');
-    } catch (e) {
-      showAlert('Failed to save: ' + (e.message || e), 'error');
-    } finally {
-      setLoading(btn, false);
-    }
+      showAlert('All settings saved successfully');
+    } catch (e) { showAlert('Failed to save all: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
-  /* =============================================
-     IMAGE PREVIEWS
-     ============================================= */
-  function setupImagePreview(inputId, previewRowId, previewImgId, removeBtnId) {
-    const input = $(inputId);
-    const previewRow = $(previewRowId);
-    const previewImg = $(previewImgId);
-    const removeBtn = $(removeBtnId);
-    if (!input || !previewRow) return;
-
-    input.addEventListener('change', () => {
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          previewImg.src = ev.target.result;
-          previewRow.style.display = 'flex';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    if (removeBtn) {
-      removeBtn.addEventListener('click', () => {
-        input.value = '';
-        previewRow.style.display = 'none';
-        previewImg.src = '';
-      });
-    }
+  async function resetSettings() {
+    if (!confirm('Reset all settings to defaults? This cannot be undone.')) return;
+    const btn = $('resetSettingsBtn');
+    setLoading(btn, true);
+    const defaults = {
+      cafeteria_name: 'Smart Cafeteria', cafeteria_description: '', cafeteria_phone: '',
+      cafeteria_email: '', cafeteria_address: '', cafeteria_opening_time: '07:00',
+      cafeteria_closing_time: '22:00', cafeteria_logo_url: '',
+      default_language: 'en', allow_language_switch: true,
+      payment_chapa_enabled: true, currency: 'ETB', payment_provider: 'chapa',
+      payment_status_mode: 'automatic', session_timeout_minutes: 60,
+      login_max_attempts: 5, admin_account_enabled: true, two_factor_enabled: false,
+      order_availability: true, maintenance_mode: false, order_cancellation_enabled: true,
+      cancellation_window_minutes: 15, max_order_quantity: 10, minimum_order_amount: 0,
+      default_preparation_time: 15, notify_new_orders: true, notify_payments: true,
+      notify_low_stock: true, notify_user_accounts: false, theme: 'light',
+      favicon_url: '', appearance_logo_url: ''
+    };
+    try {
+      for (const [k, v] of Object.entries(defaults)) await saveSetting(k, v);
+      // Repopulate all sections
+      populateCafeteria(defaults);
+      populateLanguage(defaults);
+      populatePayment(defaults);
+      populateSecurity(defaults);
+      populateOrders(defaults);
+      populateNotifications(defaults);
+      populateAppearance(defaults);
+      showAlert('Settings reset to defaults');
+    } catch (e) { showAlert('Failed to reset: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
   }
 
   /* =============================================
      INIT
      ============================================= */
-  function bindEvents() {
+  async function init() {
+    // Bind forms
     $('adminProfileForm')?.addEventListener('submit', saveProfile);
     $('cafeteriaInfoForm')?.addEventListener('submit', saveCafeteriaInfo);
     $('languageForm')?.addEventListener('submit', saveLanguage);
@@ -510,14 +466,24 @@
     $('resetSettingsBtn')?.addEventListener('click', resetSettings);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
 
-    setupImagePreview('cafeteriaLogoFile', 'logoPreviewRow', 'logoPreview', 'removeLogoBtn');
-    setupImagePreview('appearanceLogoFile', 'appearanceLogoPreviewRow', 'appearanceLogoPreview', 'removeAppearanceLogoBtn');
-  }
+    // Image previews
+    setupPreview('cafeteriaLogoFile', 'logoPreviewRow', 'logoPreview', 'removeLogoBtn');
+    setupPreview('appearanceLogoFile', 'appearanceLogoPreviewRow', 'appearanceLogoPreview', 'removeAppearanceLogoBtn');
 
-  function init() {
-    bindEvents();
-    loadProfile();
-    loadAllSettings();
+    // Load data
+    await loadProfile();
+    try {
+      const map = await loadSettingsMap();
+      populateCafeteria(map);
+      populateLanguage(map);
+      populatePayment(map);
+      populateSecurity(map);
+      populateOrders(map);
+      populateNotifications(map);
+      populateAppearance(map);
+    } catch (e) {
+      showAlert('Failed to load settings: ' + e.message, 'error');
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);
