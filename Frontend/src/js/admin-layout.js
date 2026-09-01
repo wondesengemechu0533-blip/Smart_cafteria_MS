@@ -20,7 +20,6 @@
     { id: 'feedback', path: 'feedback.html', icon: 'fa-comment-dots', label: 'Feedback', group: 'management' },
     { id: 'reports', path: 'reports.html', icon: 'fa-file-invoice-dollar', label: 'Reports', group: 'analytics' },
     { id: 'activity', path: 'activity.html', icon: 'fa-list-check', label: 'Activity Logs', group: 'analytics' },
-    { id: 'profile', path: 'profile.html', icon: 'fa-user-circle', label: 'Profile', group: 'system' },
     { id: 'settings', path: 'settings.html', icon: 'fa-gear', label: 'Settings', group: 'system' }
   ];
 
@@ -28,7 +27,7 @@
     { id: 'main', label: 'MAIN', pages: ['dashboard'] },
     { id: 'management', label: 'MANAGEMENT', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations', 'feedback'] },
     { id: 'analytics', label: 'ANALYTICS & REPORTS', pages: ['reports', 'activity'] },
-    { id: 'system', label: 'SYSTEM', pages: ['profile', 'settings'] }
+    { id: 'system', label: 'SYSTEM', pages: ['settings'] }
   ];
 
   // Current page detection
@@ -67,7 +66,7 @@
         var page = ADMIN_PAGES.find(function(p) { return p.id === pageId; });
         if (!page) return;
 
-        var labelKeyMap = { dashboard: 'admin_dashboard', users: 'admin_users', menu: 'admin_menu', categories: 'admin_categories', orders: 'admin_orders', payments: 'admin_payments', cancellations: 'admin_cancellations', reports: 'admin_reports', activity: 'admin_activity', profile: 'admin_profile', settings: 'admin_settings' };
+        var labelKeyMap = { dashboard: 'admin_dashboard', users: 'admin_users', menu: 'admin_menu', categories: 'admin_categories', orders: 'admin_orders', payments: 'admin_payments', cancellations: 'admin_cancellations', reports: 'admin_reports', activity: 'admin_activity', settings: 'admin_settings' };
         var translatedLabel = t(labelKeyMap[pageId] || pageId, page.label);
         var isActive = pageId === currentPageId;
         html += '<a href="' + page.path + '" class="sidebar-link' + (isActive ? ' active' : '') + '"';

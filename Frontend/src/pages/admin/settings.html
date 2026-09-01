@@ -4,18 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Smart Cafeteria</title>
-
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Bootstrap CSS (required for grid + components) -->
-
-    <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/image-upload.css">
 </head>
 <body class="admin-body">
-
-    <!-- Layout will be injected by admin-layout.js -->
     <header class="admin-navbar"></header>
     <div class="admin-container">
         <aside class="admin-sidebar" id="adminSidebar"></aside>
@@ -29,6 +22,7 @@
 
             <div id="settingsAlert" class="alert-banner" style="display:none;"></div>
 
+            <!-- ===== ADMIN PROFILE ===== -->
             <section class="card mb-4">
                 <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-user-shield"></i> Admin Profile</h3></div>
                 <div class="card-body">
@@ -44,122 +38,299 @@
                 </div>
             </section>
 
-            <section class="card">
-                <div class="card-header">
-                    <h3 class="section-title"><i class="fa-solid fa-gear"></i> System Settings</h3>
-                </div>
+            <!-- ===== CAFETERIA INFORMATION ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-building"></i> Cafeteria Information</h3></div>
                 <div class="card-body">
-                    <form id="settingsForm">
+                    <form id="cafeteriaInfoForm">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="cafeteriaName" class="form-label">Cafeteria Name</label>
-                                <input type="text" id="cafeteriaName" class="form-control" value="Smart Cafeteria">
+                                <label for="cafeteriaName" class="form-label">Cafeteria Name <span class="required">*</span></label>
+                                <input type="text" id="cafeteriaName" class="form-control" placeholder="Smart Cafeteria">
                             </div>
                             <div class="form-group">
-                                <label for="currency" class="form-label">Currency</label>
-                                <select id="currency" class="form-select">
+                                <label for="cafeteriaPhone" class="form-label">Phone Number</label>
+                                <input type="tel" id="cafeteriaPhone" class="form-control" placeholder="+251 911 000 000">
+                            </div>
+                            <div class="form-group">
+                                <label for="cafeteriaEmail" class="form-label">Email Address</label>
+                                <input type="email" id="cafeteriaEmail" class="form-control" placeholder="info@cafeteria.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="cafeteriaAddress" class="form-label">Address</label>
+                                <input type="text" id="cafeteriaAddress" class="form-control" placeholder="Addis Ababa, Ethiopia">
+                            </div>
+                            <div class="form-group">
+                                <label for="cafeteriaOpeningTime" class="form-label">Opening Time</label>
+                                <input type="time" id="cafeteriaOpeningTime" class="form-control" value="07:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="cafeteriaClosingTime" class="form-label">Closing Time</label>
+                                <input type="time" id="cafeteriaClosingTime" class="form-control" value="22:00">
+                            </div>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="cafeteriaDescription" class="form-label">Description</label>
+                            <textarea id="cafeteriaDescription" class="form-control" rows="2" placeholder="Short description of your cafeteria"></textarea>
+                        </div>
+                        <div class="form-row upload-row mt-3">
+                            <div class="form-group">
+                                <label for="cafeteriaLogoFile" class="form-label">Upload Logo (JPG, PNG, max 2 MB)</label>
+                                <input type="file" id="cafeteriaLogoFile" class="form-control" accept="image/jpeg,image/png">
+                            </div>
+                            <div class="form-group">
+                                <label for="cafeteriaLogoUrl" class="form-label">...or Logo URL</label>
+                                <input type="url" id="cafeteriaLogoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                            </div>
+                        </div>
+                        <div class="file-preview" id="logoPreviewRow" style="display:none;">
+                            <img id="logoPreview" alt="Preview">
+                            <button type="button" class="btn-remove-file" id="removeLogoBtn"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveCafeInfoBtn"><i class="fa-solid fa-check"></i> Save Cafeteria Info</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ===== LANGUAGE ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-globe"></i> Language Settings</h3></div>
+                <div class="card-body">
+                    <form id="languageForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="defaultLanguage" class="form-label">Default Language</label>
+                                <select id="defaultLanguage" class="form-select">
+                                    <option value="en">English</option>
+                                    <option value="am">Amharic</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Allow Language Switching</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="allowLanguageSwitch" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <small class="form-text">Let users switch between languages</small>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveLanguageBtn"><i class="fa-solid fa-check"></i> Save Language</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ===== PAYMENT SETTINGS ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-credit-card"></i> Payment Settings</h3></div>
+                <div class="card-body">
+                    <form id="paymentForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Enable Chapa</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="paymentChapaEnabled" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentCurrency" class="form-label">Currency</label>
+                                <select id="paymentCurrency" class="form-select">
                                     <option value="ETB">ETB - Ethiopian Birr</option>
                                     <option value="USD">USD - US Dollar</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="supportEmail" class="form-label">Support Email</label>
-                                <input type="email" id="supportEmail" class="form-control" placeholder="support@smartcafeteria.com">
+                                <label for="paymentStatusMode" class="form-label">Payment Verification</label>
+                                <select id="paymentStatusMode" class="form-select">
+                                    <option value="automatic">Automatic (via webhook)</option>
+                                    <option value="manual">Manual review</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label for="supportPhone" class="form-label">Support Phone</label>
-                                <input type="text" id="supportPhone" class="form-control" placeholder="+251 911 000 000">
-                            </div>
-                            <div class="form-group">
-                                <label for="maxOrderQuantity" class="form-label">Max Order Quantity</label>
-                                <input type="number" id="maxOrderQuantity" class="form-control" min="1" value="10">
+                                <label for="paymentProvider" class="form-label">Default Provider</label>
+                                <select id="paymentProvider" class="form-select">
+                                    <option value="chapa">Chapa</option>
+                                </select>
                             </div>
                         </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="savePaymentBtn"><i class="fa-solid fa-check"></i> Save Payment Settings</button>
+                    </form>
+                </div>
+            </section>
 
-                        <hr class="form-divider">
-
+            <!-- ===== SECURITY ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-lock"></i> Security</h3></div>
+                <div class="card-body">
+                    <form id="securityForm">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-key"></i> Change Admin Password</h4>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Order Availability</label>
+                                <label for="currentPassword" class="form-label">Current Password</label>
+                                <input type="password" id="currentPassword" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword" class="form-label">New Password</label>
+                                <input type="password" id="newPassword" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                <input type="password" id="confirmPassword" class="form-control">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-warning mt-2 mb-4" id="changePasswordBtn"><i class="fa-solid fa-key"></i> Change Password</button>
+
+                        <hr class="form-divider">
+                        <h4 class="settings-subtitle"><i class="fa-solid fa-shield-halved"></i> Session & Access</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" id="sessionTimeout" class="form-control" min="5" max="1440" value="60">
+                            </div>
+                            <div class="form-group">
+                                <label for="loginMaxAttempts" class="form-label">Max Login Attempts</label>
+                                <input type="number" id="loginMaxAttempts" class="form-control" min="1" max="20" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Admin Account</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="adminAccountEnabled" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <small class="form-text">Enable/Disable admin account</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Two-Factor Authentication</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="twoFactorEnabled" disabled>
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <small class="form-text">Not configured for this installation</small>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveSecurityBtn"><i class="fa-solid fa-check"></i> Save Security Settings</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ===== ORDER SETTINGS ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-cart-shopping"></i> Order Settings</h3></div>
+                <div class="card-body">
+                    <form id="orderSettingsForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Allow Orders</label>
                                 <label class="switch">
                                     <input type="checkbox" id="orderAvailability" checked>
                                     <span class="switch-slider"></span>
-                                    <span class="switch-caption">Customers can place orders</span>
                                 </label>
+                                <small class="form-text">Customers can place orders</small>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Maintenance Mode</label>
                                 <label class="switch">
                                     <input type="checkbox" id="maintenanceMode">
                                     <span class="switch-slider"></span>
-                                    <span class="switch-caption">Temporarily disable ordering</span>
                                 </label>
+                                <small class="form-text">Temporarily disable ordering</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Allow Cancellation</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="orderCancellationEnabled" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                                <small class="form-text">Allow customers to cancel eligible orders</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="cancellationWindow" class="form-label">Cancellation Window (min)</label>
+                                <input type="number" id="cancellationWindow" class="form-control" min="0" max="1440" value="15">
+                            </div>
+                            <div class="form-group">
+                                <label for="maxOrderQuantity" class="form-label">Max Order Quantity</label>
+                                <input type="number" id="maxOrderQuantity" class="form-control" min="1" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="minimumOrderAmount" class="form-label">Minimum Order (ETB)</label>
+                                <input type="number" id="minimumOrderAmount" class="form-control" min="0" step="0.01" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="defaultPreparationTime" class="form-label">Default Prep Time (min)</label>
+                                <input type="number" id="defaultPreparationTime" class="form-control" min="1" max="240" value="15">
                             </div>
                         </div>
-
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-shield-halved"></i> Security Settings</h4>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label><input type="number" id="sessionTimeout" class="form-control" min="5" max="1440"></div>
-                            <div class="form-group"><label for="loginMaxAttempts" class="form-label">Maximum Login Attempts</label><input type="number" id="loginMaxAttempts" class="form-control" min="1" max="20"></div>
-                            <div class="form-group"><label class="form-label">Two-Factor Authentication</label><label class="switch"><input type="checkbox" id="twoFactorEnabled" disabled><span class="switch-slider"></span><span class="switch-caption">Not configured for this installation</span></label></div>
-                        </div>
-
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-cart-shopping"></i> Order Settings</h4>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="minimumOrderAmount" class="form-label">Minimum Order Amount (ETB)</label><input type="number" id="minimumOrderAmount" class="form-control" min="0" step="0.01"></div>
-                            <div class="form-group"><label for="cancellationWindow" class="form-label">Cancellation Window (minutes)</label><input type="number" id="cancellationWindow" class="form-control" min="0" max="1440"></div>
-                            <div class="form-group"><label for="defaultPreparationTime" class="form-label">Default Preparation Time (minutes)</label><input type="number" id="defaultPreparationTime" class="form-control" min="1" max="240"></div>
-                            <div class="form-group"><label class="form-label">Order Cancellation</label><label class="switch"><input type="checkbox" id="orderCancellationEnabled"><span class="switch-slider"></span><span class="switch-caption">Allow customers to cancel eligible orders</span></label></div>
-                        </div>
-
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-credit-card"></i> Payment Settings</h4>
-                        <div class="form-grid">
-                            <div class="form-group"><label class="form-label">Enabled Payment Methods</label><label class="switch"><input type="checkbox" id="paymentChapaEnabled"><span class="switch-slider"></span><span class="switch-caption">Chapa</span></label></div>
-                            <div class="form-group"><label for="paymentProvider" class="form-label">Default Payment Provider</label><select id="paymentProvider" class="form-select"><option value="chapa">Chapa</option></select></div>
-                            <div class="form-group"><label for="paymentStatusMode" class="form-label">Payment Status</label><select id="paymentStatusMode" class="form-select"><option value="automatic">Automatic</option><option value="manual">Manual review</option></select></div>
-                        </div>
-
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-globe"></i> Language Settings</h4>
-                        <div class="form-grid">
-                            <div class="form-group"><label for="defaultLanguage" class="form-label">Default System Language</label><select id="defaultLanguage" class="form-select"><option value="en">English</option><option value="am">Amharic</option></select></div>
-                        </div>
-
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-bell"></i> Notification Settings</h4>
-                        <div class="form-grid">
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyNewOrders"><span class="switch-slider"></span><span class="switch-caption">New order notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyPayments"><span class="switch-slider"></span><span class="switch-caption">Payment notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyLowStock"><span class="switch-slider"></span><span class="switch-caption">Low-stock notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyUserAccounts"><span class="switch-slider"></span><span class="switch-caption">User/account notifications</span></label></div>
-                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveOrderSettingsBtn"><i class="fa-solid fa-check"></i> Save Order Settings</button>
                     </form>
                 </div>
-                <div class="card-footer">
-                    <button type="button" class="btn btn-secondary" id="resetSettingsBtn"><i class="fa-solid fa-rotate-left"></i> Reset to Defaults</button>
-                    <button type="submit" class="btn btn-primary" id="saveSettingsBtn" form="settingsForm"><i class="fa-solid fa-check"></i> Save Settings</button>
+            </section>
+
+            <!-- ===== NOTIFICATIONS ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-bell"></i> Notifications</h3></div>
+                <div class="card-body">
+                    <form id="notificationForm">
+                        <div class="form-grid">
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyNewOrders" checked><span class="switch-slider"></span><span class="switch-caption">New order notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyPayments" checked><span class="switch-slider"></span><span class="switch-caption">Payment notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyLowStock" checked><span class="switch-slider"></span><span class="switch-caption">Low-stock notifications</span></label></div>
+                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyUserAccounts"><span class="switch-slider"></span><span class="switch-caption">User/account notifications</span></label></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveNotificationsBtn"><i class="fa-solid fa-check"></i> Save Notifications</button>
+                    </form>
                 </div>
             </section>
+
+            <!-- ===== APPEARANCE ===== -->
+            <section class="card mb-4">
+                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-palette"></i> Appearance</h3></div>
+                <div class="card-body">
+                    <form id="appearanceForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Theme</label>
+                                <select id="themeSelect" class="form-select">
+                                    <option value="light">Light Mode</option>
+                                    <option value="dark">Dark Mode</option>
+                                    <option value="system">System Default</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="faviconUrl" class="form-label">Favicon URL</label>
+                                <input type="url" id="faviconUrl" class="form-control" placeholder="https://example.com/favicon.ico">
+                            </div>
+                        </div>
+                        <div class="form-row upload-row mt-3">
+                            <div class="form-group">
+                                <label for="appearanceLogoFile" class="form-label">Upload Logo</label>
+                                <input type="file" id="appearanceLogoFile" class="form-control" accept="image/jpeg,image/png,image/svg+xml">
+                            </div>
+                            <div class="form-group">
+                                <label for="appearanceLogoUrl" class="form-label">...or Logo URL</label>
+                                <input type="url" id="appearanceLogoUrl" class="form-control" placeholder="https://example.com/logo.png">
+                            </div>
+                        </div>
+                        <div class="file-preview" id="appearanceLogoPreviewRow" style="display:none;">
+                            <img id="appearanceLogoPreview" alt="Preview">
+                            <button type="button" class="btn-remove-file" id="removeAppearanceLogoBtn"><i class="fa-solid fa-trash-can"></i> Remove</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3" id="saveAppearanceBtn"><i class="fa-solid fa-check"></i> Save Appearance</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ===== SAVE ALL ===== -->
+            <div class="d-flex justify-content-between mb-4">
+                <button type="button" class="btn btn-secondary" id="resetSettingsBtn"><i class="fa-solid fa-rotate-left"></i> Reset to Defaults</button>
+                <button type="button" class="btn btn-primary btn-lg" id="saveAllSettingsBtn"><i class="fa-solid fa-check-double"></i> Save All Settings</button>
+            </div>
         </main>
     </div>
 
-    <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/admin-settings.js"></script>
-
-    <script>
-        // Page-specific initialization
-        function initPageSpecific() {
-            // admin-settings.js handles initialization via its own DOMContentLoaded
-        }
-    </script>
 </body>
 </html>
-
-
