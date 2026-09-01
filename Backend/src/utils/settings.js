@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = [
   // operations
   { key: 'order_availability', value: true, type: 'boolean', group: 'operations', label: 'Order Availability' },
   { key: 'max_order_quantity', value: 10, type: 'number', group: 'operations', label: 'Maximum Order Quantity' },
+  { key: 'max_daily_orders', value: 100, type: 'number', group: 'operations', label: 'Max Daily Order Limit' },
   { key: 'maintenance_mode', value: false, type: 'boolean', group: 'operations', label: 'Maintenance Mode' },
 
   // orders
@@ -45,6 +46,8 @@ const DEFAULT_SETTINGS = [
   { key: 'notify_payments', value: true, type: 'boolean', group: 'notifications', label: 'Payment Notifications' },
   { key: 'notify_low_stock', value: true, type: 'boolean', group: 'notifications', label: 'Low Stock Notifications' },
   { key: 'notify_user_accounts', value: false, type: 'boolean', group: 'notifications', label: 'User Account Notifications' },
+  { key: 'notify_daily_sales', value: false, type: 'boolean', group: 'notifications', label: 'Daily Sales Summary Email' },
+  { key: 'notify_security_login', value: true, type: 'boolean', group: 'notifications', label: 'Security Login Alerts' },
 
   // appearance
   { key: 'theme', value: 'light', type: 'string', group: 'appearance', label: 'Theme' },

@@ -4,325 +4,502 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Smart Cafeteria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/src/css/admin.css">
-    <link rel="stylesheet" href="/src/css/image-upload.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+                        emerald: { 50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+        .toggle-checkbox { transition: all 0.3s ease; }
+        .toggle-label { transition: background-color 0.3s ease; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover { transition: all 0.2s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        .avatar-ring { box-shadow: 0 0 0 3px rgba(16,185,129,0.3); }
+        .input-focus:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .btn-gradient { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .btn-gradient:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .session-row:hover { background-color: #f0fdf4; }
+        .alert-slide { animation: slideDown 0.4s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body class="admin-body">
+<body class="bg-gray-50 min-h-screen">
+    <!-- Layout injected by admin-layout.js -->
     <header class="admin-navbar"></header>
-    <div class="admin-container">
+    <div class="admin-container flex">
         <aside class="admin-sidebar" id="adminSidebar"></aside>
-        <main class="admin-main">
-            <div class="page-header">
-                <div>
-                    <h1>Settings</h1>
-                    <p class="subtitle">Configure system-wide cafeteria settings.</p>
+
+        <main class="admin-main flex-1 p-6 lg:p-8 max-w-6xl mx-auto">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <i class="fa-solid fa-gear text-emerald-600 text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
+                        <p class="text-sm text-gray-500">Configure your cafeteria system preferences</p>
+                    </div>
                 </div>
             </div>
 
-            <div id="settingsAlert" class="alert-banner" style="display:none;"></div>
+            <!-- Alert Banner -->
+            <div id="settingsAlert" class="hidden mb-6 p-4 rounded-xl text-sm font-medium alert-slide"></div>
 
-            <!-- ===== ADMIN PROFILE ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-user-shield"></i> Admin Profile</h3></div>
-                <div class="card-body">
+            <!-- ===== SECTION 1: ADMIN PROFILE ===== -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <i class="fa-solid fa-user-shield text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Admin Profile</h2>
+                            <p class="text-xs text-gray-500">Manage your personal account details</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
                     <form id="adminProfileForm">
-                        <div class="form-grid">
-                            <div class="form-group"><label for="adminProfileName" class="form-label">Admin Name</label><input id="adminProfileName" class="form-control" required></div>
-                            <div class="form-group"><label for="adminProfileEmail" class="form-label">Email</label><input id="adminProfileEmail" type="email" class="form-control" required></div>
-                            <div class="form-group"><label for="adminProfilePhone" class="form-label">Phone</label><input id="adminProfilePhone" class="form-control" required></div>
-                            <div class="form-group"><label for="adminProfileAvatar" class="form-label">Profile Image URL</label><input id="adminProfileAvatar" type="url" class="form-control" placeholder="https://example.com/admin.jpg"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveAdminProfileBtn"><i class="fa-solid fa-check"></i> Save Profile</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- ===== CAFETERIA INFORMATION ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-building"></i> Cafeteria Information</h3></div>
-                <div class="card-body">
-                    <form id="cafeteriaInfoForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="cafeteriaName" class="form-label">Cafeteria Name <span class="required">*</span></label>
-                                <input type="text" id="cafeteriaName" class="form-control" placeholder="Smart Cafeteria">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaPhone" class="form-label">Phone Number</label>
-                                <input type="tel" id="cafeteriaPhone" class="form-control" placeholder="+251 911 000 000">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaEmail" class="form-label">Email Address</label>
-                                <input type="email" id="cafeteriaEmail" class="form-control" placeholder="info@cafeteria.com">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaAddress" class="form-label">Address</label>
-                                <input type="text" id="cafeteriaAddress" class="form-control" placeholder="Addis Ababa, Ethiopia">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaOpeningTime" class="form-label">Opening Time</label>
-                                <input type="time" id="cafeteriaOpeningTime" class="form-control" value="07:00">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaClosingTime" class="form-label">Closing Time</label>
-                                <input type="time" id="cafeteriaClosingTime" class="form-control" value="22:00">
-                            </div>
-                        </div>
-                        <div class="form-group mt-3">
-                            <label for="cafeteriaDescription" class="form-label">Description</label>
-                            <textarea id="cafeteriaDescription" class="form-control" rows="2" placeholder="Short description of your cafeteria"></textarea>
-                        </div>
-                        <div class="form-row upload-row mt-3">
-                            <div class="form-group">
-                                <label for="cafeteriaLogoFile" class="form-label">Upload Logo (JPG, PNG, max 2 MB)</label>
-                                <input type="file" id="cafeteriaLogoFile" class="form-control" accept="image/jpeg,image/png">
-                            </div>
-                            <div class="form-group">
-                                <label for="cafeteriaLogoUrl" class="form-label">...or Logo URL</label>
-                                <input type="url" id="cafeteriaLogoUrl" class="form-control" placeholder="https://example.com/logo.png">
-                            </div>
-                        </div>
-                        <div class="file-preview" id="logoPreviewRow" style="display:none;">
-                            <img id="logoPreview" alt="Preview">
-                            <button type="button" class="btn-remove-file" id="removeLogoBtn"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveCafeInfoBtn"><i class="fa-solid fa-check"></i> Save Cafeteria Info</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- ===== LANGUAGE ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-globe"></i> Language Settings</h3></div>
-                <div class="card-body">
-                    <form id="languageForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="defaultLanguage" class="form-label">Default Language</label>
-                                <select id="defaultLanguage" class="form-select">
-                                    <option value="en">English</option>
-                                    <option value="am">Amharic</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Allow Language Switching</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="allowLanguageSwitch" checked>
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Let users switch between languages</small>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveLanguageBtn"><i class="fa-solid fa-check"></i> Save Language</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- ===== PAYMENT SETTINGS ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-credit-card"></i> Payment Settings</h3></div>
-                <div class="card-body">
-                    <form id="paymentForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Enable Chapa</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="paymentChapaEnabled" checked>
-                                    <span class="switch-slider"></span>
+                        <!-- Avatar + Info Row -->
+                        <div class="flex flex-col sm:flex-row items-start gap-6 mb-6">
+                            <div class="relative group">
+                                <div id="profileAvatarCircle" class="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-3xl font-bold avatar-ring cursor-pointer">
+                                    A
+                                </div>
+                                <label class="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer border border-gray-200 hover:bg-emerald-50 transition-colors">
+                                    <i class="fa-solid fa-pen text-xs text-emerald-600"></i>
+                                    <input type="file" id="avatarFileInput" class="hidden" accept="image/*">
                                 </label>
                             </div>
-                            <div class="form-group">
-                                <label for="paymentCurrency" class="form-label">Currency</label>
-                                <select id="paymentCurrency" class="form-select">
-                                    <option value="ETB">ETB - Ethiopian Birr</option>
-                                    <option value="USD">USD - US Dollar</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="paymentStatusMode" class="form-label">Payment Verification</label>
-                                <select id="paymentStatusMode" class="form-select">
-                                    <option value="automatic">Automatic (via webhook)</option>
-                                    <option value="manual">Manual review</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="paymentProvider" class="form-label">Default Provider</label>
-                                <select id="paymentProvider" class="form-select">
-                                    <option value="chapa">Chapa</option>
-                                </select>
+                            <div class="flex-1">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+                                        <input type="text" id="adminProfileName" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Admin User">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+                                        <input type="email" id="adminProfileEmail" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="admin@gmail.com">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                                        <input type="tel" id="adminProfilePhone" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="0911223344">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Profile Image URL</label>
+                                        <input type="url" id="adminProfileAvatar" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="https://example.com/avatar.jpg">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="savePaymentBtn"><i class="fa-solid fa-check"></i> Save Payment Settings</button>
+                        <div class="flex justify-end">
+                            <button type="submit" id="saveAdminProfileBtn" class="px-6 py-2.5 btn-gradient text-white rounded-xl text-sm font-semibold shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> Save Profile Changes
+                            </button>
+                        </div>
                     </form>
                 </div>
             </section>
 
-            <!-- ===== SECURITY ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-lock"></i> Security</h3></div>
-                <div class="card-body">
-                    <form id="securityForm">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-key"></i> Change Admin Password</h4>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="currentPassword" class="form-label">Current Password</label>
-                                <input type="password" id="currentPassword" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="newPassword" class="form-label">New Password</label>
-                                <input type="password" id="newPassword" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                                <input type="password" id="confirmPassword" class="form-control">
-                            </div>
+            <!-- ===== SECTION 2: SECURITY SETTINGS ===== -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center">
+                            <i class="fa-solid fa-shield-halved text-red-600"></i>
                         </div>
-                        <button type="button" class="btn btn-warning mt-2 mb-4" id="changePasswordBtn"><i class="fa-solid fa-key"></i> Change Password</button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Security Settings</h2>
+                            <p class="text-xs text-gray-500">Protect your account with password and 2FA</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <!-- Password Change -->
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-500"></i> Change Password
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
+                            <input type="password" id="currentPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter current password">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+                            <input type="password" id="newPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter new password">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                    <div class="flex justify-start mb-6">
+                        <button type="button" id="changePasswordBtn" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-key"></i> Update Security
+                        </button>
+                    </div>
 
-                        <hr class="form-divider">
-                        <h4 class="settings-subtitle"><i class="fa-solid fa-shield-halved"></i> Session & Access</h4>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
-                                <input type="number" id="sessionTimeout" class="form-control" min="5" max="1440" value="60">
-                            </div>
-                            <div class="form-group">
-                                <label for="loginMaxAttempts" class="form-label">Max Login Attempts</label>
-                                <input type="number" id="loginMaxAttempts" class="form-control" min="1" max="20" value="5">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Admin Account</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="adminAccountEnabled" checked>
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Enable/Disable admin account</small>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Two-Factor Authentication</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="twoFactorEnabled" disabled>
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Not configured for this installation</small>
-                            </div>
+                    <hr class="border-gray-100 my-6">
+
+                    <!-- 2FA Toggle -->
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-lock text-emerald-500"></i> Two-Factor Authentication
+                    </h3>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Two-Factor Authentication (2FA)</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Add an extra layer of security to your account</p>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveSecurityBtn"><i class="fa-solid fa-check"></i> Save Security Settings</button>
-                    </form>
+                        <div class="relative inline-block w-12 align-middle select-none">
+                            <input type="checkbox" id="twoFactorEnabled" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                            <label for="twoFactorEnabled" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- ===== ORDER SETTINGS ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-cart-shopping"></i> Order Settings</h3></div>
-                <div class="card-body">
-                    <form id="orderSettingsForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Allow Orders</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="orderAvailability" checked>
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Customers can place orders</small>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Maintenance Mode</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="maintenanceMode">
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Temporarily disable ordering</small>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Allow Cancellation</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="orderCancellationEnabled" checked>
-                                    <span class="switch-slider"></span>
-                                </label>
-                                <small class="form-text">Allow customers to cancel eligible orders</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="cancellationWindow" class="form-label">Cancellation Window (min)</label>
-                                <input type="number" id="cancellationWindow" class="form-control" min="0" max="1440" value="15">
-                            </div>
-                            <div class="form-group">
-                                <label for="maxOrderQuantity" class="form-label">Max Order Quantity</label>
-                                <input type="number" id="maxOrderQuantity" class="form-control" min="1" value="10">
-                            </div>
-                            <div class="form-group">
-                                <label for="minimumOrderAmount" class="form-label">Minimum Order (ETB)</label>
-                                <input type="number" id="minimumOrderAmount" class="form-control" min="0" step="0.01" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="defaultPreparationTime" class="form-label">Default Prep Time (min)</label>
-                                <input type="number" id="defaultPreparationTime" class="form-control" min="1" max="240" value="15">
-                            </div>
+            <!-- ===== SECTION 3: SYSTEM CONFIGURATION ===== -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
+                            <i class="fa-solid fa-sliders text-purple-600"></i>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveOrderSettingsBtn"><i class="fa-solid fa-check"></i> Save Order Settings</button>
-                    </form>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">System Configuration</h2>
+                            <p class="text-xs text-gray-500">Cafeteria operating rules and order limits</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <!-- Operating Hours -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                <i class="fa-regular fa-clock text-gray-400 mr-1"></i> Start Time
+                            </label>
+                            <input type="time" id="cafeteriaOpeningTime" value="07:00" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                <i class="fa-regular fa-clock text-gray-400 mr-1"></i> End Time
+                            </label>
+                            <input type="time" id="cafeteriaClosingTime" value="22:00" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all">
+                        </div>
+
+                        <!-- Currency -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                <i class="fa-solid fa-coins text-gray-400 mr-1"></i> Default Currency
+                            </label>
+                            <select id="paymentCurrency" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all appearance-none">
+                                <option value="ETB">ETB - Ethiopian Birr</option>
+                                <option value="USD">USD - US Dollar</option>
+                            </select>
+                        </div>
+
+                        <!-- Max Daily Orders -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                                <i class="fa-solid fa-list-ol text-gray-400 mr-1"></i> Max Daily Order Limit
+                            </label>
+                            <input type="number" id="maxDailyOrders" value="100" min="1" max="9999" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Online Ordering Toggle -->
+                    <div class="mt-5 flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Online Ordering</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Allow customers to place orders through the system</p>
+                        </div>
+                        <div class="relative inline-block w-12 align-middle select-none">
+                            <input type="checkbox" id="orderAvailability" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                            <label for="orderAvailability" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-5">
+                        <button type="button" id="saveSystemConfigBtn" class="px-6 py-2.5 btn-gradient text-white rounded-xl text-sm font-semibold shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> Save System Config
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            <!-- ===== NOTIFICATIONS ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-bell"></i> Notifications</h3></div>
-                <div class="card-body">
-                    <form id="notificationForm">
-                        <div class="form-grid">
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyNewOrders" checked><span class="switch-slider"></span><span class="switch-caption">New order notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyPayments" checked><span class="switch-slider"></span><span class="switch-caption">Payment notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyLowStock" checked><span class="switch-slider"></span><span class="switch-caption">Low-stock notifications</span></label></div>
-                            <div class="form-group"><label class="switch"><input type="checkbox" id="notifyUserAccounts"><span class="switch-slider"></span><span class="switch-caption">User/account notifications</span></label></div>
+            <!-- ===== SECTION 4: NOTIFICATION PREFERENCES ===== -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                            <i class="fa-solid fa-bell text-amber-600"></i>
                         </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveNotificationsBtn"><i class="fa-solid fa-check"></i> Save Notifications</button>
-                    </form>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Notification Preferences</h2>
+                            <p class="text-xs text-gray-500">Choose which alerts you want to receive</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- New Order Alerts -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-cart-shopping text-emerald-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">New Order Alerts</p>
+                                    <p class="text-xs text-gray-500">Get notified for each new order</p>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-12 align-middle select-none">
+                                <input type="checkbox" id="notifyNewOrders" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                                <label for="notifyNewOrders" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <!-- Low Stock Alerts -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-box-open text-orange-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Low Stock Alerts</p>
+                                    <p class="text-xs text-gray-500">Alert when menu items are running low</p>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-12 align-middle select-none">
+                                <input type="checkbox" id="notifyLowStock" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                                <label for="notifyLowStock" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <!-- Daily Sales Summary -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-chart-line text-blue-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Daily Sales Summary Email</p>
+                                    <p class="text-xs text-gray-500">Receive a daily revenue report</p>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-12 align-middle select-none">
+                                <input type="checkbox" id="notifyDailySales" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                                <label for="notifyDailySales" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+
+                        <!-- Security Login Alerts -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-shield-halved text-red-600 text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Security Login Alerts</p>
+                                    <p class="text-xs text-gray-500">Alert on new device logins</p>
+                                </div>
+                            </div>
+                            <div class="relative inline-block w-12 align-middle select-none">
+                                <input type="checkbox" id="notifySecurityLogin" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer" style="top:0;left:0;">
+                                <label for="notifySecurityLogin" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end mt-5">
+                        <button type="button" id="saveNotificationsBtn" class="px-6 py-2.5 btn-gradient text-white rounded-xl text-sm font-semibold shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> Save Preferences
+                        </button>
+                    </div>
                 </div>
             </section>
 
-            <!-- ===== APPEARANCE ===== -->
-            <section class="card mb-4">
-                <div class="card-header"><h3 class="section-title"><i class="fa-solid fa-palette"></i> Appearance</h3></div>
-                <div class="card-body">
-                    <form id="appearanceForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Theme</label>
-                                <select id="themeSelect" class="form-select">
-                                    <option value="light">Light Mode</option>
-                                    <option value="dark">Dark Mode</option>
-                                    <option value="system">System Default</option>
-                                </select>
+            <!-- ===== SECTION 5: ACTIVE SESSIONS & ACTIVITY LOGS ===== -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 card-hover">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                <i class="fa-solid fa-desktop text-indigo-600"></i>
                             </div>
-                            <div class="form-group">
-                                <label for="faviconUrl" class="form-label">Favicon URL</label>
-                                <input type="url" id="faviconUrl" class="form-control" placeholder="https://example.com/favicon.ico">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Active Sessions & Activity Logs</h2>
+                                <p class="text-xs text-gray-500">Monitor devices and track admin activity</p>
                             </div>
                         </div>
-                        <div class="form-row upload-row mt-3">
-                            <div class="form-group">
-                                <label for="appearanceLogoFile" class="form-label">Upload Logo</label>
-                                <input type="file" id="appearanceLogoFile" class="form-control" accept="image/jpeg,image/png,image/svg+xml">
-                            </div>
-                            <div class="form-group">
-                                <label for="appearanceLogoUrl" class="form-label">...or Logo URL</label>
-                                <input type="url" id="appearanceLogoUrl" class="form-control" placeholder="https://example.com/logo.png">
-                            </div>
-                        </div>
-                        <div class="file-preview" id="appearanceLogoPreviewRow" style="display:none;">
-                            <img id="appearanceLogoPreview" alt="Preview">
-                            <button type="button" class="btn-remove-file" id="removeAppearanceLogoBtn"><i class="fa-solid fa-trash-can"></i> Remove</button>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3" id="saveAppearanceBtn"><i class="fa-solid fa-check"></i> Save Appearance</button>
-                    </form>
+                        <button type="button" id="refreshSessionsBtn" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <!-- Active Sessions Table -->
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Device</th>
+                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Browser</th>
+                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">IP Address</th>
+                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Last Active</th>
+                                    <th class="text-left px-5 py-3 font-semibold text-gray-600">Status</th>
+                                    <th class="text-center px-5 py-3 font-semibold text-gray-600">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsTableBody">
+                                <!-- Session 1 -->
+                                <tr class="border-b border-gray-100 session-row transition-colors">
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                                <i class="fa-solid fa-laptop text-emerald-600 text-xs"></i>
+                                            </div>
+                                            <span class="font-medium text-gray-900">MacBook Pro</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-brands fa-chrome text-blue-500"></i>
+                                            <span class="text-gray-700">Chrome 120.0</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">192.168.1.105</code>
+                                    </td>
+                                    <td class="px-5 py-4 text-gray-500 text-xs">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                                            Just now
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">
+                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Active
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4 text-center">
+                                        <button onclick="terminateSession(this, 'MacBook Pro')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
+                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Session 2 -->
+                                <tr class="border-b border-gray-100 session-row transition-colors">
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <i class="fa-solid fa-desktop text-blue-600 text-xs"></i>
+                                            </div>
+                                            <span class="font-medium text-gray-900">Windows PC</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-brands fa-firefox text-orange-500"></i>
+                                            <span class="text-gray-700">Firefox 121.0</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">10.0.0.42</code>
+                                    </td>
+                                    <td class="px-5 py-4 text-gray-500 text-xs">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                                            2 hours ago
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
+                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> Idle
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4 text-center">
+                                        <button onclick="terminateSession(this, 'Windows PC')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
+                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Session 3 -->
+                                <tr class="session-row transition-colors">
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                                <i class="fa-solid fa-mobile-screen text-purple-600 text-xs"></i>
+                                            </div>
+                                            <span class="font-medium text-gray-900">iPhone 15</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-brands fa-safari text-blue-400"></i>
+                                            <span class="text-gray-700">Safari 17.2</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <code class="px-2 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">172.16.0.8</code>
+                                    </td>
+                                    <td class="px-5 py-4 text-gray-500 text-xs">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                                            1 day ago
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">
+                                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full"></span> Idle
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4 text-center">
+                                        <button onclick="terminateSession(this, 'iPhone 15')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors">
+                                            <i class="fa-solid fa-right-from-bracket mr-1"></i> Terminate
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- View Full Log History -->
+                    <div class="mt-4 flex justify-end">
+                        <a href="activity.html" class="inline-flex items-center gap-2 px-5 py-2.5 text-indigo-600 bg-indigo-50 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-all">
+                            <i class="fa-solid fa-arrow-right"></i> View Full Log History
+                        </a>
+                    </div>
                 </div>
             </section>
 
-            <!-- ===== SAVE ALL ===== -->
-            <div class="d-flex justify-content-between mb-4">
-                <button type="button" class="btn btn-secondary" id="resetSettingsBtn"><i class="fa-solid fa-rotate-left"></i> Reset to Defaults</button>
-                <button type="button" class="btn btn-primary btn-lg" id="saveAllSettingsBtn"><i class="fa-solid fa-check-double"></i> Save All Settings</button>
+            <!-- ===== BOTTOM ACTIONS ===== -->
+            <div class="flex items-center justify-between mb-8">
+                <button type="button" id="resetSettingsBtn" class="px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Reset to Defaults
+                </button>
+                <button type="button" id="saveAllSettingsBtn" class="px-8 py-3 btn-gradient text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-check-double"></i> Save All Settings
+                </button>
             </div>
         </main>
     </div>
@@ -332,5 +509,51 @@
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/admin-settings.js"></script>
+    <script>
+        /* ---------- Session termination ---------- */
+        function terminateSession(btn, device) {
+            if (!confirm('Terminate session for ' + device + '?')) return;
+            const row = btn.closest('tr');
+            row.style.opacity = '0.5';
+            row.style.transform = 'translateX(20px)';
+            row.style.transition = 'all 0.3s ease';
+            setTimeout(() => { row.remove(); }, 300);
+            showToast('Session terminated for ' + device, 'success');
+        }
+
+        /* ---------- Toggle switch styling fix ---------- */
+        document.querySelectorAll('.toggle-checkbox').forEach(cb => {
+            function updateToggle() {
+                const label = cb.nextElementSibling;
+                if (cb.checked) {
+                    label.classList.remove('bg-gray-300');
+                    label.classList.add('bg-emerald-500');
+                    cb.classList.remove('border-gray-300');
+                    cb.classList.add('border-emerald-500');
+                } else {
+                    label.classList.remove('bg-emerald-500');
+                    label.classList.add('bg-gray-300');
+                    cb.classList.remove('border-emerald-500');
+                    cb.classList.add('border-gray-300');
+                }
+            }
+            updateToggle();
+            cb.addEventListener('change', updateToggle);
+        });
+
+        function showToast(message, type) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (type || 'success');
+            toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:12px;color:white;font-size:14px;font-weight:500;box-shadow:0 10px 40px rgba(0,0,0,0.15);animation:slideDown 0.4s ease-out;';
+            if (type === 'error') toast.style.background = '#ef4444';
+            else if (type === 'warning') toast.style.background = '#f59e0b';
+            else toast.style.background = '#10b981';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+    </script>
 </body>
 </html>
