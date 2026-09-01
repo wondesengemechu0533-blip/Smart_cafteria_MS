@@ -12,11 +12,15 @@ const { ORDER_STATUS, MESSAGES, HTTP_STATUS } = require('../config/constants');
 */
 exports.getKitchenDashboard = async (req, res) => {
 try {
+// ✅ Only show orders from the last 24 hours (stale orders get filtered out)
+const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
 // ✅ Get all active orders (pending, preparing, ready)
 const activeOrders = await
 
 Order.find({
-status: { $in: ['pending', 'preparing', 'ready'] }
+status: { $in: ['pending', 'preparing', 'ready'] },
+createdAt: { $gte: cutoff }
 })
 .populate('userId', 'name phone')
 .sort({ createdAt: 1 });
@@ -80,9 +84,13 @@ exports.getKitchenOrders = async (req, res) => {
 try {
 const { status } = req.query;
 
+// ✅ Only show orders from the last 24 hours (stale orders get filtered out)
+const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
 // ✅ Build filter
 let filter = {};
 filter.paymentStatus = 'PAID';
+filter.createdAt = { $gte: cutoff };
 if (status && status !== 'all') {
 filter.status = status;
 } else {
