@@ -14,7 +14,7 @@ const {
 const { validateReportQuery } = require('../validators/report.validator');
 
 router.use(protect);
-router.use(authorize('admin'));
+router.use(authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'));
 
 router.get('/daily', validateQuery(validateReportQuery), getDailyOrdersReport);
 router.get('/sales', validateQuery(validateReportQuery), getSalesReport);

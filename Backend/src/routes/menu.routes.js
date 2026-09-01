@@ -21,15 +21,15 @@ const {
 } = require("../validators/admin.validator");
 
 router.get("/", getAllMenuItems);
-router.get("/stats", protect, authorize("admin"), getMenuStats);
+router.get("/stats", protect, authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"), getMenuStats);
+
 router.get("/featured", getFeaturedItems);
 router.get("/category/:category", getMenuItemsByCategory);
 router.get("/:id", getMenuItemById);
 router.get("/:id/related", getRelatedItems);
 
-router.post("/", protect, authorize("admin"), validateBody(validateCreateMenuItem), createMenuItem);
-router.put("/:id", protect, authorize("admin"), validateBody(validateUpdateMenuItem), updateMenuItem);
-router.delete("/:id", protect, authorize("admin"), deleteMenuItem);
-router.patch("/:id/availability", protect, authorize("admin"), validateBody(validateToggleAvailability), toggleAvailability);
-
+router.post("/", protect, authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"), validateBody(validateCreateMenuItem), createMenuItem);
+router.put("/:id", protect, authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"), validateBody(validateUpdateMenuItem), updateMenuItem);
+router.delete("/:id", protect, authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"), deleteMenuItem);
+router.patch("/:id/availability", protect, authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"), validateBody(validateToggleAvailability), toggleAvailability);
 module.exports = router;

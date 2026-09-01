@@ -16,10 +16,10 @@ const { validateFeedbackInput } = require('../validators/feedback.validator');
 router.post('/', protect, validateBody(validateFeedbackInput), submitFeedback);
 router.get('/my', protect, getMyFeedback);
 
-router.get('/', protect, authorize('admin'), getAllFeedback);
-router.get('/stats', protect, authorize('admin'), getFeedbackStats);
-router.get('/:id', protect, authorize('admin'), getFeedbackById);
-router.patch('/:id/reply', protect, authorize('admin'), replyToFeedback);
-router.delete('/:id', protect, authorize('admin'), deleteFeedback);
+router.get('/', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getAllFeedback);
+router.get('/stats', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getFeedbackStats);
+router.get('/:id', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getFeedbackById);
+router.patch('/:id/reply', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), replyToFeedback);
+router.delete('/:id', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), deleteFeedback);
 
 module.exports = router;

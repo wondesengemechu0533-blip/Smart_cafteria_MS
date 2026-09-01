@@ -22,8 +22,8 @@ router.post('/validate', protect, validateBody(validatePaymentVerification), val
 router.get('/my', protect, getMyPayments);
 router.get('/order/:orderId', protect, getPaymentByOrder);
 
-router.get('/stats', protect, authorize('admin'), getPaymentStats);
-router.get('/', protect, authorize('admin'), validateBody(validateAdminPaymentFilter), getAllPayments);
+router.get('/stats', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getPaymentStats);
+router.get('/', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), validateBody(validateAdminPaymentFilter), getAllPayments);
 
 router.post('/chapa/initialize', protect, initializeChapaPayment);
 router.post('/chapa/callback', chapaCallback);

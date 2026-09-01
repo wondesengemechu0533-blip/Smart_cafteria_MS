@@ -239,8 +239,14 @@
 
   // Auth guard + profile population
   function initAuthGuard() {
-    var userRole = localStorage.getItem('userRole');
-    if (!userRole || (userRole !== 'ADMIN' && userRole !== 'Admin' && userRole !== 'admin')) {
+    var userRole = (localStorage.getItem('userRole') || '').toLowerCase();
+    var role = (localStorage.getItem('role') || '').toLowerCase();
+    var allowedRoles = ['admin', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'];
+    if (!userRole && !role) {
+      window.location.href = '../../pages/common/login.html';
+      return false;
+    }
+    if (!allowedRoles.includes(userRole) && !allowedRoles.includes(role)) {
       window.location.href = '../../pages/common/login.html';
       return false;
     }

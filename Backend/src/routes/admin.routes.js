@@ -12,10 +12,10 @@ const {
 const { changePassword } = require("../controllers/auth.controller");
 
 // ============================================================
-//  ALL ROUTES REQUIRE ADMIN ROLE
+//  ALL ROUTES REQUIRE ADMIN, STAFF, OR KITCHEN ROLE
 // ============================================================
 router.use(protect);
-router.use(authorize("admin", "ADMIN"));
+router.use(authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"));
 
 /**
  * @route   GET /api/admin/dashboard

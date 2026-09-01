@@ -43,21 +43,21 @@ router.get('/:orderId/check', protect, checkCancellationEligibility);
  * @access  Private/Admin
  * Query: search, status, paymentStatus, refundStatus, date, from, to, sort, page, limit
  */
-router.get('/', protect, authorize('admin'), getCancellations);
+router.get('/', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getCancellations);
 
 /**
  * @route   GET /api/v1/cancellations/stats
  * @desc    Get cancellation statistics
  * @access  Private/Admin
  */
-router.get('/stats', protect, authorize('admin'), getCancellationStats);
+router.get('/stats', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getCancellationStats);
 
 /**
  * @route   GET /api/v1/cancellations/:id
  * @desc    Get single cancellation (by cancellation id, number, or orderId)
  * @access  Private/Admin
  */
-router.get('/:id', protect, authorize('admin'), getCancellationById);
+router.get('/:id', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getCancellationById);
 
 /**
  * @route   PATCH /api/v1/cancellations/:id/approve
