@@ -1,95 +1,69 @@
 /**
  * ================================================================
- * SMART CAFETERIA ORDERING SYSTEM - USER MANAGEMENT
+ * SMART CAFETERIA - USER MANAGEMENT (All 6 Actions)
  * ================================================================
- * Admin User Management driven by the backend API:
- *   GET    /admin/users            (list/search/filter/paginate)
+ * Actions: View, Edit, ID Card, Reset Password, Block/Unblock, Delete
+ *
+ * API endpoints:
+ *   GET    /admin/users            (list)
  *   GET    /admin/users/:id        (details)
  *   GET    /admin/users/stats      (statistics)
  *   POST   /admin/users            (create)
  *   PUT    /admin/users/:id        (update)
- *   PATCH  /admin/users/:id/status (activate / deactivate / suspend)
+ *   PATCH  /admin/users/:id/status (toggle status)
  *   PATCH  /admin/users/:id/role   (assign role)
  *   PATCH  /admin/users/:id/password (reset password)
- *   DELETE /admin/users/:id        (soft-delete / deactivate)
- *
- * Requires window.AdminAPI (admin-api.js) loaded first.
+ *   DELETE /admin/users/:id        (delete)
  * ================================================================
  */
 (function () {
   "use strict";
 
-  var state = {
-    page: 1,
-    limit: 10,
-    search: "",
-    role: "",
-    status: "",
-    total: 0,
-    pages: 1
-  };
+  var state = { page: 1, limit: 10, search: "", role: "", status: "", total: 0, pages: 1 };
+  var pendingToggleUser = null;
+  var pendingDeleteUser = null;
 
-  /* ---- Role helpers ---- */
+  /* ----------------------------------------------------------------
+   * HELPERS
+   * ---------------------------------------------------------------- */
   var ROLE_LABELS = {
-    customer: { en: "Customer", am: "ተጠቃሚ", om: "Maaldaa" },
-    kitchen:  { en: "Kitchen Staff / Food Maker", am: "የኩሽና ሰራተኛ / ምግብ አዘጋጅ", om: "Hojjettaa Mana Caccabsaa" },
-    admin:    { en: "Admin", am: "አስተዳዳሪ", om: "Haadhaa" }
+    customer: { en: "Customer" },
+    kitchen:  { en: "Kitchen Staff" },
+    admin:    { en: "Admin" }
   };
-
   var STATUS_LABELS = {
-    ACTIVE:    { en: "Active",   am: "ንቁ",     om: "Naqqa" },
-    BLOCKED:   { en: "Blocked",  am: "ተቋርጧል", om: "Cufame" },
-    SUSPENDED: { en: "Suspended", am: "ተinee十余", om: "Hakiinamaa" }
+    ACTIVE:    { en: "Active" },
+    BLOCKED:   { en: "Blocked" },
+    SUSPENDED: { en: "Suspended" },
+    INACTIVE:  { en: "Inactive" }
   };
 
   function getLang() {
-    try {
-      return (window.getCurrentLanguage && window.getCurrentLanguage()) || localStorage.getItem("scos_language") || localStorage.getItem("cafeteria_language") || "en";
-    } catch (e) { return "en"; }
+    try { return (window.getCurrentLanguage && window.getCurrentLanguage()) || localStorage.getItem("scos_language") || "en"; }
+    catch (e) { return "en"; }
   }
-
   function t(key) {
-    try {
-      if (window.getText) {
-        var v = window.getText(key);
-        if (v !== key) return v;
-      }
-    } catch (e) {}
+    try { if (window.getText) { var v = window.getText(key); if (v !== key) return v; } } catch (e) {}
     return key;
   }
-
-  function roleLabel(role) {
-    var labels = ROLE_LABELS[role];
-    if (!labels) return role || "\u2014";
-    return labels[getLang()] || labels.en || role;
-  }
-
-  function statusLabel(status) {
-    var labels = STATUS_LABELS[status];
-    if (!labels) return status || "\u2014";
-    return labels[getLang()] || labels.en || status;
-  }
-
+  function roleLabel(role) { var l = ROLE_LABELS[role]; return l ? (l[getLang()] || l.en) : (role || "—"); }
+  function statusLabel(s) { var l = STATUS_LABELS[s]; return l ? (l[getLang()] || l.en) : (s || "—"); }
+  function esc(str) { return window.esc ? window.esc(str) : String(str || ""); }
+  function avatarInitial(name) { return (name && name.charAt(0).toUpperCase()) || "U"; }
+  function formatDate(v) { return window.AdminAPI ? window.AdminAPI.formatDate(v) : new Date(v).toLocaleDateString(); }
+  function formatDateTime(v) { return window.AdminAPI ? window.AdminAPI.formatDateTime(v) : new Date(v).toLocaleString(); }
   function currentAdminId() {
     try {
       var token = window.AdminAPI.getToken();
       if (!token) return null;
-      var payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
-      return payload.id || null;
+      return JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).id || null;
     } catch (e) { return null; }
   }
-
   var adminId = currentAdminId();
 
-  /* ---- Display helpers ---- */
-  function money(value) {
-    if (value === null || value === undefined) return "0";
-    return Number(value).toLocaleString("en-US");
-  }
-
   function rolePill(role) {
-    var cls = "role-pill";
     var r = String(role || "").toUpperCase();
+    var cls = "role-pill";
     if (r === "ADMIN") cls += " role-admin";
     else if (r === "KITCHEN") cls += " role-kitchen";
     else cls += " role-customer";
@@ -105,127 +79,100 @@
     return '<span class="' + cls + '">' + esc(statusLabel(status)) + "</span>";
   }
 
-  function esc(str) {
-    return window.esc ? window.esc(str) : String(str || "");
-  }
+  /* ----------------------------------------------------------------
+   * MODAL UTILS
+   * ---------------------------------------------------------------- */
+  function openModal(id) { var el = document.getElementById(id); if (el) el.classList.add("open"); }
+  function closeModal(id) { var el = document.getElementById(id); if (el) el.classList.remove("open"); }
+  function closeAllModals() { document.querySelectorAll(".modal-overlay.open").forEach(function (m) { m.classList.remove("open"); }); }
 
-  function avatarInitial(name) {
-    return (name && name.charAt(0).toUpperCase()) || "U";
-  }
-
-  function formatDate(v) { return window.AdminAPI.formatDate(v); }
-  function formatDateTime(v) { return window.AdminAPI.formatDateTime(v); }
-
-  /* ============================================================
-   * MODALS
-   * ============================================================ */
-  function openModal(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.add("open");
-  }
-  function closeModal(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.remove("open");
-  }
-  function closeAllModals() {
-    document.querySelectorAll(".modal-overlay.open").forEach(function (m) { m.classList.remove("open"); });
-  }
-
-  /* ============================================================
-   * DATA LOADING
-   * ============================================================ */
+  /* ----------------------------------------------------------------
+   * LOAD DATA
+   * ---------------------------------------------------------------- */
   async function loadStats() {
     try {
       var data = await window.AdminAPI.get("/admin/users/stats");
-      var stats = data.stats || {};
-      var el1 = document.getElementById("metricTotalUsers");
-      var el2 = document.getElementById("metricActiveCustomers");
-      var el3 = document.getElementById("metricStaff");
-      var el4 = document.getElementById("metricBlockedUsers");
-      if (el1) el1.textContent = stats.totalUsers || 0;
-      if (el2) el2.textContent = stats.activeCustomers || 0;
-      if (el3) el3.textContent = stats.staffCount || 0;
-      if (el4) el4.textContent = stats.blockedCount || 0;
-    } catch (e) {
-      // stats are supplementary; ignore failures
-    }
+      var s = data.stats || {};
+      var e1 = document.getElementById("metricTotalUsers");
+      var e2 = document.getElementById("metricActiveCustomers");
+      var e3 = document.getElementById("metricStaff");
+      var e4 = document.getElementById("metricBlockedUsers");
+      if (e1) e1.textContent = s.totalUsers || 0;
+      if (e2) e2.textContent = s.activeCustomers || 0;
+      if (e3) e3.textContent = s.staffCount || 0;
+      if (e4) e4.textContent = s.blockedCount || 0;
+    } catch (e) {}
   }
 
   async function loadUsers() {
     var tbody = document.getElementById("usersTableBody");
     if (!tbody || !window.AdminAPI) return;
-
-    tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><i class="fa-solid fa-spinner fa-spin"></i> ' + esc(t("loading")) + "...</td></tr>";
-
+    tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</td></tr>';
     try {
       var data = await window.AdminAPI.get("/admin/users", {
-        page: state.page,
-        limit: state.limit,
-        search: state.search,
-        role: state.role,
-        status: state.status
+        page: state.page, limit: state.limit, search: state.search, role: state.role, status: state.status
       });
-
       state.total = data.total || 0;
       state.pages = data.pages || Math.max(Math.ceil(state.total / state.limit), 1);
       window.__usersCache = data.users || [];
       renderUsers(window.__usersCache);
       renderPagination();
     } catch (error) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><i class="fa-solid fa-circle-exclamation"></i> ' + esc(error.message || "Server error") + "</td></tr>";
+      tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><i class="fa-solid fa-circle-exclamation"></i> ' + esc(error.message || "Server error") + "</td></tr>";
     }
   }
 
   function renderUsers(users) {
     var tbody = document.getElementById("usersTableBody");
     if (!tbody) return;
-
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><i class="fa-solid fa-users"></i> ' + esc(t("no_data")) + "</td></tr>";
+      tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><i class="fa-solid fa-users"></i> No users found</td></tr>';
       return;
     }
-
     tbody.innerHTML = users.map(function (u) {
-      var initials = avatarInitial(u.name);
-      var name = esc(u.name || "\u2014");
-      var email = esc(u.email || "\u2014");
-      var phone = esc(u.phone || "\u2014");
-      var isSelf = u.id === adminId;
-      var isLastAdmin = false;
       var isActive = u.status === "ACTIVE" && u.isActive !== false;
-      var isSuspended = String(u.status).toUpperCase() === "SUSPENDED";
+      var isSelf = u.id === adminId;
 
-      var toggleBtn = isSelf
-        ? '<button class="action-btn" title="' + esc(t("cannot_deactivate_own")) + '" disabled><i class="fa-solid fa-lock"></i></button>'
-        : '<button class="action-btn" data-action="toggle" data-id="' + u.id + '" title="' + (isActive ? esc(t("deactivate")) : esc(t("activate"))) + '">' +
-          '<i class="fa-solid ' + (isActive ? "fa-user-slash" : "fa-user-check") + '"></i></button>';
+      // Button 5: Block/Unblock toggle
+      var toggleBtn;
+      if (isSelf) {
+        toggleBtn = '<button class="action-btn" title="Cannot block yourself" disabled><i class="fa-solid fa-lock"></i></button>';
+      } else if (isActive) {
+        toggleBtn = '<button class="action-btn" data-action="toggle" data-id="' + u.id + '" title="Block user"><i class="fa-solid fa-user-slash"></i></button>';
+      } else {
+        toggleBtn = '<button class="action-btn action-btn-success" data-action="toggle" data-id="' + u.id + '" title="Unblock user"><i class="fa-solid fa-user-check"></i></button>';
+      }
 
       return (
-        '<tr' + (!isActive ? ' class="row-inactive"' : "") + '>' +
-        '<td>' +
-          '<div class="user-cell">' +
-            '<div class="user-avatar">' + initials + "</div>" +
-            "<div>" +
-              "<strong>" + name + "</strong>" +
-              "<small>" + email + "</small>" +
-              (phone !== "\u2014" ? '<small class="text-muted">' + phone + "</small>" : "") +
+        '<tr data-row-id="' + u.id + '"' + (!isActive ? ' class="row-inactive"' : "") + '>' +
+          '<td>' +
+            '<div class="user-cell">' +
+              '<div class="user-avatar">' + avatarInitial(u.name) + "</div>" +
+              "<div>" +
+                "<strong>" + esc(u.name || "—") + "</strong>" +
+                "<small>" + esc(u.email || "—") + "</small>" +
+              "</div>" +
             "</div>" +
-          "</div>" +
-        "</td>" +
-        '<td>' + rolePill(u.role) + "</td>" +
-        '<td>' + money(u.balance) + " ETB</td>" +
-        '<td>' + statusPill(u.status, u.isActive) + "</td>" +
-        "<td>" + formatDate(u.createdAt) + "</td>" +
-        "<td>" +
-          '<div class="table-actions">' +
-            '<button class="action-btn" data-action="view" data-id="' + u.id + '" title="' + esc(t("view_details")) + '"><i class="fa-solid fa-eye"></i></button>' +
-            '<button class="action-btn" data-action="edit" data-id="' + u.id + '" title="' + esc(t("edit")) + '"><i class="fa-solid fa-pen"></i></button>' +
-            '<button class="action-btn" data-action="role" data-id="' + u.id + '" title="' + esc(t("change_role")) + '"><i class="fa-solid fa-id-card"></i></button>' +
-            '<button class="action-btn" data-action="password" data-id="' + u.id + '" title="' + esc(t("reset_password")) + '"><i class="fa-solid fa-key"></i></button>' +
-            toggleBtn +
-            '<button class="action-btn danger" data-action="delete" data-id="' + u.id + '" title="' + esc(t("delete")) + '"><i class="fa-solid fa-trash"></i></button>' +
-          "</div>" +
-        "</td>" +
+          "</td>" +
+          '<td>' + rolePill(u.role) + "</td>" +
+          '<td>' + statusPill(u.status, u.isActive) + "</td>" +
+          "<td>" + formatDate(u.createdAt) + "</td>" +
+          "<td>" +
+            '<div class="table-actions">' +
+              // 1. View
+              '<button class="action-btn" data-action="view" data-id="' + u.id + '" title="View details"><i class="fa-solid fa-eye"></i></button>' +
+              // 2. Edit
+              '<button class="action-btn" data-action="edit" data-id="' + u.id + '" title="Edit user"><i class="fa-solid fa-pen"></i></button>' +
+              // 3. ID Card
+              '<button class="action-btn" data-action="idcard" data-id="' + u.id + '" title="ID Badge"><i class="fa-solid fa-id-card"></i></button>' +
+              // 4. Reset Password
+              '<button class="action-btn" data-action="password" data-id="' + u.id + '" title="Reset password"><i class="fa-solid fa-key"></i></button>' +
+              // 5. Block/Unblock
+              toggleBtn +
+              // 6. Delete
+              '<button class="action-btn danger" data-action="delete" data-id="' + u.id + '" title="Delete user"><i class="fa-solid fa-trash"></i></button>' +
+            "</div>" +
+          "</td>" +
         "</tr>"
       );
     }).join("");
@@ -233,38 +180,49 @@
 
   function renderPagination() {
     var info = document.getElementById("paginationInfo");
-    var prevBtn = document.getElementById("prevPageBtn");
-    var nextBtn = document.getElementById("nextPageBtn");
-
-    if (info) info.textContent = t("page_info").replace("{page}", state.page).replace("{pages}", Math.max(state.pages, 1)).replace("{total}", state.total);
-    if (prevBtn) prevBtn.disabled = state.page <= 1;
-    if (nextBtn) nextBtn.disabled = state.page >= state.pages;
+    var prev = document.getElementById("prevPageBtn");
+    var next = document.getElementById("nextPageBtn");
+    if (info) info.textContent = "Page " + state.page + " of " + Math.max(state.pages, 1) + " (" + state.total + " users)";
+    if (prev) prev.disabled = state.page <= 1;
+    if (next) next.disabled = state.page >= state.pages;
   }
 
-  function changePage(delta) {
-    state.page = Math.min(Math.max(state.page + delta, 1), Math.max(state.pages, 1));
-    loadUsers();
+  function changePage(d) { state.page = Math.min(Math.max(state.page + d, 1), Math.max(state.pages, 1)); loadUsers(); }
+
+  async function findUserById(id) {
+    try { var d = await window.AdminAPI.get("/admin/users/" + id); return d.user || null; } catch (e) { return null; }
   }
 
-  /* ============================================================
-   * ADD / EDIT USER
-   * ============================================================ */
-  function openAddUserModal() {
-    closeAllModals();
-    document.getElementById("userForm").reset();
-    document.getElementById("userId").value = "";
-    document.getElementById("modalTitle").textContent = t("add_user");
-    document.getElementById("saveUserBtn").textContent = t("save");
-    document.getElementById("passwordLabel").textContent = t("password") + " *";
-    document.getElementById("userPassword").required = true;
-    document.getElementById("userPassword").value = "";
-    document.getElementById("userConfirmPassword").value = "";
-    document.getElementById("userStatus").value = "ACTIVE";
-    openModal("userModal");
+  function getCachedUser(id) {
+    return (window.__usersCache || []).find(function (u) { return u.id === id; }) || null;
   }
 
-  function openEditUserModal(user) {
-    closeAllModals();
+  /* ==================================================================
+   * ACTION 1: VIEW USER DETAILS
+   * Fetches fresh data from GET /admin/users/:id
+   * ================================================================== */
+  async function actionView(id) {
+    var user = getCachedUser(id);
+    if (!user) user = await findUserById(id);
+    if (!user) { if (window.AdminToast) window.AdminToast.error("User not found"); return; }
+
+    document.getElementById("detailAvatar").textContent = avatarInitial(user.name);
+    document.getElementById("detailName").textContent = user.name || "—";
+    document.getElementById("detailRoleWrap").innerHTML = rolePill(user.role);
+    document.getElementById("detailId").textContent = user.id;
+    document.getElementById("detailUsername").textContent = user.username || "—";
+    document.getElementById("detailEmail").textContent = user.email || "—";
+    document.getElementById("detailPhone").textContent = user.phone || "—";
+    document.getElementById("detailStatus").innerHTML = statusPill(user.status, user.isActive);
+    document.getElementById("detailJoined").textContent = formatDate(user.createdAt);
+    openModal("viewUserModal");
+  }
+
+  /* ==================================================================
+   * ACTION 2: EDIT USER
+   * Populates edit form, submits via PUT /admin/users/:id
+   * ================================================================== */
+  function actionEdit(user) {
     document.getElementById("userForm").reset();
     document.getElementById("userId").value = user.id;
     document.getElementById("userName").value = user.name || "";
@@ -273,295 +231,314 @@
     document.getElementById("userUsername").value = user.username || "";
     document.getElementById("userRole").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
     document.getElementById("userStatus").value = user.status || "ACTIVE";
-    document.getElementById("modalTitle").textContent = t("edit_user");
-    document.getElementById("saveUserBtn").textContent = t("update");
-    document.getElementById("passwordLabel").textContent = t("new_password_optional");
+    document.getElementById("modalTitle").textContent = "Edit User";
+    document.getElementById("saveUserBtn").textContent = "Update User";
+    document.getElementById("passwordLabel").textContent = "New Password (optional)";
     document.getElementById("userPassword").required = false;
     document.getElementById("userPassword").value = "";
     document.getElementById("userConfirmPassword").value = "";
     openModal("userModal");
   }
 
-  function buildUserPayload() {
-    return {
-      name: document.getElementById("userName").value.trim(),
-      email: document.getElementById("userEmail").value.trim(),
-      phone: document.getElementById("userPhone").value.trim(),
-      username: document.getElementById("userUsername").value.trim(),
-      role: document.getElementById("userRole").value,
-      status: document.getElementById("userStatus").value,
-      balance: 0,
-      password: document.getElementById("userPassword").value
-    };
+  /* ==================================================================
+   * ACTION 3: ID CARD BADGE
+   * Renders digital ID badge preview
+   * ================================================================== */
+  function actionIdCard(user) {
+    document.getElementById("idBadgeAvatar").textContent = avatarInitial(user.name);
+    document.getElementById("idBadgeName").textContent = user.name || "—";
+
+    var roleEl = document.getElementById("idBadgeRole");
+    roleEl.textContent = roleLabel(user.role);
+    roleEl.className = "id-badge-role role-" + (user.role || "customer");
+
+    document.getElementById("idBadgeId").textContent = user.id ? user.id.slice(-8).toUpperCase() : "—";
+    document.getElementById("idBadgeEmail").textContent = user.email || "—";
+    document.getElementById("idBadgePhone").textContent = user.phone || "—";
+    document.getElementById("idBadgeStatus").textContent = statusLabel(user.status);
+    document.getElementById("idBadgeJoined").textContent = formatDate(user.createdAt);
+    openModal("idCardModal");
   }
 
-  async function handleUserFormSubmit(event) {
-    event.preventDefault();
-
-    var id = document.getElementById("userId").value;
-    var payload = buildUserPayload();
-    if (!id && !payload.email) return;
-
-    // Password confirmation check
-    var confirmPassword = document.getElementById("userConfirmPassword").value;
-    if (!id && payload.password !== confirmPassword) {
-      if (window.AdminToast) window.AdminToast.error(t("passwords_no_match"));
-      return;
-    }
-    if (id && payload.password && payload.password !== confirmPassword) {
-      if (window.AdminToast) window.AdminToast.error(t("passwords_no_match"));
-      return;
-    }
-
-    var submitBtn = document.getElementById("saveUserBtn");
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.dataset.originalText = submitBtn.textContent; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + t("saving") + "..."; }
-
-    try {
-      if (!id) {
-        if (!payload.password) {
-          if (window.AdminToast) window.AdminToast.error(t("password_required_new"));
-          return;
-        }
-        await window.AdminAPI.post("/admin/users", payload);
-      } else {
-        var updatePayload = {
-          name: payload.name,
-          email: payload.email,
-          phone: payload.phone,
-          username: payload.username,
-          role: payload.role,
-          status: payload.status,
-          balance: 0
-        };
-        if (payload.password) updatePayload.password = payload.password;
-        await window.AdminAPI.put("/admin/users/" + id, updatePayload);
-      }
-
-      closeModal("userModal");
-      if (window.AdminToast) window.AdminToast.success(t("user_saved"));
-      loadUsers();
-      loadStats();
-    } catch (error) {
-      if (window.AdminToast) {
-        window.AdminToast.error(error.message || t("failed_save_user"));
-      }
-    } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.originalText || t("save"); }
-    }
-  }
-
-  /* ============================================================
-   * VIEW USER
-   * ============================================================ */
-  function viewUser(user) {
-    closeAllModals();
-    document.getElementById("detailAvatar").textContent = avatarInitial(user.name || "U");
-    document.getElementById("detailName").textContent = user.name || "\u2014";
-    document.getElementById("detailRoleWrap").innerHTML = rolePill(user.role);
-    document.getElementById("detailId").textContent = user.id;
-    document.getElementById("detailEmail").textContent = user.email || "\u2014";
-    document.getElementById("detailPhone").textContent = user.phone || "\u2014";
-    document.getElementById("detailBalance").textContent = money(user.balance) + " ETB";
-    document.getElementById("detailStatus").textContent = statusLabel(user.status);
-    document.getElementById("detailJoined").textContent = formatDate(user.createdAt) + " | " + formatDateTime(user.createdAt);
-    openModal("viewUserModal");
-  }
-
-  /* ============================================================
-   * ASSIGN ROLE
-   * ============================================================ */
-  function openAssignRoleModal(user) {
-    closeAllModals();
-    document.getElementById("assignRoleName").textContent = (user.name || "User") + " (" + (user.email || "") + ")";
-    document.getElementById("assignRoleSelect").value = user.role === "customer" ? "kitchen" : (user.role || "kitchen");
-    document.getElementById("assignRoleSelect").dataset.userId = user.id;
-    openModal("assignRoleModal");
-  }
-
-  async function confirmAssignRole() {
-    var select = document.getElementById("assignRoleSelect");
-    var id = select.dataset.userId;
-    var role = select.value;
-    if (!id || !role) return;
-
-    try {
-      await window.AdminAPI.patch("/admin/users/" + id + "/role", { role: role });
-      closeModal("assignRoleModal");
-      if (window.AdminToast) window.AdminToast.success(t("role_updated"));
-      loadUsers();
-      loadStats();
-    } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || t("failed_role"));
-    }
-  }
-
-  /* ============================================================
-   * STATUS TOGGLE (ACTIVE / BLOCKED / SUSPENDED)
-   * ============================================================ */
-  function openStatusModal(user) {
-    closeAllModals();
-    var currentStatus = String(user.status || "ACTIVE").toUpperCase();
-    document.getElementById("statusUserName").textContent = (user.name || "User") + " (" + (user.email || "") + ")";
-    document.getElementById("statusSelect").value = currentStatus;
-    document.getElementById("statusSelect").dataset.userId = user.id;
-    document.getElementById("statusSelect").dataset.currentStatus = currentStatus;
-    openModal("statusModal");
-  }
-
-  async function confirmStatusChange() {
-    var select = document.getElementById("statusSelect");
-    var id = select.dataset.userId;
-    var newStatus = select.value;
-    if (!id || !newStatus) return;
-
-    try {
-      await window.AdminAPI.patch("/admin/users/" + id + "/status", { status: newStatus });
-      closeModal("statusModal");
-      if (window.AdminToast) window.AdminToast.success(t("status_updated"));
-      loadUsers();
-      loadStats();
-    } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || t("failed_status"));
-    }
-  }
-
-  /* ============================================================
-   * RESET PASSWORD
-   * ============================================================ */
-  function openPasswordResetModal(user) {
-    closeAllModals();
-    document.getElementById("resetPwdUserName").textContent = (user.name || "User") + " (" + (user.email || "") + ")";
+  /* ==================================================================
+   * ACTION 4: RESET PASSWORD
+   * PATCH /admin/users/:id/password, shows generated password
+   * ================================================================== */
+  function actionResetPassword(user) {
+    document.getElementById("resetPwdUserName").textContent = user.name + " (" + user.email + ")";
+    document.getElementById("resetPwdUserId").value = user.id;
     document.getElementById("resetPwdNewPassword").value = "";
     document.getElementById("resetPwdConfirmPassword").value = "";
-    document.getElementById("resetPwdUserId").value = user.id;
+    document.getElementById("resetPwdFormFields").style.display = "";
+    document.getElementById("resetPwdResult").style.display = "none";
+    document.getElementById("confirmResetPwdBtn").style.display = "";
     openModal("resetPasswordModal");
   }
 
-  async function confirmPasswordReset() {
+  async function confirmResetPassword() {
     var id = document.getElementById("resetPwdUserId").value;
     var newPwd = document.getElementById("resetPwdNewPassword").value;
     var confirmPwd = document.getElementById("resetPwdConfirmPassword").value;
     if (!id) return;
 
     if (!newPwd || newPwd.length < 6) {
-      if (window.AdminToast) window.AdminToast.error(t("password_min_6"));
+      if (window.AdminToast) window.AdminToast.error("Password must be at least 6 characters");
       return;
     }
     if (newPwd !== confirmPwd) {
-      if (window.AdminToast) window.AdminToast.error(t("passwords_no_match"));
+      if (window.AdminToast) window.AdminToast.error("Passwords do not match");
       return;
     }
 
+    var btn = document.getElementById("confirmResetPwdBtn");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Resetting...'; }
+
     try {
       await window.AdminAPI.patch("/admin/users/" + id + "/password", { password: newPwd });
-      closeModal("resetPasswordModal");
-      if (window.AdminToast) window.AdminToast.success(t("password_reset_success"));
+      document.getElementById("resetPwdFormFields").style.display = "none";
+      document.getElementById("resetPwdGenerated").textContent = newPwd;
+      document.getElementById("resetPwdResult").style.display = "";
+      if (btn) btn.style.display = "none";
+      if (window.AdminToast) window.AdminToast.success("Password reset successfully");
     } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || t("failed_password_reset"));
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to reset password");
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = "Reset Password"; }
     }
   }
 
-  /* ============================================================
-   * DELETE (SOFT DELETE = DEACTIVATE)
-   * ============================================================ */
-  async function deleteUser(user) {
-    var msg = t("confirm_delete_user").replace("{name}", user.name);
-    if (!window.confirm(msg)) return;
+  /* ==================================================================
+   * ACTION 5: BLOCK / UNBLOCK (TOGGLE STATUS)
+   * PATCH /admin/users/:id/status
+   * Updates UI badge + button state instantly
+   * ================================================================== */
+  function actionToggle(user) {
+    var isActive = user.status === "ACTIVE" && user.isActive !== false;
+    pendingToggleUser = user;
+
+    document.getElementById("toggleStatusTitle").textContent = isActive ? "Block User" : "Unblock User";
+    var icon = document.getElementById("toggleStatusIcon");
+    icon.className = isActive ? "status-icon block" : "status-icon unblock";
+    icon.innerHTML = isActive
+      ? '<i class="fa-solid fa-user-slash"></i>'
+      : '<i class="fa-solid fa-user-check"></i>';
+    document.getElementById("toggleStatusText").innerHTML = isActive
+      ? 'Are you sure you want to <strong>block</strong> <strong>' + esc(user.name) + '</strong>?<br><span style="font-size:13px;color:#64748b;">They will not be able to access the system.</span>'
+      : 'Do you want to <strong>unblock</strong> <strong>' + esc(user.name) + '</strong>?<br><span style="font-size:13px;color:#64748b;">They will regain access to the system.</span>';
+
+    var confirmBtn = document.getElementById("confirmToggleStatusBtn");
+    confirmBtn.className = isActive ? "btn btn-danger" : "btn btn-success";
+    confirmBtn.textContent = isActive ? "Block User" : "Unblock User";
+    openModal("toggleStatusModal");
+  }
+
+  async function confirmToggleStatus() {
+    if (!pendingToggleUser) return;
+    var user = pendingToggleUser;
+    var isActive = user.status === "ACTIVE" && user.isActive !== false;
+    var newStatus = isActive ? "BLOCKED" : "ACTIVE";
+
+    var btn = document.getElementById("confirmToggleStatusBtn");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...'; }
+
+    try {
+      await window.AdminAPI.patch("/admin/users/" + user.id + "/status", { status: newStatus });
+
+      // Instant UI update — update cached user
+      user.status = newStatus;
+      user.isActive = newStatus === "ACTIVE";
+
+      // Re-render just this row
+      var row = document.querySelector('tr[data-row-id="' + user.id + '"]');
+      if (row) {
+        var statusTd = row.querySelectorAll("td")[2];
+        if (statusTd) statusTd.innerHTML = statusPill(newStatus, newStatus === "ACTIVE");
+
+        // Update toggle button
+        var actionsDiv = row.querySelector(".table-actions");
+        if (actionsDiv) {
+          var oldToggle = actionsDiv.querySelector('[data-action="toggle"]');
+          if (oldToggle) {
+            if (newStatus === "ACTIVE") {
+              oldToggle.className = "action-btn action-btn-success";
+              oldToggle.title = "Block user";
+              oldToggle.innerHTML = '<i class="fa-solid fa-user-check"></i>';
+            } else {
+              oldToggle.className = "action-btn";
+              oldToggle.title = "Unblock user";
+              oldToggle.innerHTML = '<i class="fa-solid fa-user-slash"></i>';
+            }
+          }
+        }
+
+        // Update row highlight
+        if (newStatus !== "ACTIVE") { row.classList.add("row-inactive"); }
+        else { row.classList.remove("row-inactive"); }
+      }
+
+      closeModal("toggleStatusModal");
+      pendingToggleUser = null;
+      loadStats();
+      if (window.AdminToast) window.AdminToast.success("User " + (isActive ? "blocked" : "unblocked") + " successfully");
+    } catch (error) {
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to update status");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = isActive ? "Block User" : "Unblock User"; }
+    }
+  }
+
+  /* ==================================================================
+   * ACTION 6: DELETE USER
+   * DELETE /admin/users/:id, removes row from DOM
+   * ================================================================== */
+  function actionDelete(user) {
+    pendingDeleteUser = user;
+    document.getElementById("deleteText").innerHTML =
+      'Are you sure you want to delete <strong>' + esc(user.name) + '</strong>?<br>' +
+      '<span style="font-size:13px;color:#64748b;">This action cannot be undone.</span>';
+    openModal("deleteModal");
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteUser) return;
+    var user = pendingDeleteUser;
+
+    var btn = document.getElementById("confirmDeleteBtn");
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...'; }
 
     try {
       await window.AdminAPI.del("/admin/users/" + user.id);
-      if (window.AdminToast) window.AdminToast.success(t("user_deactivated"));
-      if (state.total === 1 && state.page > 1) state.page--;
-      loadUsers();
+
+      // Remove row from DOM instantly
+      var row = document.querySelector('tr[data-row-id="' + user.id + '"]');
+      if (row) {
+        row.style.transition = "opacity 0.3s, transform 0.3s";
+        row.style.opacity = "0";
+        row.style.transform = "translateX(20px)";
+        setTimeout(function () { row.remove(); }, 300);
+      }
+
+      // Update cache
+      window.__usersCache = (window.__usersCache || []).filter(function (u) { return u.id !== user.id; });
+      state.total = Math.max(0, state.total - 1);
+
+      closeModal("deleteModal");
+      pendingDeleteUser = null;
+
+      if (state.total === 0 && state.page > 1) {
+        state.page--;
+        loadUsers();
+      } else {
+        renderPagination();
+      }
       loadStats();
+      if (window.AdminToast) window.AdminToast.success("User deleted successfully");
     } catch (error) {
-      if (window.AdminToast) window.AdminToast.error(error.message || t("failed_delete"));
+      if (window.AdminToast) window.AdminToast.error(error.message || "Failed to delete user");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "Delete User"; }
     }
   }
 
-  async function findUserById(id) {
-    try {
-      var data = await window.AdminAPI.get("/admin/users/" + id);
-      return data.user || null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /* ============================================================
+  /* ==================================================================
    * EVENT BINDINGS
-   * ============================================================ */
+   * ================================================================== */
   function bindEvents() {
-    // Open add-user modal
+    // Add user button
     var addBtn = document.getElementById("openAddUserModalBtn");
-    if (addBtn) addBtn.addEventListener("click", openAddUserModal);
+    if (addBtn) addBtn.addEventListener("click", function () {
+      document.getElementById("userForm").reset();
+      document.getElementById("userId").value = "";
+      document.getElementById("modalTitle").textContent = "Add New User";
+      document.getElementById("saveUserBtn").textContent = "Save User";
+      document.getElementById("passwordLabel").textContent = "Password *";
+      document.getElementById("userPassword").required = true;
+      document.getElementById("userPassword").value = "";
+      document.getElementById("userConfirmPassword").value = "";
+      document.getElementById("userStatus").value = "ACTIVE";
+      openModal("userModal");
+    });
 
-    // Form submit
+    // Form submit (create / update)
     var userForm = document.getElementById("userForm");
-    if (userForm) userForm.addEventListener("submit", handleUserFormSubmit);
+    if (userForm) userForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var id = document.getElementById("userId").value;
+      var name = document.getElementById("userName").value.trim();
+      var email = document.getElementById("userEmail").value.trim();
+      var phone = document.getElementById("userPhone").value.trim();
+      var username = document.getElementById("userUsername").value.trim();
+      var role = document.getElementById("userRole").value;
+      var status = document.getElementById("userStatus").value;
+      var password = document.getElementById("userPassword").value;
+      var confirmPassword = document.getElementById("userConfirmPassword").value;
+
+      if (!id && !email) return;
+      if (!id && password !== confirmPassword) {
+        if (window.AdminToast) window.AdminToast.error("Passwords do not match"); return;
+      }
+      if (id && password && password !== confirmPassword) {
+        if (window.AdminToast) window.AdminToast.error("Passwords do not match"); return;
+      }
+
+      var submitBtn = document.getElementById("saveUserBtn");
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
+
+      try {
+        if (!id) {
+          if (!password) { if (window.AdminToast) window.AdminToast.error("Password is required"); return; }
+          await window.AdminAPI.post("/admin/users", { name: name, email: email, phone: phone, username: username, role: role, status: status, balance: 0, password: password });
+        } else {
+          var payload = { name: name, email: email, phone: phone, username: username, role: role, status: status, balance: 0 };
+          if (password) payload.password = password;
+          await window.AdminAPI.put("/admin/users/" + id, payload);
+        }
+        closeModal("userModal");
+        if (window.AdminToast) window.AdminToast.success(id ? "User updated" : "User created");
+        loadUsers(); loadStats();
+      } catch (error) {
+        if (window.AdminToast) window.AdminToast.error(error.message || "Failed to save user");
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = id ? "Update User" : "Save User"; }
+      }
+    });
 
     // Close buttons
     document.querySelectorAll("[data-close-modal]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        closeModal(btn.getAttribute("data-close-modal"));
-      });
+      btn.addEventListener("click", function () { closeModal(btn.getAttribute("data-close-modal")); });
+    });
+    // Backdrop close
+    document.querySelectorAll(".modal-overlay").forEach(function (ov) {
+      ov.addEventListener("click", function (e) { if (e.target === ov) ov.classList.remove("open"); });
     });
 
-    // Modal overlay click (close on backdrop)
-    document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
-      overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) overlay.classList.remove("open");
-      });
-    });
-
-    // Search (debounced)
+    // Search
     var searchInput = document.getElementById("userSearchInput");
     if (searchInput) {
-      var debounceTimer = null;
+      var timer = null;
       searchInput.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(function () {
-          state.search = searchInput.value.trim();
-          state.page = 1;
-          loadUsers();
-        }, 400);
+        clearTimeout(timer);
+        timer = setTimeout(function () { state.search = searchInput.value.trim(); state.page = 1; loadUsers(); }, 400);
       });
     }
 
     // Role filter
-    var roleSelect = document.getElementById("roleFilter");
-    if (roleSelect) {
-      roleSelect.addEventListener("change", function () {
-        state.role = roleSelect.value;
-        state.page = 1;
-        loadUsers();
-      });
-    }
+    var roleFilter = document.getElementById("roleFilter");
+    if (roleFilter) roleFilter.addEventListener("change", function () { state.role = roleFilter.value; state.page = 1; loadUsers(); });
 
     // Status filter
-    var statusSelect = document.getElementById("statusFilter");
-    if (statusSelect) {
-      statusSelect.addEventListener("change", function () {
-        state.status = statusSelect.value;
-        state.page = 1;
-        loadUsers();
-      });
-    }
+    var statusFilter = document.getElementById("statusFilter");
+    if (statusFilter) statusFilter.addEventListener("change", function () { state.status = statusFilter.value; state.page = 1; loadUsers(); });
 
     // Reset filters
     var resetBtn = document.getElementById("resetFiltersBtn");
-    if (resetBtn) {
-      resetBtn.addEventListener("click", function () {
-        if (searchInput) searchInput.value = "";
-        if (roleSelect) roleSelect.value = "";
-        if (statusSelect) statusSelect.value = "";
-        state.search = "";
-        state.role = "";
-        state.status = "";
-        state.page = 1;
-        loadUsers();
-      });
-    }
+    if (resetBtn) resetBtn.addEventListener("click", function () {
+      if (searchInput) searchInput.value = "";
+      if (roleFilter) roleFilter.value = "";
+      if (statusFilter) statusFilter.value = "";
+      state.search = ""; state.role = ""; state.status = ""; state.page = 1;
+      loadUsers();
+    });
 
     // Pagination
     var prevBtn = document.getElementById("prevPageBtn");
@@ -569,7 +546,7 @@
     if (prevBtn) prevBtn.addEventListener("click", function () { changePage(-1); });
     if (nextBtn) nextBtn.addEventListener("click", function () { changePage(1); });
 
-    // Table row actions (event delegation)
+    // Table action buttons (event delegation)
     var tbody = document.getElementById("usersTableBody");
     if (tbody) {
       tbody.addEventListener("click", async function (e) {
@@ -577,85 +554,42 @@
         if (!btn) return;
         var id = btn.getAttribute("data-id");
         var action = btn.getAttribute("data-action");
-        if (!id) return;
+        if (!id || !action) return;
 
-        var user = (window.__usersCache || []).find(function (u) { return u.id === id; });
+        var user = getCachedUser(id);
         if (!user) user = await findUserById(id);
-        if (!user) {
-          if (window.AdminToast) window.AdminToast.error(t("user_not_found"));
-          return;
-        }
+        if (!user) { if (window.AdminToast) window.AdminToast.error("User not found"); return; }
 
-        if (action === "view") viewUser(user);
-        else if (action === "edit") openEditUserModal(user);
-        else if (action === "role") openAssignRoleModal(user);
-        else if (action === "password") openPasswordResetModal(user);
-        else if (action === "toggle") openStatusModal(user);
-        else if (action === "delete") deleteUser(user);
+        // Dispatch to action handler
+        if (action === "view")     return actionView(id);
+        if (action === "edit")     return actionEdit(user);
+        if (action === "idcard")   return actionIdCard(user);
+        if (action === "password") return actionResetPassword(user);
+        if (action === "toggle")   return actionToggle(user);
+        if (action === "delete")   return actionDelete(user);
       });
     }
 
-    // Assign role modal save
-    var confirmRoleBtn = document.getElementById("confirmAssignRoleBtn");
-    if (confirmRoleBtn) confirmRoleBtn.addEventListener("click", confirmAssignRole);
-
-    // Status change modal save
-    var confirmStatusBtn = document.getElementById("confirmStatusBtn");
-    if (confirmStatusBtn) confirmStatusBtn.addEventListener("click", confirmStatusChange);
-
-    // Password reset modal save
+    // Reset password confirm button
     var confirmPwdBtn = document.getElementById("confirmResetPwdBtn");
-    if (confirmPwdBtn) confirmPwdBtn.addEventListener("click", confirmPasswordReset);
+    if (confirmPwdBtn) confirmPwdBtn.addEventListener("click", confirmResetPassword);
+
+    // Toggle status confirm button
+    var confirmToggleBtn = document.getElementById("confirmToggleStatusBtn");
+    if (confirmToggleBtn) confirmToggleBtn.addEventListener("click", confirmToggleStatus);
+
+    // Delete confirm button
+    var confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", confirmDelete);
   }
 
-  /* ============================================================
-   * i18n RE-RENDER ON LANGUAGE CHANGE
-   * ============================================================ */
-  function onLanguageChange() {
-    renderUsers(window.__usersCache || []);
-    renderPagination();
-    updatePageTexts();
-  }
-
-  function updatePageTexts() {
-    var h1 = document.querySelector(".page-header h1");
-    if (h1) h1.textContent = t("admin_users_title");
-    var sub = document.querySelector(".page-header .subtitle");
-    if (sub) sub.textContent = t("admin_users_subtitle");
-    var addBtn = document.getElementById("openAddUserModalBtn");
-    if (addBtn) addBtn.innerHTML = '<i class="fa-solid fa-plus"></i> ' + t("add_user");
-    var searchInput = document.getElementById("userSearchInput");
-    if (searchInput) searchInput.placeholder = t("admin_user_search");
-
-    // Stats labels
-    var lbl1 = document.querySelector('[data-label-key="total_users"]');
-    var lbl2 = document.querySelector('[data-label-key="active_customers"]');
-    var lbl3 = document.querySelector('[data-label-key="staff"]');
-    var lbl4 = document.querySelector('[data-label-key="blocked_users"]');
-    if (lbl1) lbl1.textContent = t("total_users");
-    if (lbl2) lbl2.textContent = t("active_customers");
-    if (lbl3) lbl3.textContent = t("staff");
-    if (lbl4) lbl4.textContent = t("blocked_users");
-
-    // Table headers
-    var ths = document.querySelectorAll("#usersTableBody").length ? document.querySelectorAll(".admin-table thead th") : [];
-    // Column labels are in HTML, updated by applyTranslations via data-i18n
-
-    // Modal titles
-    var modalTitle = document.getElementById("modalTitle");
-    if (modalTitle && !document.getElementById("userId").value) modalTitle.textContent = t("add_user");
-    else if (modalTitle) modalTitle.textContent = t("edit_user");
-  }
-
+  /* ----------------------------------------------------------------
+   * INIT
+   * ---------------------------------------------------------------- */
   function init() {
     bindEvents();
     loadStats();
     loadUsers();
-    updatePageTexts();
-
-    // Listen for language changes
-    window.addEventListener("language:changed", onLanguageChange);
-    window.addEventListener("languageChanged", onLanguageChange);
   }
 
   document.addEventListener("DOMContentLoaded", init);
