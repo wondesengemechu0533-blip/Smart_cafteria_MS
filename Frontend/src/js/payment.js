@@ -2,7 +2,7 @@
  * ================================================================
  * SMART CAFETERIA ORDERING SYSTEM - PAYMENT MODULE
  * ================================================================
- * Handles payment simulation for CBE Birr and TeleBirr.
+ * Handles payment simulation for Chapa backend providers.
  * ================================================================
  */
 
@@ -20,11 +20,9 @@ let paymentListeners = [];
 /**
  * Simulate payment for an order
  * @param {string} orderId - Order ID
- * @param {string} method - Payment method (cbe_birr, telebirr)
- * @param {Object} details - Payment details (phone, etc.)
- * @returns {Promise<Object>} Payment result
+ * @param {string} method - Payment method (chapa)
  */
-export async function simulatePayment(orderId, method = PAYMENT_METHODS.CBE_BIRR, details = {}) {
+export async function simulatePayment(orderId, method = PAYMENT_METHODS.CHAPA, details = {}) {
     try {
         const user = getCurrentUser();
         if (!user) {
@@ -90,10 +88,9 @@ export async function simulatePayment(orderId, method = PAYMENT_METHODS.CBE_BIRR
         // Notify listeners
         notifyPaymentListeners();
 
-        const methodLabels = {
-            [PAYMENT_METHODS.CBE_BIRR]: 'CBE Birr',
-            [PAYMENT_METHODS.TELEBIRR]: 'TeleBirr',
-        };
+const methodLabels = {
+            [PAYMENT_METHODS.CHAPA]: 'Chapa',
+        };
 
         showToast(
             `Payment successful! ${methodLabels[method] || method} - ${transactionId}`,
@@ -181,17 +178,15 @@ export function getPaymentStats() {
         .filter(p => p.status === PAYMENT_STATUS.SIMULATED)
         .reduce((sum, p) => sum + p.amount, 0);
 
-    const cbeBirr = paymentHistory.filter(p => p.method === PAYMENT_METHODS.CBE_BIRR).length;
-    const telebirr = paymentHistory.filter(p => p.method === PAYMENT_METHODS.TELEBIRR).length;
+const chapa = paymentHistory.filter(p => p.method === PAYMENT_METHODS.CHAPA).length;
 
-    return {
-        total,
-        simulated,
-        failed,
-        totalAmount,
-        cbeBirr,
-        telebirr,
-    };
+    return {
+        total,
+        simulated,
+        failed,
+        totalAmount,
+        chapa,
+    };
 }
 
 // ===== 3. PAYMENT LISTENERS =====

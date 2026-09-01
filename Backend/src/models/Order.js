@@ -123,7 +123,7 @@ const OrderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
+      enum: ["CHAPA"],
       required: true,
     },
     paymentStatus: {
@@ -143,7 +143,7 @@ const OrderSchema = new mongoose.Schema(
     payment: {
       method: {
         type: String,
-        enum: ["TELEBIRR", "CHAPA", "CBE_BIRR"],
+        enum: ["CHAPA"],
       },
       status: {
         type: String,

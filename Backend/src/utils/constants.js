@@ -15,9 +15,7 @@ export const ORDER_STATUS = {
 };
 
 export const PAYMENT_METHODS = {
-    TELEBIRR: 'telebirr',
-    CBE_BIRR: 'cbe_birr',
-    CASH: 'cash'
+    CHAPA: 'chapa'
 };
 
 export const PAYMENT_STATUS = {

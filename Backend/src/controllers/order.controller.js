@@ -50,7 +50,7 @@ error: 'Customer name and phone are required'
 if (!Object.values(PAYMENT_METHODS).includes(normalizedPaymentMethod)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
-error: 'Payment method must be TELEBIRR, CHAPA, or CBE_BIRR'
+error: 'Payment method must be CHAPA'
 });
 }
 

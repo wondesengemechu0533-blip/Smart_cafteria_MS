@@ -31,12 +31,12 @@ const PaymentSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR", "CASH", "BANK_TRANSFER"],
+      enum: ["CHAPA", "CASH", "BANK_TRANSFER"],
       required: true,
     },
     method: {
       type: String,
-      enum: ["TELEBIRR", "CHAPA", "CBE_BIRR", "CASH", "BANK_TRANSFER", "WALLET", "CARD"],
+      enum: ["CHAPA", "CASH", "BANK_TRANSFER", "WALLET", "CARD"],
       required: true,
     },
     currency: {

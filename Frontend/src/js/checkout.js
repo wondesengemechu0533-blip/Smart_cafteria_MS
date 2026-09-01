@@ -523,11 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let checkoutUrl = null;
                     let paymentSuccess = false;
                     
-                    const paymentEndpoint = paymentMethod === "TELEBIRR"
-                        ? "/payments/telebirr/initialize"
-                        : paymentMethod === "CBE_BIRR"
-                            ? "/payments/cbe-birr/initialize"
-                            : "/payments/chapa/initialize";
+                    const paymentEndpoint = "/payments/chapa/initialize";
                     
                     try {
                         const paymentResponse = await api.post(paymentEndpoint, {

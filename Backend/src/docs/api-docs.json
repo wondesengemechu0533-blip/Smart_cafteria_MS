@@ -815,10 +815,7 @@
           "paymentMethod": {
             "type": "string",
             "enum": [
-              "telebirr",
-              "card",
-              "cash",
-              "cbe_birr"
+              "chapa"
             ]
           }
         }

@@ -7,8 +7,6 @@ const {
     chapaCallback,
     verifyChapaPayment
 } = require('../controllers/chapa.controller');
-const { initializeTelebirrPayment, telebirrCallback } = require('../controllers/provider-payment.controller');
-const { initializeCbeBirrPayment, cbeBirrCallback } = require('../controllers/cbe-birr.controller');
 const {
     simulatePayment,
     getPaymentByOrder,
@@ -31,11 +29,5 @@ router.post('/chapa/initialize', protect, initializeChapaPayment);
 router.post('/chapa/callback', chapaCallback);
 router.get('/chapa/callback', chapaCallback);
 router.get('/chapa/verify/:txRef', protect, verifyChapaPayment);
-router.post('/telebirr/initialize', protect, initializeTelebirrPayment);
-router.post('/telebirr/callback', telebirrCallback);
-router.get('/telebirr/callback', telebirrCallback);
-router.post('/cbe-birr/initialize', protect, initializeCbeBirrPayment);
-router.post('/cbe-birr/callback', cbeBirrCallback);
-router.get('/cbe-birr/callback', cbeBirrCallback);
 
 module.exports = router;

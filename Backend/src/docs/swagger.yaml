@@ -848,11 +848,8 @@ components:
         paymentMethod:
           type: string
           enum:
-            - telebirr
-            - cbe_birr
-            - card
-            - cash
-          example: telebirr
+            - chapa
+          example: chapa
 
     FeedbackRequest:
       type: object

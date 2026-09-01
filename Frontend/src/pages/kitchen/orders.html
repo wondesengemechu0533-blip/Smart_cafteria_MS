@@ -226,6 +226,41 @@
         function toggleUserMenu() {
             alert('User menu coming soon');
         }
+
+        // Order status filter
+        const filterButtons = document.querySelectorAll('.filter-group .btn');
+        const orderRows = document.querySelectorAll('#kitchenOrdersBody tr');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active state
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const status = button.dataset.status;
+
+                orderRows.forEach(row => {
+                    const badge = row.querySelector('.badge');
+                    if (!badge) return;
+
+                    const badgeText = badge.textContent.trim();
+                    const statusMap = {
+                        'Pending': 'Pending',
+                        'Preparing': 'Preparing',
+                        'Ready': 'Ready',
+                        'Cancelled': 'Cancelled'
+                    };
+
+                    if (status === 'all') {
+                        row.style.display = '';
+                    } else if (statusMap[status] && badgeText === statusMap[status]) {
+                        row.style.display = '';
+                    } else if (statusMap[status] && badgeText !== statusMap[status]) {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
     </script>
 
     <script type="module" src="../../js/utils/i18n.js"></script>

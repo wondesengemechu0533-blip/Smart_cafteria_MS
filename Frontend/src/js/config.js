@@ -130,7 +130,6 @@ export const PAYMENT_STATUS = {
 };
 
 export const PAYMENT_METHODS = {
-    TELEBIRR: 'TELEBIRR',
     CHAPA: 'CHAPA',
 };
 

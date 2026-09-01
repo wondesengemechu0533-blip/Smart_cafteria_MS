@@ -258,7 +258,7 @@ exports.getPaymentStats = async (req, res) => {
     const successfulPaymentsData = await Payment.find({ status: PAYMENT_STATUS.PAID });
     const totalRevenue = successfulPaymentsData.reduce((sum, p) => sum + p.amount, 0);
 
-    const telebirr = await Payment.countDocuments({ method: 'TELEBIRR' });
+    const telebirr = 0;
     const chapa = await Payment.countDocuments({ method: 'CHAPA' });
 
     res.status(HTTP_STATUS.OK).json({
@@ -291,7 +291,7 @@ exports.validatePayment = async (req, res) => {
   try {
     const { method, phone } = req.body;
     const errors = {};
-    const validMethods = ['TELEBIRR', 'CHAPA', 'CBE_BIRR', 'telebirr', 'chapa', 'cbe_birr'];
+    const validMethods = ['CHAPA', 'chapa'];
     if (!method) {
       errors.method = 'Payment method is required';
     } else if (!validMethods.includes(method)) {

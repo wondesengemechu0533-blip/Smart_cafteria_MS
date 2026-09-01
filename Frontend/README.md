@@ -77,7 +77,7 @@ Smart-Cafeteria-Ordering-System/
 - Search and filter food items
 - Add/remove items to/from cart
 - Place orders remotely
-- Simulate payment (CBE Birr & TeleBirr)
+- Simulate payment (Chapa)
 - Track order status in real-time
 - View order history
 - Receive notifications

@@ -127,7 +127,7 @@ export async function placeOrder(orderData) {
             orderTime: new Date().toISOString(),
             readyTime: null,
             completedTime: null,
-            paymentMethod: orderData.paymentMethod || 'cbe_birr',
+            paymentMethod: orderData.paymentMethod || 'chapa',
             notes: orderData.notes || '',
         };
         orders.push(order);

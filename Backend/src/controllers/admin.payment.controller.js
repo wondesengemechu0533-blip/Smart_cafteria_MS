@@ -200,7 +200,7 @@ exports.getPaymentStats = async (req, res) => {
     const paidPayments = await Payment.find({ status: PAYMENT_STATUS.PAID }).select('amount').lean();
     const totalRevenue = paidPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-    const telebirr = await Payment.countDocuments({ method: 'TELEBIRR' });
+    const telebirr = 0;
     const chapa = await Payment.countDocuments({ method: 'CHAPA' });
 
     res.status(HTTP_STATUS.OK).json({

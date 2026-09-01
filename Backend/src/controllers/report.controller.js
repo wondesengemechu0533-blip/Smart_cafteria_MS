@@ -26,8 +26,7 @@ exports.getDailyOrdersReport = async (req, res) => {
 
     const payments = await Payment.find({ paymentDate: { $regex: reportDate } });
     const paymentMethods = {
-      cbeBirr: payments.filter((p) => p.method === 'cbe_birr').length,
-      telebirr: payments.filter((p) => p.method === 'TELEBIRR' || p.method === 'telebirr').length,
+      chapa: payments.filter((p) => p.method === 'CHAPA' || p.method === 'chapa').length,
       cash: payments.filter((p) => p.method === 'cash').length
     };
 
@@ -107,8 +106,7 @@ exports.getSalesReport = async (req, res) => {
       status: 'PAID'
     });
     const paymentBreakdown = {
-      cbeBirr: payments.filter((p) => p.method === 'cbe_birr').reduce((sum, p) => sum + p.amount, 0),
-      telebirr: payments.filter((p) => p.method === 'TELEBIRR' || p.method === 'telebirr').reduce((sum, p) => sum + p.amount, 0),
+      chapa: payments.filter((p) => p.method === 'CHAPA' || p.method === 'chapa').reduce((sum, p) => sum + p.amount, 0),
       cash: payments.filter((p) => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0)
     };
 
@@ -211,8 +209,7 @@ exports.getPaymentsReport = async (req, res) => {
     const pending = payments.filter((p) => p.status === 'PENDING').length;
 
     const methodBreakdown = {
-      cbeBirr: payments.filter((p) => p.method === 'cbe_birr').length,
-      telebirr: payments.filter((p) => p.method === 'TELEBIRR' || p.method === 'telebirr').length,
+      chapa: payments.filter((p) => p.method === 'CHAPA' || p.method === 'chapa').length,
       cash: payments.filter((p) => p.method === 'cash').length
     };
 

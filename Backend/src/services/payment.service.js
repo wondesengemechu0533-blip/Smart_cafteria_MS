@@ -39,8 +39,7 @@ export const processPayment = async (
     }
 
     const allowedMethods = [
-        'telebirr',
-        'cbe'
+        'chapa'
     ];
 
     if (!allowedMethods.includes(paymentMethod)) {

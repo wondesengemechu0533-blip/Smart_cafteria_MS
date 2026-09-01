@@ -14,7 +14,7 @@ const validatePaymentInput = (data) => {
         errors.orderId = 'Order ID is required';
     }
 
-    const methodErr = validateEnum(data.method, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
+    const methodErr = validateEnum(data.method, ['CHAPA'], 'Payment method');
     if (methodErr) errors.method = methodErr;
 
     return { isValid: Object.keys(errors).length === 0, errors };
@@ -37,7 +37,7 @@ const validateAdminPaymentFilter = (data) => {
     if (!data) return { isValid: true, errors };
 
     if (data.method) {
-        const methodErr = validateEnum(data.method, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
+        const methodErr = validateEnum(data.method, ['CHAPA'], 'Payment method');
         if (methodErr) errors.method = methodErr;
     }
 

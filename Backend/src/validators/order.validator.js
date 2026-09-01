@@ -43,7 +43,7 @@ const validateCreateOrder = (data) => {
         }
     }
 
-    const methodErr = validateEnum(data.paymentMethod, ['CHAPA', 'TELEBIRR', 'CBE_BIRR'], 'Payment method');
+    const methodErr = validateEnum(data.paymentMethod, ['CHAPA'], 'Payment method');
     if (methodErr) errors.paymentMethod = methodErr;
 
     if (data.totalAmount !== undefined) {
