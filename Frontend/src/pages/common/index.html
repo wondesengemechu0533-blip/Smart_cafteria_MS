@@ -4,25 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Smart Cafeteria Ordering System</title>
+    <!-- Prevent Back-Forward Cache -->
+    <script>window.addEventListener('pageshow', function(e){ if(e.persisted) window.location.reload(); });</script>
     <!-- ===== Google Font: Poppins ===== -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" href="/public/assets/vendor/fonts/fonts.css">
     <!-- ===== Font Awesome Icons (v6) ===== -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <!-- ===== Bootstrap CSS (Required for Carousel) ===== -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- ===== Google Fonts for Amharic Support ===== -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/assets/vendor/bootstrap/css/bootstrap.min.css">
+    <!-- ===== Shared Theme (Light / Dark / System) - loaded in head to avoid flash ===== -->
+    <script src="../../js/theme.js"></script>
     <!-- ===== Internal CSS ===== -->
     <style>
               * {
@@ -1175,6 +1166,102 @@
                       height: 40px;
                   }
               }
+              /* ===== Theme Toggle Button (Top Right) ===== */
+              .nav-theme-toggle {
+                  background: rgba(255, 255, 255, 0.12);
+                  border: 1px solid rgba(255, 255, 255, 0.25);
+                  color: #ffffff;
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  font-size: 16px;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  flex-shrink: 0;
+              }
+              .nav-theme-toggle:hover {
+                  background: #3b82f6;
+                  border-color: #3b82f6;
+                  transform: translateY(-2px);
+                  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+              }
+              @media (max-width: 768px) {
+                  .nav-theme-toggle {
+                      margin: 12px 0 4px;
+                  }
+              }
+              /* ============================================================
+                 HOME PAGE DARK MODE
+                 Applied when theme.js sets data-theme="dark" on <html>
+                 ============================================================ */
+              [data-theme="dark"] body {
+                  background: #0f172a;
+                  color: #e2e8f0;
+              }
+              [data-theme="dark"] .section-title {
+                  color: #f8fafc;
+              }
+              [data-theme="dark"] .how-it-works,
+              [data-theme="dark"] .features {
+                  background: #0f172a;
+              }
+              [data-theme="dark"] .menu-preview {
+                  background: #1e293b;
+              }
+              [data-theme="dark"] .step-card,
+              [data-theme="dark"] .feature-card,
+              [data-theme="dark"] .menu-card {
+                  background: #1e293b;
+                  border-color: #334155;
+                  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+              }
+              [data-theme="dark"] .step-card:hover,
+              [data-theme="dark"] .feature-card:hover,
+              [data-theme="dark"] .menu-card:hover {
+                  border-color: #475569;
+                  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+              }
+              [data-theme="dark"] .step-card h3,
+              [data-theme="dark"] .feature-card h4,
+              [data-theme="dark"] .menu-card .menu-body h4 {
+                  color: #f8fafc;
+              }
+              [data-theme="dark"] .step-card p,
+              [data-theme="dark"] .feature-card p {
+                  color: #94a3b8;
+              }
+              [data-theme="dark"] .menu-card .menu-img {
+                  background: #334155;
+              }
+              [data-theme="dark"] .testimonials {
+                  background:
+                      radial-gradient(circle at 10% 20%, rgba(0, 180, 210, 0.10), transparent 32%),
+                      radial-gradient(circle at 90% 80%, rgba(220, 70, 70, 0.08), transparent 32%),
+                      linear-gradient(135deg, #0b1a2a 0%, #0f2233 50%, #0b1a2a 100%);
+              }
+              [data-theme="dark"] .testimonials .section-title {
+                  color: #f8fafc;
+              }
+              [data-theme="dark"] .testimonial-card {
+                  background: linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+                  border-color: rgba(148, 163, 184, 0.2);
+                  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+              }
+              [data-theme="dark"] .testimonial-card > p {
+                  color: #cbd5e1;
+              }
+              [data-theme="dark"] .testimonial-card .author {
+                  color: #f8fafc;
+              }
+              [data-theme="dark"] .lang-switcher select,
+              [data-theme="dark"] #langToggleSelect {
+                  background: #1e293b !important;
+                  color: #e2e8f0 !important;
+                  border-color: #334155 !important;
+              }
     </style>
   </head>
   <body>
@@ -1209,6 +1296,17 @@
               <option value="am">🇪🇹 አማርኛ</option>
             </select>
           </div>
+          <!-- Theme Toggle Button (Top Right) -->
+          <button
+            type="button"
+            class="nav-theme-toggle"
+            id="navThemeToggle"
+            data-theme-toggle
+            aria-label="Toggle dark / light mode"
+            title="Dark Mode"
+          >
+            <i class="fas fa-moon"></i>
+          </button>
           <div class="auth-buttons">
             <a
               href="/src/pages/common/login.html"
@@ -1553,7 +1651,7 @@
     <!-- Unified i18n Engine -->
     <script type="module" src="../../js/utils/i18n.js"></script>
     <!-- ================= BOOTSTRAP JS ================= -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/public/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- ================= JAVASCRIPT ================= -->
     <script>
       // Navbar Toggle & Icon Switcher
@@ -1791,7 +1889,8 @@
         ids.forEach(function (id) {
           const el = document.getElementById(id);
           if (el && t[id]) {
-            el.textContent = t[id];
+            if (t[id].startsWith("<")) el.innerHTML = t[id];
+            else el.textContent = t[id];
           }
         });
 
@@ -1799,15 +1898,19 @@
         if (btnEl && t.viewFullMenuBtn) {
           btnEl.innerHTML = t.viewFullMenuBtn;
         }
+        // Also delegate to centralized engine for any data-i18n / directTextMap coverage
+        if (window.applyTranslations) window.applyTranslations();
       }
 
       document.addEventListener("DOMContentLoaded", function () {
         renderMenuPreview();
         const langSelect = document.getElementById("langToggleSelect");
+        // Restore bilingual: read from localStorage, immediate switch without refresh, persist
+        const currentLang = localStorage.getItem("scos_language") || localStorage.getItem("cafeteria_language") || "en";
+        const normalized = currentLang === "am" ? "am" : "en";
         if (langSelect) {
-          const currentLang = localStorage.getItem("scos_language") || localStorage.getItem("cafeteria_language") || "en";
-          langSelect.value = currentLang;
-          updateLanguageUI(currentLang);
+          langSelect.value = normalized;
+          updateLanguageUI(normalized);
           if (window.applyTranslations) window.applyTranslations();
 
           langSelect.addEventListener("change", function () {
@@ -1815,20 +1918,31 @@
             localStorage.setItem("scos_language", selectedLang);
             localStorage.setItem("cafeteria_language", selectedLang);
             updateLanguageUI(selectedLang);
-            if (window.applyTranslations) window.applyTranslations();
             if (window.setLanguage) window.setLanguage(selectedLang);
+            if (window.applyTranslations) window.applyTranslations();
             window.dispatchEvent(new CustomEvent("language:changed", { detail: { language: selectedLang } }));
             window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: selectedLang } }));
           });
+        } else {
+          updateLanguageUI(normalized);
         }
-        // Listen to global language changes from other pages/components
+        // Listen to global language changes from other pages/components (immediate without refresh)
         window.addEventListener("language:changed", function(e){
           const lang = e.detail && e.detail.language;
           if (lang && langSelect) { langSelect.value = lang; updateLanguageUI(lang); }
+          else if (lang) updateLanguageUI(lang);
         });
         window.addEventListener("languageChanged", function(e){
           const lang = e.detail && e.detail.language;
           if (lang && langSelect) { langSelect.value = lang; updateLanguageUI(lang); }
+          else if (lang) updateLanguageUI(lang);
+        });
+        // Also sync via storage event across tabs
+        window.addEventListener("storage", function(e){
+          if (e.key === "scos_language" || e.key === "cafeteria_language") {
+            const nl = e.newValue;
+            if (nl && langSelect) { langSelect.value = nl; updateLanguageUI(nl); }
+          }
         });
       });
     </script>

@@ -75,6 +75,23 @@ exports.submitFeedback = async (req, res) => {
       status: FEEDBACK_STATUS.PENDING,
     });
 
+    // ✅ Real-time to admin dashboard
+    try {
+      const { emitSocketEvent } = require('../utils/socket');
+      emitSocketEvent('admin', 'feedback:new', {
+        id: feedback._id,
+        userId: feedback.userId,
+        rating: feedback.rating,
+        comment: feedback.comment,
+        category: feedback.category,
+        dishName: feedback.dishName,
+        status: feedback.status,
+        createdAt: feedback.createdAt
+      });
+    } catch (e) {
+      console.warn('Socket emit failed for new feedback:', e.message);
+    }
+
     res.status(HTTP_STATUS.CREATED).json({
       success: true,
       message: "Thank you for your feedback!",
@@ -305,15 +322,29 @@ exports.replyToFeedback = async (req, res) => {
 
     await feedback.save();
 
-    // ✅ Create notification for user
-    await Notification.create({
+    // ✅ Create notification for user - saved for offline, emitted for online (only to correct customer)
+    const notification = await Notification.create({
       userId: feedback.userId,
       title: "Reply to your feedback",
-
       message: `Admin replied to your feedback: "${reply.trim()}"`,
       type: "system",
       isRead: false,
     });
+
+    // ✅ Real-time notification to correct customer only
+    try {
+      const { emitSocketEvent } = require('../utils/socket');
+      emitSocketEvent(`user:${feedback.userId}`, 'notification:new', {
+        id: notification._id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        isRead: notification.isRead,
+        createdAt: notification.createdAt
+      });
+    } catch (e) {
+      console.warn('Socket emit failed for feedback reply:', e.message);
+    }
 
     res.status(HTTP_STATUS.OK).json({
       success: true,

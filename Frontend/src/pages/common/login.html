@@ -1,21 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="eng">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Smart Cafeteria</title>
+    <!-- Prevent Back-Forward Cache -->
+    <script>window.addEventListener('pageshow', function(e){ if(e.persisted) window.location.reload(); });</script>
     <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="stylesheet" href="/public/assets/vendor/fonts/fonts.css">
+    <!-- Shared Theme (open / dark) - loaded in head to avoid flash -->
+    <script src="../../js/theme.js"></script>
     <style>
         * {
             margin: 0;
@@ -306,6 +302,22 @@
             font-size: 12px;
             pointer-events: none;
         }
+        .input-wrapper .toggle-password-icon {
+            left: auto;
+            right: 11px;
+            cursor: pointer;
+            pointer-events: auto;
+            padding: 4px;
+            font-size: 14px;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+        .input-wrapper .toggle-password-icon:hover {
+            color: var(--primary);
+        }
+        .input-wrapper input.password-input {
+            padding-right: 34px;
+        }
         .form-group input {
             width: 100%;
             height: 36px;
@@ -461,6 +473,92 @@
                 font-size: 21px;
             }
         }
+        /* ============================================================
+           LOGIN / REGISTER DARK MODE  (theme.js sets data-theme="dark")
+           ============================================================ */
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0f172a 0%, #0b1220 45%, #131c31 100%);
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] body::before { background: rgba(37, 99, 235, 0.18); }
+        [data-theme="dark"] body::after  { background: rgba(37, 99, 235, 0.14); }
+        [data-theme="dark"] .home-button {
+            color: #e2e8f0;
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(148, 163, 184, 0.3);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="dark"] .login-container {
+            background: #1e293b;
+            border-color: rgba(148, 163, 184, 0.2);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        }
+        [data-theme="dark"] .food-panel {
+            background:
+                linear-gradient(180deg, rgba(15, 23, 42, 0.0),
+                rgba(15, 23, 42, 0.55)),
+                linear-gradient(150deg, #0f1530, #1e293b);
+        }
+        [data-theme="dark"] .login-panel,
+        [data-theme="dark"] .form-panel {
+            background: #1e293b;
+        }
+        [data-theme="dark"] .login-heading h1,
+        [data-theme="dark"] .login-heading p,
+        [data-theme="dark"] .login-panel label,
+        [data-theme="dark"] .brand-name {
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+        [data-theme="dark"] input::placeholder { color: #64748b; }
+        [data-theme="dark"] .forgot-link,
+        [data-theme="dark"] .footer-link { color: #93c5fd; }
+        [data-theme="dark"] .submit-btn { box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35); }
+        [data-theme="dark"] .message { background: #0f172a; }
+        /* ===== Top-right controls: language switcher + theme toggle ===== */
+        .top-controls {
+            position: fixed;
+            top: 14px;
+            right: 18px;
+            z-index: 30;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-corner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+            transition: 0.25s ease;
+        }
+        .theme-corner:hover { background: #2563eb; color: #fff; transform: translateY(-2px); }
+        [data-theme="dark"] .top-controls .lang-switcher-widget {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] .top-controls select {
+            color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-corner {
+            background: rgba(30, 41, 59, 0.9);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -469,6 +567,19 @@
         <i class="fa-solid fa-arrow-left"></i>
         Smart Cafeteria
     </a>
+    <!-- THEME TOGGLE + LANGUAGE SWITCHER (top right, shared cluster) -->
+    <div class="top-controls">
+        <div class="lang-switcher-widget" id="authLangSwitcher" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+            <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>
+            <select class="scos-lang-select" id="authLangSelect" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:105px;">
+                <option value="en">🇬🇧 English</option>
+                <option value="am">🇪🇹 አማርኛ</option>
+            </select>
+        </div>
+        <button type="button" class="theme-corner" data-theme-toggle aria-label="Toggle dark / light mode" title="Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </div>
     <main class="page-wrapper">
         <div class="login-container">
             <!-- LEFT FOOD PANEL -->
@@ -545,11 +656,13 @@
                             <input
                                 type="password"
                                 id="password"
+                                class="password-input"
                                 placeholder="Enter your password"
                                 autocomplete="current-password"
                                 required
                             >
                             <i class="fa-solid fa-lock"></i>
+                            <i class="fa-solid fa-eye toggle-password-icon" id="togglePassword" title="Show password"></i>
                         </div>
                     </div>
                     <!-- LOGIN BUTTON -->
@@ -580,6 +693,19 @@
         const successMsg = document.getElementById("successMsg");
         const submitBtn = document.getElementById("submitBtn");
 
+        // Password show/hide toggle
+        const passwordInput = document.getElementById("password");
+        const togglePassword = document.getElementById("togglePassword");
+        if (passwordInput && togglePassword) {
+            togglePassword.addEventListener("click", function () {
+                const isPassword = passwordInput.type === "password";
+                passwordInput.type = isPassword ? "text" : "password";
+                togglePassword.classList.toggle("fa-eye", !isPassword);
+                togglePassword.classList.toggle("fa-eye-slash", isPassword);
+                togglePassword.title = isPassword ? "Hide password" : "Show password";
+            });
+        }
+
         form.addEventListener("submit", async function (e) {
             e.preventDefault();
             errorMsg.style.display = "none";
@@ -587,6 +713,8 @@
 
             const identifier = document.getElementById("identifier").value.trim();
             const password = document.getElementById("password").value;
+
+            console.log("[Login] Identifier:", JSON.stringify(identifier), "Password length:", password.length);
 
             if (!identifier) {
                 showError("Phone or Email is required.");
@@ -604,14 +732,13 @@
             let authenticatedUser = null;
             let authToken = null;
             let backendSuccess = false;
-            let backendError = "Unable to reach the authentication server.";
+            let backendError = "Unable to reach the authentication server. Please ensure the backend is running on port 5000.";
 
             // Try authenticating with backend API
             try {
                 let response;
                 const reqBody = JSON.stringify({
                     identifier: identifier,
-                    email: identifier,
                     password: password
                 });
 
@@ -640,6 +767,7 @@
                 }
             } catch (err) {
                 console.warn("Backend API login unreachable:", err);
+                backendError = "Backend server is not running. Please start the backend on port 5000 and try again.";
             }
 
             let userRole = "";

@@ -1,12 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order History - Cafeteria Menu</title>
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/src/css/style.css">
+<link rel="stylesheet" href="/src/css/themes/dark-theme.css">
 </head>
 <body>
 
@@ -50,6 +51,10 @@
 
     <!-- Connect Scripts -->
     <script type="module" src="../../js/utils/i18n.js"></script>
-    <script type="module" src="../../js/order-history.js"></script>
+<script type="module" src="../../js/theme.js"></script>
+<script type="module" src="../../js/customer-orders-sync.js"></script>
+<script type="module" src="../../js/order-history.js"></script>
+    <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
+    <script type="module" src="../../js/customer-realtime.js"></script>
 </body>
 </html>

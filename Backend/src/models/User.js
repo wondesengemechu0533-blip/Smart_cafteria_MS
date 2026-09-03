@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Full name is required"],
       trim: true,
       minlength: [2, "Name must be at least 2 characters"],
-      maxlength: [50, "Name cannot exceed 50 characters"],
+      maxlength: [100, "Name cannot exceed 100 characters"],
     },
     email: {
       type: String,
@@ -53,8 +53,8 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Phone number is required"],
       unique: true,
       match: [
-        /^(09|07)[0-9]{8}$/,
-        "Please provide a valid Ethiopian phone number (09XXXXXXXX or 07XXXXXXXX)",
+        /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/,
+        "Please provide a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)",
       ],
     },
     username: {
@@ -65,7 +65,10 @@ const UserSchema = new mongoose.Schema(
       minlength: [3, "Username must be at least 3 characters"],
       maxlength: [30, "Username cannot exceed 30 characters"],
       match: [/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"],
-      default: null,
+      // No default: when absent, the field must be left unset so the sparse
+      // unique index does not index it. A `null` value would be indexed by
+      // MongoDB (sparse skips only missing fields, not null), causing false
+      // duplicate-key 409s when two users both have no username.
     },
     address: {
       type: String,
@@ -76,7 +79,7 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters"],
+      minlength: [8, "Password must be at least 8 characters"],
       select: false,
     },
     role: {
@@ -112,14 +115,6 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       required: [true, "You must agree to the Terms & Conditions"],
       default: false,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   {

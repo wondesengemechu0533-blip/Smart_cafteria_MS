@@ -114,15 +114,23 @@
           window.location.href = '../../pages/common/login.html';
         }
       });
-    }
+}
   }
 
-  // Ensure unified i18n is loaded on admin pages (auto-inject if missing)
-  function ensureI18nLoaded() {
+    // Ensure unified i18n is loaded on admin pages (auto-inject if missing)
+    function ensureI18nLoaded() {
     if (document.querySelector('script[src*="i18n.js"]')) return;
     var s = document.createElement('script');
     s.type = 'module';
     s.src = '../../js/utils/i18n.js';
+    document.head.appendChild(s);
+  }
+
+  // Ensure theme.js is loaded on all admin pages
+  function ensureThemeLoaded() {
+    if (document.querySelector('script[src*="theme.js"]')) return;
+    var s = document.createElement('script');
+    s.src = '../../js/theme.js';
     document.head.appendChild(s);
   }
 
@@ -136,19 +144,23 @@
     var profile = getStoredProfile();
     var avatarLetter = profile && profile.name ? profile.name.charAt(0).toUpperCase() : 'A';
     var adminName = profile && profile.name ? profile.name : 'Admin User';
-    var currentLang = (function(){ try{ return localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en'; } catch(e){ return 'en'; }})();
 
+    var curLang = 'en';
+    try { curLang = localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en'; if (curLang !== 'am') curLang = 'en'; } catch(e){}
     navbar.innerHTML = ''
       + '<div class="nav-left">'
       + '  <button id="sidebarToggle" class="btn-icon" aria-label="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>'
       + '  <a href="dashboard.html" class="brand-logo"><i class="fa-solid fa-utensils"></i><span>Smart Cafeteria <small>Admin</small></span></a>'
+      + '  <button type="button" class="theme-toggle" id="themeToggle" title="Toggle Theme">'
+      + '    <i class="fa-solid fa-moon"></i>'
+      + '  </button>'
       + '</div>'
       + '<div class="nav-right">'
-      + '  <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;margin-right:10px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
+      + '  <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-right:8px;">'
       + '    <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>'
       + '    <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">'
-      + '      <option value="en"' + (currentLang==='en'?' selected':'') + '>🇬🇧 English</option>'
-      + '      <option value="am"' + (currentLang==='am'?' selected':'') + '>🇪🇹 አማርኛ</option>'
+      + '      <option value="en"' + (curLang==='en'?' selected':'') + '>🇬🇧 English</option>'
+      + '      <option value="am"' + (curLang==='am'?' selected':'') + '>🇪🇹 አማርኛ</option>'
       + '    </select>'
       + '  </div>'
       + '  <div class="nav-item dropdown">'
@@ -163,6 +175,38 @@
       + '    <button id="logoutBtn" class="btn-logout-icon" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>'
       + '  </div>'
       + '</div>';
+
+    // Bind language switcher - immediate without refresh, persisted in localStorage
+    var langSelect = navbar.querySelector('.scos-lang-select');
+    if (langSelect) {
+      try { langSelect.value = curLang; } catch(e){}
+      if (!langSelect.dataset.i18nBound) {
+        langSelect.dataset.i18nBound = '1';
+        langSelect.addEventListener('change', function(e) {
+          var lang = e.target.value;
+          if (window.setLanguage) window.setLanguage(lang);
+          else { try { localStorage.setItem('scos_language', lang); localStorage.setItem('cafeteria_language', lang); } catch(_){} if (window.applyTranslations) window.applyTranslations(); }
+        });
+      }
+    }
+    if (window.applyTranslations) setTimeout(function(){ window.applyTranslations(); }, 0);
+
+    // Bind theme toggle
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = themeToggle ? themeToggle.querySelector('i') : null;
+    if (themeToggle) {
+      function syncThemeIcon() {
+        var isDark = document.documentElement.classList.contains('dark');
+        if (themeIcon) themeIcon.className = 'fa-solid ' + (isDark ? 'fa-sun' : 'fa-moon');
+        themeToggle.title = isDark ? 'Light Mode' : 'Dark Mode';
+      }
+      themeToggle.addEventListener('click', function() {
+        var next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        if (window.ScosTheme) window.ScosTheme.apply(next);
+        syncThemeIcon();
+      });
+      syncThemeIcon();
+    }
 
     // Attach sidebar toggle
     var sidebarToggle = document.getElementById('sidebarToggle');
@@ -226,20 +270,6 @@
       });
     }
 
-    // Language switcher handler
-    var langSelect = navbar.querySelector('.scos-lang-select');
-    if (langSelect) {
-      langSelect.addEventListener('change', function() {
-        var lang = this.value;
-        try {
-          localStorage.setItem('scos_language', lang);
-          localStorage.setItem('cafeteria_language', lang);
-        } catch(e){}
-        if (window.applyTranslations) window.applyTranslations();
-        if (window.setLanguage) window.setLanguage(lang);
-        else window.location.reload();
-      });
-    }
   }
 
   // Auth guard + profile population
@@ -281,11 +311,14 @@
     // 1. Auth guard
     if (!initAuthGuard()) return;
 
-    // 2. Render layout
+    // 2. Load theme module
+    ensureThemeLoaded();
+
+    // 3. Render layout
     renderNavbar();
     renderSidebar(getCurrentPageId());
 
-    // 3. Initialize tooltips, etc.
+    // 4. Initialize tooltips, etc.
     if (typeof initPageSpecific === 'function') {
       initPageSpecific();
     }

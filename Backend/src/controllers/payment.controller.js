@@ -297,11 +297,11 @@ exports.validatePayment = async (req, res) => {
     } else if (!validMethods.includes(method)) {
       errors.method = 'Invalid payment method';
     }
-    const phoneRegex = /^(09|07)[0-9]{8}$/;
+    const phoneRegex = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
     if (!phone) {
       errors.phone = 'Phone number is required';
     } else if (!phoneRegex.test(phone)) {
-      errors.phone = 'Invalid phone number format (09XXXXXXXX or 07XXXXXXXX)';
+      errors.phone = 'Invalid phone number format (e.g. 09XXXXXXXX or +2519XXXXXXXX)';
     }
     res.status(HTTP_STATUS.OK).json({
       success: Object.keys(errors).length === 0,

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <title>Admin Dashboard - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
 
@@ -14,7 +14,10 @@
     <link rel="stylesheet" href="/src/css/admin.css">
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/public/assets/vendor/js/chart.umd.min.js"></script>
+
+    <!-- Shared Theme -->
+    <script src="../../js/theme.js"></script>
 </head>
 <body class="admin-body">
 
@@ -26,31 +29,6 @@
             <div class="page-header">
                 <div>
                     <h1>Dashboard Overview</h1>
-                    <p class="subtitle">Real-time statistics from MongoDB — updated live from the database.</p>
-                    <small class="subtitle" id="lastUpdated"></small>
-                </div>
-                <div class="page-actions">
-                    <div class="btn-group gap-2">
-                        <button class="btn btn-secondary" id="refreshMetricsBtn" title="Refresh (R)">
-                            <i class="fa-solid fa-rotate"></i> Refresh
-                        </button>
-                        <button class="btn btn-secondary" id="autoRefreshBtn" title="Toggle Auto-refresh (A)">
-                            <i class="fa-solid fa-play"></i> Auto-refresh OFF
-                        </button>
-                        <div class="btn-group-dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" id="refreshIntervalBtn" title="Refresh Interval">
-                                <i class="fa-solid fa-clock"></i> 30s
-                            </button>
-                            <div class="dropdown-menu">
-                                <button class="dropdown-item refresh-interval-btn active" data-interval="30000">30 seconds</button>
-                                <button class="dropdown-item refresh-interval-btn" data-interval="60000">1 minute</button>
-                                <button class="dropdown-item refresh-interval-btn" data-interval="300000">5 minutes</button>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" id="exportDashboardBtn" title="Export Data (E)">
-                            <i class="fa-solid fa-download"></i> Export
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -105,7 +83,7 @@
 
             <!-- STATISTICS CARDS -->
             <div class="row g-4 mb-4">
-                <!-- Users Stats -->
+                <!-- Users / Menu -->
                 <div class="col-xl-3 col-md-6">
                     <div class="metric-card" data-nav="users.html">
                         <div class="metric-icon bg-indigo">
@@ -129,31 +107,6 @@
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="users.html">
-                        <div class="metric-icon bg-orange">
-                            <i class="fa-solid fa-kitchen-set"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Kitchen Staff</span>
-                            <h2 class="metric-value" id="statKitchenStaff">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="users.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-user-shield"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Admins</span>
-                            <h2 class="metric-value" id="statAdmins">0</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
                     <div class="metric-card" data-nav="menu.html">
                         <div class="metric-icon bg-indigo">
                             <i class="fa-solid fa-bowl-food"></i>
@@ -172,28 +125,6 @@
                         <div class="metric-content">
                             <span class="metric-label">Available Now</span>
                             <h2 class="metric-value" id="statAvailableMenu">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="menu.html">
-                        <div class="metric-icon bg-orange">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Out of Stock</span>
-                            <h2 class="metric-value" id="statOutOfStockMenu">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="categories.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-layer-group"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Categories</span>
-                            <h2 class="metric-value" id="statTotalCategories">0</h2>
                         </div>
                     </div>
                 </div>
@@ -248,109 +179,7 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-receipt"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Orders</span>
-                            <h2 class="metric-value" id="statTotalOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-orange">
-                            <i class="fa-solid fa-hourglass-half"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Pending</span>
-                            <h2 class="metric-value" id="statPendingOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-yellow">
-                            <i class="fa-solid fa-fire-burner"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Preparing</span>
-                            <h2 class="metric-value" id="statPreparingOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-cyan">
-                            <i class="fa-solid fa-bell-concierge"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Ready</span>
-                            <h2 class="metric-value" id="statReadyOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-green">
-                            <i class="fa-solid fa-check-double"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Completed</span>
-                            <h2 class="metric-value" id="statCompletedOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-ban"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Cancelled</span>
-                            <h2 class="metric-value" id="statCancelledOrders">0</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
-                        <div class="metric-icon bg-green">
-                            <i class="fa-solid fa-wallet"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Successful Payments</span>
-                            <h2 class="metric-value" id="statSuccessfulPayments">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
-                        <div class="metric-icon bg-orange">
-                            <i class="fa-solid fa-hourglass-half"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Pending Payments</span>
-                            <h2 class="metric-value" id="statPendingPayments">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="payments.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Failed Payments</span>
-                            <h2 class="metric-value" id="statFailedPayments">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
+                <div class="col-xl-6 offset-xl-3">
                     <div class="metric-card revenue-total" data-nav="payments.html">
                         <div class="metric-icon bg-indigo">
                             <i class="fa-solid fa-sack-dollar"></i>
@@ -397,7 +226,7 @@
             </div>
 
             <!-- RECENT TABLES -->
-            <div class="row g-4">
+            <div class="row g-4 recent-tables">
                 <!-- RECENT ORDERS -->
                 <div class="col-xl-6">
                     <div class="card">
@@ -462,7 +291,10 @@
     </div>
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="/public/assets/vendor/js/chart.umd.min.js"></script>
+
+    <!-- Shared Theme -->
+    <script src="../../js/theme.js"></script>
 
     <!-- JavaScript Files -->
     <script src="../../js/admin-api.js"></script>

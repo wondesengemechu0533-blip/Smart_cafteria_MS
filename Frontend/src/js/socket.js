@@ -14,6 +14,7 @@ class SocketClient {
     constructor() {
         this.socket = null;
         this.listeners = new Map();
+        this.pendingJoins = new Set();
     }
 
     connect(token) {
@@ -30,6 +31,13 @@ class SocketClient {
             if (this.isKitchenStaff()) {
                 this.socket.emit('join:kitchen');
             }
+            // Re-apply any order-room joins that were requested before connect.
+            this.pendingJoins.forEach((roomId) => {
+                this.socket.emit('order:join', roomId);
+            });
+            this.pendingJoins.clear();
+            // Let consumers' socketClient.on("connect", cb) listeners fire too.
+            this.emit('connect', undefined);
         });
 
         this.socket.on('disconnect', (reason) => {
@@ -65,19 +73,32 @@ class SocketClient {
     }
 
     joinOrderRoom(orderId) {
+        if (!orderId) return;
         if (this.socket?.connected) {
             this.socket.emit('order:join', orderId);
+        } else {
+            // Connection is still in progress; remember to join once connected.
+            this.pendingJoins.add(orderId);
         }
     }
 
     leaveOrderRoom(orderId) {
+        this.pendingJoins.delete(orderId);
         if (this.socket?.connected) {
             this.socket.emit('order:leave', orderId);
         }
     }
 
     isKitchenStaff() {
-        const role = localStorage.getItem('role') || localStorage.getItem('userRole');
+        // Check top-level role keys first, then fall back to the stored user.
+        let role = localStorage.getItem('role') || localStorage.getItem('userRole') || '';
+        if (!role) {
+            try {
+                role = JSON.parse(localStorage.getItem('current_user'))?.role || '';
+            } catch (e) {
+                /* ignore */
+            }
+        }
         return ['kitchen', 'KITCHEN_STAFF', 'STAFF', 'admin', 'ADMIN'].includes(role);
     }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,14 +6,13 @@
     <title>Menu Management - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
 
     <!-- Admin CSS stylesheet -->
     <link rel="stylesheet" href="/src/css/admin.css">
     <link rel="stylesheet" href="/src/css/image-upload.css">
-    <link rel="stylesheet" href="/src/css/image-gallery.css">
     
     <!-- Admin JS -->
     <script src="/src/js/admin-api.js"></script>
@@ -167,6 +166,7 @@
             <form id="menuItemForm">
                 <input type="hidden" name="id" id="itemId">
                 <div class="modal-body">
+                    <h4 class="form-section-title"><i class="fa-solid fa-tag"></i> Basic Information</h4>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="itemNameEn" class="form-label">English Name <span class="required">*</span></label>
@@ -174,7 +174,7 @@
                         </div>
                         <div class="form-group">
                             <label for="itemNameAm" class="form-label">Amharic Name <span class="required">*</span></label>
-                            <input type="text" name="name_am" id="itemNameAm" class="form-control" placeholder="e.g. á‹¶áˆ® á‹ˆáŒ¥" required>
+                            <input type="text" name="name_am" id="itemNameAm" class="form-control" placeholder="የመዝቀል ስም">
                         </div>
                         <div class="form-group">
                             <label for="itemCategory" class="form-label">Category <span class="required">*</span></label>
@@ -182,6 +182,10 @@
                                 <option value="">Select category</option>
                             </select>
                         </div>
+                    </div>
+
+                    <h4 class="form-section-title"><i class="fa-solid fa-coins"></i> Pricing &amp; Stock</h4>
+                    <div class="form-grid">
                         <div class="form-group">
                             <label for="itemPrice" class="form-label">Price (ETB) <span class="required">*</span></label>
                             <input type="number" name="price" id="itemPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
@@ -191,6 +195,18 @@
                             <input type="number" name="preparationTime" id="itemPrepTime" class="form-control" min="1" value="10">
                         </div>
                         <div class="form-group">
+                            <label for="itemStockQuantity" class="form-label">Stock Quantity</label>
+                            <input type="number" id="itemStockQuantity" class="form-control" min="0" step="1" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="itemLowStockThreshold" class="form-label">Low-stock Threshold</label>
+                            <input type="number" id="itemLowStockThreshold" class="form-control" min="0" step="1" value="5">
+                        </div>
+                    </div>
+
+                    <h4 class="form-section-title"><i class="fa-solid fa-bell"></i> Availability &amp; Promotion</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
                             <label class="form-label">Availability</label>
                             <label class="switch">
                                 <input type="checkbox" name="available" id="itemAvailable" checked>
@@ -198,33 +214,49 @@
                             </label>
                             <small id="itemAvailableLabel" class="form-text">Available for ordering</small>
                         </div>
-                        <div class="form-group"><label for="itemStockQuantity" class="form-label">Stock Quantity</label><input type="number" id="itemStockQuantity" class="form-control" min="0" step="1" value="0"></div>
-                        <div class="form-group"><label for="itemLowStockThreshold" class="form-label">Low-stock Threshold</label><input type="number" id="itemLowStockThreshold" class="form-control" min="0" step="1" value="5"></div>
-                        <div class="form-group"><label class="form-label">Promotion</label><label class="switch"><input type="checkbox" id="itemPopular"><span class="switch-slider"></span><span class="switch-caption">Popular</span></label><label class="switch"><input type="checkbox" id="itemRecommended"><span class="switch-slider"></span><span class="switch-caption">Recommended</span></label><label class="switch"><input type="checkbox" id="itemHomepage"><span class="switch-slider"></span><span class="switch-caption">Show on Homepage</span></label></div>
+                        <div class="form-group">
+                            <label class="form-label">Promotion</label>
+                            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+                                <label class="switch"><input type="checkbox" id="itemPopular"><span class="switch-slider"></span><span class="switch-caption">Popular</span></label>
+                                <label class="switch"><input type="checkbox" id="itemRecommended"><span class="switch-slider"></span><span class="switch-caption">Recommended</span></label>
+                                <label class="switch"><input type="checkbox" id="itemHomepage"><span class="switch-slider"></span><span class="switch-caption">Show on Homepage</span></label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group mt-3">
-                        <label for="itemDescriptionEn" class="form-label">Description (English)</label>
-                        <textarea name="description_en" id="itemDescriptionEn" class="form-control" rows="2" placeholder="Brief description in English..."></textarea>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label for="itemDescriptionAm" class="form-label">Description (Amharic)</label>
-                        <textarea name="description_am" id="itemDescriptionAm" class="form-control" rows="2" placeholder="á‰ áŠ áˆ›áˆ­áŠ› áˆ˜áŒáˆˆáŒ«..."></textarea>
+                    <h4 class="form-section-title"><i class="fa-solid fa-align-left"></i> Description</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="itemDescriptionEn" class="form-label">Description (English)</label>
+                            <textarea name="description_en" id="itemDescriptionEn" class="form-control" rows="2" placeholder="Brief description in English..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemDescriptionAm" class="form-label">Description (Amharic)</label>
+                            <textarea name="description_am" id="itemDescriptionAm" class="form-control" rows="2" placeholder="ገና መጽሃፍ በነጻ..."></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-row upload-row mt-3">
+                    <h4 class="form-section-title"><i class="fa-solid fa-image"></i> Item Image</h4>
+                    <div class="form-row upload-row">
                         <div class="form-group">
                             <label for="itemImageFile" class="form-label">Upload Image (JPG, PNG, WEBP, max 2 MB)</label>
                             <input type="file" name="image" id="itemImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
                         </div>
                         <div class="form-group">
-                            <label for="itemImageUrl" class="form-label">...or Image URL (optional)</label>
-                            <input type="url" name="image_url" id="itemImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                            <label for="itemImageUrl" class="form-label">...or Image URL</label>
+                            <div class="upload-url-row">
+                                <input type="url" name="image_url" id="itemImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                                <div class="url-feedback" id="urlFeedback"></div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="file-preview" id="imagePreviewRow" style="display:none;">
-                        <img id="itemImagePreview" alt="Preview">
+                        <div class="image-preview-wrap">
+                            <img id="itemImagePreview" alt="Preview">
+                            <div class="img-loading" id="imageLoading" style="display:none;"><div class="spinner"></div></div>
+                            <div class="img-error" id="imageError" style="display:none;"><i class="fa-solid fa-circle-exclamation"></i> Failed</div>
+                        </div>
                         <button type="button" class="btn-remove-file" id="removeImageBtn"><i class="fa-solid fa-trash-can"></i> Remove Image</button>
                     </div>
                 </div>
@@ -247,19 +279,19 @@
                 <div class="detail-hero">
                     <img id="viewItemImage" class="img-thumb" alt="Item image" src="">
                     <div>
-                        <h4 id="viewItemName">—</h4>
-                        <div id="viewItemCategory" class="form-text">—</div>
+                        <h4 id="viewItemName">â€”</h4>
+                        <div id="viewItemCategory" class="form-text">â€”</div>
                     </div>
                 </div>
                 <div class="detail-grid">
-                    <div class="detail-item"><span>Item ID</span><strong id="viewItemId">—</strong></div>
-                    <div class="detail-item"><span>Price</span><strong id="viewItemPrice">—</strong></div>
-                    <div class="detail-item"><span>Availability</span><strong id="viewItemAvailability">—</strong></div>
-                    <div class="detail-item"><span>Prep Time</span><strong id="viewItemPrepTime">—</strong></div>
-                    <div class="detail-item"><span>Description (EN)</span><strong id="viewItemDescEn">—</strong></div>
-                    <div class="detail-item"><span>Description (AM)</span><strong id="viewItemDescAm">—</strong></div>
-                    <div class="detail-item"><span>Created</span><strong id="viewItemCreated">—</strong></div>
-                    <div class="detail-item"><span>Last Updated</span><strong id="viewItemUpdated">—</strong></div>
+                    <div class="detail-item"><span>Item ID</span><strong id="viewItemId">â€”</strong></div>
+                    <div class="detail-item"><span>Price</span><strong id="viewItemPrice">â€”</strong></div>
+                    <div class="detail-item"><span>Availability</span><strong id="viewItemAvailability">â€”</strong></div>
+                    <div class="detail-item"><span>Prep Time</span><strong id="viewItemPrepTime">â€”</strong></div>
+                    <div class="detail-item"><span>Description (EN)</span><strong id="viewItemDescEn">â€”</strong></div>
+                    <div class="detail-item"><span>Description (AM)</span><strong id="viewItemDescAm">â€”</strong></div>
+                    <div class="detail-item"><span>Created</span><strong id="viewItemCreated">â€”</strong></div>
+                    <div class="detail-item"><span>Last Updated</span><strong id="viewItemUpdated">â€”</strong></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -299,7 +331,7 @@
                 <div class="confirm-icon danger">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
-                <p class="confirm-text">Are you sure you want to delete <strong id="deleteItemName">—</strong>?</p>
+                <p class="confirm-text">Are you sure you want to delete <strong id="deleteItemName">â€”</strong>?</p>
                 <p class="confirm-subtext">This action cannot be undone.</p>
             </div>
             <div class="modal-footer justify-content-center">
@@ -323,8 +355,8 @@
                     <div class="stock-hero">
                         <img id="stockItemThumb" class="img-thumb-sm" src="" alt="">
                         <div>
-                            <strong id="stockItemName">—</strong>
-                            <small id="stockItemCat">—</small>
+                            <strong id="stockItemName">â€”</strong>
+                            <small id="stockItemCat">â€”</small>
                         </div>
                     </div>
                     <input type="hidden" id="stockItemId">
@@ -355,7 +387,6 @@
     <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/image-upload-manager.js"></script>
-    <script src="../../js/image-gallery-manager.js"></script>
     <script src="../../js/admin-menu.js"></script>
 
     <script>

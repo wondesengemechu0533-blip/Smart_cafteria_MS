@@ -61,13 +61,12 @@ async function handleLogin(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
-    const formData = new FormData(form);
 
-    const email = formData.get("email")?.trim();
-    const password = formData.get("password");
+    const identifier = form.querySelector('#identifier')?.value?.trim();
+    const password = form.querySelector('#password')?.value;
 
-    if (!email || !password) {
-        showMessage("Email and password are required.", "danger");
+    if (!identifier || !password) {
+        showMessage("Phone/Email and password are required.", "danger");
         return;
     }
 
@@ -75,7 +74,7 @@ async function handleLogin(event) {
         setLoading(form, true);
 
         const result = await authService.login({
-            email,
+            identifier,
             password
         });
 
@@ -84,7 +83,7 @@ async function handleLogin(event) {
         const redirect =
             result?.user?.role === "admin"
                 ? "../admin/dashboard.html"
-                : "../customer/index.html";
+                : "../customer/menu.html";
 
         setTimeout(() => {
             window.location.href = redirect;
@@ -101,15 +100,21 @@ async function handleRegister(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
-    const formData = new FormData(form);
 
-    const name = formData.get("name")?.trim();
-    const email = formData.get("email")?.trim();
-    const password = formData.get("password");
-    const confirmPassword = formData.get("confirmPassword");
+    const name = form.querySelector('#regFullName')?.value?.trim();
+    const email = form.querySelector('#regEmail')?.value?.trim();
+    const phone = form.querySelector('#regPhone')?.value?.trim();
+    const password = form.querySelector('#regPassword')?.value;
+    const confirmPassword = form.querySelector('#confirmPassword')?.value;
+    const agreedToTerms = form.querySelector('#agreeTerms')?.checked;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !phone || !password || !confirmPassword) {
         showMessage("Please fill in all required fields.", "danger");
+        return;
+    }
+
+    if (!agreedToTerms) {
+        showMessage("You must agree to the Terms & Conditions.", "danger");
         return;
     }
 
@@ -124,8 +129,10 @@ async function handleRegister(event) {
         await authService.register({
             name,
             email,
+            phone,
             password,
-            role: "customer"
+            confirmPassword,
+            agreedToTerms
         });
 
         showMessage(

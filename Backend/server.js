@@ -13,6 +13,7 @@ const orderRoutes = require('./src/routes/order.routes');
 const kitchenRoutes = require('./src/routes/kitchen.routes');
 const kitchenStaffRoutes = require('./src/routes/kitchen-staff.routes');
 const kitchenReportsRoutes = require('./src/routes/kitchen-reports.routes');
+const kitchenSettingsRoutes = require('./src/routes/kitchen-settings.routes');
 const userRoutes = require('./src/routes/user.routes');
 const menuRoutes = require('./src/routes/menu.routes');
 const categoryRoutes = require('./src/routes/category.routes');
@@ -90,11 +91,12 @@ app.get('/health', (req, res) => res.json({ success: true, service: 'smart-cafet
 
 app.use('/api/v1', apiLimiter);
 
-app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
 
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/kitchen', kitchenRoutes);
+app.use('/api/v1/kitchen/settings', kitchenSettingsRoutes);
 app.use('/api/v1/kitchen-staff', kitchenStaffRoutes);
 app.use('/api/v1/kitchen', kitchenReportsRoutes);
 app.use('/api/v1/users', userRoutes);

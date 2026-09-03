@@ -1,4 +1,15 @@
 /**
+ * Live Order Tracker
+ * - Renders the order receipt + status timeline
+ * - Fetches LIVE status from the backend (GET /api/orders/:orderId)
+ * - Joins the Socket.io order room and updates the timeline in real-time
+ *   when the kitchen marks the order preparing/ready/served
+ * - Persists status changes back to localStorage for consistency on refresh
+ */
+import api from "./api.js";
+import { socketClient } from "./socket.js";
+
+/**
  * Find an order by its ID from localStorage (orderHistory / latestOrder)
  * @param {string} orderId - Order ID (may include a leading #)
  * @returns {Object|null} Order object or null
@@ -64,44 +75,184 @@ window.cancelOrderFromStatusPage = function(orderId) {
     }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const requestedId = urlParams.get("orderId");
+function normalizeStatus(status) {
+    return (status || "").toString().trim().toLowerCase();
+}
 
-    let orderData = null;
+/**
+ * Persist a status update back into localStorage so a refresh shows the truth.
+ */
+function persistStatus(orderId, status) {
+    const id = String(orderId).replace(/^#/, "");
     let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
-    let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+    let changed = false;
 
-    // Retrieve requested order or default to latest order
-    if (requestedId) {
-        orderData = historyData.find(o => (o.orderId || o.id) === requestedId);
-    }
-    
-    if (!orderData) {
-        orderData = latestOrder;
-    }
-
-    // Render empty state if no order is found
-    if (!orderData) {
-        const mainContent = document.querySelector("main");
-        if (mainContent) {
-            mainContent.innerHTML = `
-                <section class="status-banner" style="max-width: 500px; margin: 40px auto; text-align: center; background: #fff; padding: 30px; border-radius: 10px;">
-                    <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: #ff6b00; margin-bottom: 12px;"></i>
-                    <h2>No Active Order Found</h2>
-                    <p style="color: #6b7280; margin-bottom: 16px;">You don't have an active order tracking session right now.</p>
-                    <a href="menu.html" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; background: #ff6b00; color: #fff; border-radius: 6px; text-decoration: none;">View Menu</a>
-                </section>
-            `;
+    historyData = historyData.map(order => {
+        if ((order.orderId || order.id || "").replace(/^#/, "") === id) {
+            if (normalizeStatus(order.status) !== normalizeStatus(status)) {
+                order.status = status;
+                changed = true;
+            }
         }
+        return order;
+    });
+
+    const latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+    if (latestOrder) {
+        const latestId = (latestOrder.orderId || latestOrder.id || "").replace(/^#/, "");
+        if (latestId === id && normalizeStatus(latestOrder.status) !== normalizeStatus(status)) {
+            latestOrder.status = status;
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        localStorage.setItem("orderHistory", JSON.stringify(historyData));
+        localStorage.setItem("latestOrder", JSON.stringify(latestOrder));
+    }
+}
+
+/**
+ * Update the status heading/badge/subtext based on the order status.
+ */
+function setStatusText(status) {
+    const s = normalizeStatus(status);
+    const heading = document.getElementById("status-heading");
+    const subtext = document.getElementById("status-subtext");
+    const icon = document.getElementById("status-badge-icon");
+    if (!heading && !subtext) return;
+
+    const map = {
+        pending: ["Order Received", "We have sent your order directly to the kitchen counter."],
+        preparing: ["Preparing", "The kitchen is preparing your order. Please wait."],
+        ready: ["Ready for Pickup", "Your order is ready for pickup!"],
+        served: ["Served", "Your order has been served."],
+        completed: ["Completed", "Your order has been completed."],
+        cancelled: ["Order Cancelled", "This order was cancelled and will not be prepared."]
+    };
+
+    const entry = map[s] || ["Order Tracker", "We are processing your order."];
+
+    if (heading) heading.textContent = entry[0];
+    if (subtext) subtext.textContent = entry[1];
+
+    if (icon) {
+        const icons = {
+            pending: 'fa-circle-check',
+            preparing: 'fa-fire-burner',
+            ready: 'fa-bell-concierge',
+            served: 'fa-circle-check',
+            completed: 'fa-circle-check',
+            cancelled: 'fa-circle-xmark'
+        };
+        const colors = {
+            pending: '#16a34a',
+            preparing: '#16a34a',
+            ready: '#16a34a',
+            served: '#16a34a',
+            completed: '#16a34a',
+            cancelled: '#dc3545'
+        };
+        icon.innerHTML = `<i class="fa-solid ${icons[s] || 'fa-circle-check'}" style="color: ${colors[s] || '#ff6b00'}; font-size: 2.5rem;"></i>`;
+    }
+
+    // Gate the cancel button (hide actions for terminal statuses)
+    updateCancelButton(s);
+}
+
+function updateCancelButton(s) {
+    const cancelWrapper = document.getElementById("cancel-btn-wrapper");
+    if (!cancelWrapper) return;
+    const timelineSection = document.getElementById("timeline-section");
+
+    if (s === "cancelled") {
+        if (timelineSection) {
+            timelineSection.style.opacity = "0.4";
+            timelineSection.style.pointerEvents = "none";
+        }
+        cancelWrapper.innerHTML = `
+            <button class="btn btn-outline-danger" disabled style="width: 100%; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: #fde8e8; cursor: not-allowed;">
+                <i class="fa-solid fa-ban"></i> Cancelled
+            </button>
+        `;
+    } else if (s !== "completed" && s !== "ready" && s !== "served") {
+        // Active, non-completed order → allow cancellation request
+        const url = new URL(window.location.href);
+        const id = url.searchParams.get("orderId");
+        cancelWrapper.innerHTML = `
+            <a href="cancel-order.html?id=${encodeURIComponent(id || "")}"
+                class="btn btn-outline-danger"
+                style="width: 100%; display: inline-block; text-align: center; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: transparent; cursor: pointer; font-weight: 600; text-decoration: none; box-sizing: border-box;">
+                <i class="fa-solid fa-ban"></i> Cancel Order
+            </a>
+        `;
+    } else {
+        cancelWrapper.innerHTML = `
+            <button class="btn btn-success" disabled style="width: 100%; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; background: #d4edda; cursor: not-allowed;">
+                <i class="fa-solid fa-circle-check"></i> ${statusLabel(s)}
+            </button>
+        `;
+    }
+}
+
+function statusLabel(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Mark the correct timeline steps/lines active based on the order status.
+ */
+function renderTimeline(status) {
+    const s = normalizeStatus(status);
+    const step1 = document.getElementById("step-1");
+    const step2 = document.getElementById("step-2");
+    const step3 = document.getElementById("step-3");
+    const line1 = document.getElementById("line-1");
+    const line2 = document.getElementById("line-2");
+
+    if (!step1 || !step2 || !step3) return;
+
+    // Reset every step & line to its neutral/empty state first.
+    const reset = () => [step1, step2, step3, line1, line2].forEach(el => {
+        if (el) {
+            el.classList.remove("active");
+            el.style.opacity = "1";
+        }
+    });
+
+    // Highlight ONLY the single step that matches the current status. Every
+    // other step stays empty. The incoming connecting line matches that step.
+    if (s === "cancelled") {
+        reset();
+        step1.classList.add("active");
         return;
     }
 
-    const currentId = orderData.orderId || orderData.id || "ET-0000";
-    const rawStatus = (orderData.status || "Pending").toString().trim();
-    const normalizedStatus = rawStatus.toLowerCase();
+    let activeStep = null;
+    let activeLine = null;
+    if (s === "pending") {
+        activeStep = step1;
+    } else if (s === "preparing" || s === "in progress") {
+        activeStep = step2;
+        activeLine = line1;
+    } else if (s === "ready" || s === "served" || s === "completed") {
+        activeStep = step3;
+        activeLine = line2;
+    }
 
-    // Populate Receipt Details
+    reset();
+    if (activeStep) activeStep.classList.add("active");
+    if (activeLine) activeLine.classList.add("active");
+}
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+}
+
+function populateReceipt(orderData) {
+    const currentId = orderData.orderId || orderData.id || "ET-0000";
     if (document.getElementById("display-order-id")) document.getElementById("display-order-id").textContent = `#${currentId}`;
     if (document.getElementById("receipt-name")) document.getElementById("receipt-name").textContent = orderData.customerName || orderData.name || "Customer";
     if (document.getElementById("receipt-phone")) document.getElementById("receipt-phone").textContent = orderData.customerPhone || orderData.phone || "-";
@@ -110,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("receipt-payment")) document.getElementById("receipt-payment").textContent = orderData.paymentMethod || "Telebirr";
     if (document.getElementById("receipt-time")) document.getElementById("receipt-time").textContent = orderData.orderDate || new Date().toLocaleString();
 
-    // Populate Items List
+    // Items
     const itemsListContainer = document.getElementById("receipt-items-list");
     if (itemsListContainer && Array.isArray(orderData.items)) {
         let itemsHTML = "";
@@ -122,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="receipt-item-row" style="display:flex; justify-content:space-between; margin-bottom:8px;">
                     <div>
                         <span class="qty-badge" style="font-weight: bold; color: #ff6b00; margin-right: 6px;">${qty}x</span>
-                        <span class="item-title">${item.name}</span>
+                        <span class="item-title">${escapeHtml(item.name)}</span>
                     </div>
                     <span class="item-price">${itemTotal} ETB</span>
                 </div>
@@ -131,7 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
         itemsListContainer.innerHTML = itemsHTML;
     }
 
-    // Populate Financial Totals
+    // Totals
     const subtotalVal = parseFloat(orderData.subtotal) || parseFloat(orderData.totalAmount) || 0;
     const serviceFeeVal = parseFloat(orderData.serviceFee) || 20;
     const totalVal = parseFloat(orderData.totalAmount) || (subtotalVal + serviceFeeVal);
@@ -139,60 +290,132 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("receipt-subtotal")) document.getElementById("receipt-subtotal").textContent = subtotalVal.toFixed(0);
     if (document.getElementById("receipt-service-fee")) document.getElementById("receipt-service-fee").textContent = serviceFeeVal.toFixed(0);
     if (document.getElementById("receipt-total")) document.getElementById("receipt-total").textContent = totalVal.toFixed(0);
+}
 
-    // Dynamic UI & Cancel Button Controls
-    const cancelWrapper = document.getElementById("cancel-btn-wrapper");
-    const timelineSection = document.getElementById("timeline-section");
-
-    if (normalizedStatus === "cancelled") {
-        const subtext = document.getElementById("status-subtext");
-        const heading = document.getElementById("status-heading");
-        const badgeIcon = document.getElementById("status-badge-icon");
-
-        if (subtext) subtext.textContent = "This order was cancelled and will not be prepared.";
-        if (heading) heading.textContent = "Order Cancelled";
-        if (badgeIcon) badgeIcon.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #dc3545; font-size: 2.5rem;"></i>`;
-        
-        if (timelineSection) {
-            timelineSection.style.opacity = "0.4";
-            timelineSection.style.pointerEvents = "none";
-        }
-
-        if (cancelWrapper) {
-            cancelWrapper.innerHTML = `
-                <button class="btn btn-outline-danger" disabled style="width: 100%; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: #fde8e8; cursor: not-allowed;">
-                    <i class="fa-solid fa-ban"></i> Cancelled
-                </button>
-            `;
-        }
-    } else if (normalizedStatus !== "completed" && normalizedStatus !== "ready") {
-        // Show Cancel Button for any active, non-completed order.
-        // Route through the formal cancellation request flow (admin review).
-        if (cancelWrapper) {
-            cancelWrapper.innerHTML = `
-                <a
-                    href="cancel-order.html?id=${encodeURIComponent(currentId)}"
-                    class="btn btn-outline-danger"
-                    style="width: 100%; display: inline-block; text-align: center; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: transparent; cursor: pointer; font-weight: 600; text-decoration: none; box-sizing: border-box;"
-                >
-                    <i class="fa-solid fa-ban"></i> Cancel Order
-                </a>
-            `;
-        }
-    } else if (cancelWrapper) {
-        // Completed/Ready state
-        cancelWrapper.innerHTML = `
-            <button class="btn btn-success" disabled style="width: 100%; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; background: #d4edda; cursor: not-allowed;">
-                <i class="fa-solid fa-circle-check"></i> ${rawStatus}
-            </button>
+function renderEmptyState() {
+    const mainContent = document.querySelector("main");
+    if (mainContent) {
+        mainContent.innerHTML = `
+            <section class="status-banner" style="max-width: 500px; margin: 40px auto; text-align: center; background: #fff; padding: 30px; border-radius: 10px;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: #ff6b00; margin-bottom: 12px;"></i>
+                <h2>No Active Order Found</h2>
+                <p style="color: #6b7280; margin-bottom: 16px;">You don't have an active order tracking session right now.</p>
+                <a href="menu.html" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; background: #ff6b00; color: #fff; border-radius: 6px; text-decoration: none;">View Menu</a>
+            </section>
         `;
     }
-     else if (cancelWrapper) {
-    
-    cancelWrapper.innerHTML = `
-        <a href="feedback.html?orderId=${currentId}" class="btn btn-success" style="display: block; width: 100%; text-align: center; color: #fff; background: #10b981; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: 600;">
-            <i class="fa-solid fa-star"></i> Leave Feedback for #${currentId}
-        </a>
-    `;
 }
+
+function renderOrder(orderData) {
+    populateReceipt(orderData);
+    const status = orderData.status || "Pending";
+    renderTimeline(status);
+    setStatusText(status);
+}
+
+async function loadLiveOrder(orderId, fallbackOrderData) {
+    // If customer is logged in, fetch the authoritative live status.
+    const token = localStorage.getItem("auth_token");
+    if (token && orderId) {
+        try {
+            const res = await api.get(`/orders/${encodeURIComponent(orderId)}`);
+            const live = res?.data?.order || res?.order;
+            if (live && live.status) {
+                const merged = { ...(fallbackOrderData || {}), ...live };
+                renderOrder(merged);
+                persistStatus(orderId, live.status);
+                return merged;
+            }
+        } catch (err) {
+            // Fall back to local data if the fetch fails (e.g. not logged in / offline).
+            console.log("Could not fetch live order (using local data):", err?.message);
+        }
+    }
+    if (fallbackOrderData) {
+        renderOrder(fallbackOrderData);
+    }
+    return fallbackOrderData;
+}
+
+function setupRealtime(orderId) {
+    const token = localStorage.getItem("auth_token");
+    if (!token || !orderId) return;
+
+    socketClient.on("order:status", (order) => {
+        const liveId = (order?.orderId || order?.id || "").replace(/^#/, "");
+        const currentId = String(orderId).replace(/^#/, "");
+        if (liveId && currentId && liveId !== currentId) return; // not our order
+
+        const newStatus = order?.status;
+        if (!newStatus) return;
+
+        renderTimeline(newStatus);
+        setStatusText(newStatus);
+        persistStatus(currentId, newStatus);
+        // NOTE: a toast/popup is handled by customer-realtime.js via the
+        // "notification:new" socket event, so we do NOT duplicate it here.
+    });
+
+    // Join this order's room on the socket server (guarantees targeted events)
+    socketClient.on("connect", () => {
+        socketClient.joinOrderRoom(orderId);
+    });
+    // Try to connect / join immediately.
+    try {
+        socketClient.connect(token);
+        socketClient.joinOrderRoom(orderId);
+    } catch (e) {
+        console.log("Socket connect skipped:", e?.message);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedId = urlParams.get("orderId");
+
+    function bootstrap() {
+        let orderData = null;
+        let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
+        let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+
+        if (requestedId) {
+            orderData = historyData.find(o => (o.orderId || o.id) === requestedId);
+        }
+
+        if (!orderData) {
+            orderData = latestOrder;
+        }
+
+        if (!orderData && !requestedId) {
+            renderEmptyState();
+            return;
+        }
+
+        // Resolve the authoritative orderId (local ticket number e.g. "ET-1234")
+        const orderId = orderData?.orderId || orderData?.id || requestedId;
+
+        // Dashboards may pass an id that includes a leading # - normalize for API call
+        const normalizedId = String(orderId || "").replace(/^#/, "");
+
+        // Kick off live status fetch + socket subscription.
+        loadLiveOrder(normalizedId, orderData);
+        setupRealtime(normalizedId);
+    }
+
+    bootstrap();
+
+    // A customer who just logged in may not have localStorage order data yet
+    // (customer-orders-sync.js rebuilds it asynchronously from the backend).
+    // Re-check once the sync completes so the tracking page populates.
+    if (!requestedId) {
+        const onSynced = () => {
+            if (JSON.parse(localStorage.getItem("latestOrder"))) {
+                window.removeEventListener("customer:orders-synced", onSynced);
+                bootstrap();
+            }
+        };
+        window.addEventListener("customer:orders-synced", onSynced);
+        // Safety net: also re-check after a short delay in case the event missed.
+        setTimeout(onSynced, 2000);
+    }
 });

@@ -32,6 +32,23 @@ export class AuthService {
                 "current_user",
                 JSON.stringify(user)
             );
+            // Also expose the role/name at the top level for the many parts of
+            // the app that read these keys directly (socket.js room-joining,
+            // kitchen/customer headers, etc.). This is what allows the kitchen
+            // socket client to join the "kitchen" room and receive real-time
+            // new-order / status events.
+            const role = user.role || "";
+            const name = user.name || user.username || user.fullName || user.email || "";
+            try {
+                localStorage.setItem("role", role);
+                localStorage.setItem("userRole", role);
+                if (name) {
+                    localStorage.setItem("userName", name);
+                    localStorage.setItem("name", name);
+                }
+            } catch (e) {
+                console.warn("Could not persist auth keys:", e.message);
+            }
         }
 
         return response;
@@ -53,6 +70,10 @@ export class AuthService {
 
         api.removeToken();
         localStorage.removeItem("current_user");
+        localStorage.removeItem("role");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("name");
     }
 
     async getProfile() {

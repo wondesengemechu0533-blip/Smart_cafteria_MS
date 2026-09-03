@@ -33,25 +33,41 @@ const { name, email, phone, password, confirmPassword, username, address, agreed
 // ✅ Validate required fields (matches register.html validation)
 
 if (!name || !email || !phone || !password) {
+const missingFields = {};
+if (!name) missingFields.name = 'Full name is required';
+if (!email) missingFields.email = 'Email is required';
+if (!phone) missingFields.phone = 'Phone number is required';
+if (!password) missingFields.password = 'Password is required';
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'All fields are required'
+    success: false,
+    error: 'All fields are required',
+    errors: missingFields
 });
 }
 
 // ✅ Validate terms agreement
 if (!agreedToTerms) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'You must agree to the Terms & Conditions'
+    success: false,
+    error: 'You must agree to the Terms & Conditions',
+    errors: { agreedToTerms: 'You must agree to the Terms & Conditions' }
 });
 }
 
 // ✅ Validate name (matches register.html)
-if (name.length < 2) {
+if (name.length < 2 || name.length > 100) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Name must be at least 2 characters'
+    success: false,
+    error: 'Name must be between 2 and 100 characters',
+    errors: { name: 'Name must be between 2 and 100 characters' }
+});
+}
+
+if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+    success: false,
+    error: 'Name can only contain letters and spaces',
+    errors: { name: 'Name can only contain letters and spaces' }
 });
 }
 
@@ -59,42 +75,46 @@ error: 'Name must be at least 2 characters'
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 if (!emailRegex.test(email)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Please enter a valid email address'
+    success: false,
+    error: 'Please enter a valid email address',
+    errors: { email: 'Please enter a valid email address' }
 });
 }
 
-// ✅ Validate phone (matches register.html pattern: 09XXXXXXXX or 07XXXXXXXX)
-const phoneRegex = /^(09|07)[0-9]{8}$/;
+// ✅ Validate phone (Ethiopian format: 09XXXXXXXX, 07XXXXXXXX, or +2519XXXXXXXX)
+const phoneRegex = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
 if (!phoneRegex.test(phone)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Enter a valid phone number (09XXXXXXXX or 07XXXXXXXX)'
+    success: false,
+    error: 'Enter a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)',
+    errors: { phone: 'Enter a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)' }
 });
 }
 
 // Validate password length.
 if (password.length < 8) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Password must be at least 8 characters'
+    success: false,
+    error: 'Password must be at least 8 characters',
+    errors: { password: 'Password must be at least 8 characters' }
 });
 }
 
 // ✅ Validate password complexity
 if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Password must contain uppercase, lowercase, number, and special character'
+    success: false,
+    error: 'Password must contain uppercase, lowercase, number, and special character',
+    errors: { password: 'Password must contain uppercase, lowercase, number, and special character' }
 });
 }
 
 // ✅ Check password confirmation (matches register.html)
 if (password !== confirmPassword) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
-
-success: false,
-error: 'Passwords do not match'
+    success: false,
+    error: 'Passwords do not match',
+    errors: { confirmPassword: 'Passwords do not match' }
 });
 }
 
@@ -136,16 +156,21 @@ if (username && username.trim()) {
 // Public registration ALWAYS creates a customer. Any `role` sent by the
 // client is deliberately ignored here so users cannot register as ADMIN,
 // kitchen staff, or any other privileged role.
-const user = await User.create({
+const userData = {
 name: name.trim(),
 email: email.toLowerCase(),
 phone: phone,
 password: password,
 role: ROLES.CUSTOMER,
-username: username && username.trim() ? username.trim() : null,
+// Only set username when provided. Setting it to `null` would clash with
+// the sparse unique index on `username` if another user also has null
+// (MongoDB indexes explicit null values even for sparse indexes), causing
+// a false "already exists" 409 during registration.
+...(username && username.trim() ? { username: username.trim() } : {}),
 address: address && address.trim() ? address.trim() : null,
 agreedToTerms: agreedToTerms === true
-});
+};
+const user = await User.create(userData);
 
 
 // ✅ Generate token
@@ -381,12 +406,12 @@ if (name) user.name =
 
 name.trim();
 if (phone) {
-const phoneRegex = /^(09|07)[0-9]{8}$/;
+const phoneRegex = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
 if (!phoneRegex.test(phone)) {
-return res.status(HTTP_STATUS.BAD_REQUEST).json({
-success: false,
-error: 'Enter a valid phone number (09XXXXXXXX or 07XXXXXXXX)'
-});
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: 'Enter a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)'
+    });
 }
 user.phone = phone;
 }

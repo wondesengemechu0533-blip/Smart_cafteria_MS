@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,16 +8,14 @@
     <title>Your Cart - Smart Cafeteria</title>
 
     <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="/src/css/style.css">
 
     <!-- Cart CSS -->
     <link rel="stylesheet" href="/src/css/cart.css">
+<link rel="stylesheet" href="/src/css/themes/dark-theme.css">
 
     <!--
         Food images are intentionally hidden in the cart.
@@ -230,7 +228,10 @@
 
     <!-- Cart JavaScript -->
     <script type="module" src="../../js/utils/i18n.js"></script>
+<script type="module" src="../../js/theme.js"></script>
     <script type="module" src="../../js/cart.js"></script>
+    <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
+    <script type="module" src="../../js/customer-realtime.js"></script>
 
 </body>
 

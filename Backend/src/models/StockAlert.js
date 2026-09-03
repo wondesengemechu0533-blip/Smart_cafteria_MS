@@ -14,7 +14,7 @@ const StockAlertSchema = new mongoose.Schema(
     itemId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MenuItem",
-      required: true,
+      required: false,
     },
     itemName: {
       type: String,
@@ -62,12 +62,15 @@ const StockAlertSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    affectedOrders: [
-      {
-        orderId: mongoose.Schema.Types.ObjectId,
-        orderNumber: String,
-      },
-    ],
+    affectedOrders: {
+      type: [
+        {
+          orderId: mongoose.Schema.Types.ObjectId,
+          orderNumber: String,
+        },
+      ],
+      default: [],
+    },
     estimatedResolutionTime: {
       type: Date,
       default: null,

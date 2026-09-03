@@ -381,16 +381,27 @@ emitSocketEvent(`order:${order.orderId}`, 'order:status', orderSummary);
 
 // ✅ Create notification for customer
 if (status === 'ready' || status === 'preparing') {
-await Notification.create({
+const notification = await Notification.create({
 userId: order.userId,
 title: status === 'ready' ? 'Order Ready!' : 'Order Preparing',
 message: status === 'ready'
 ? `Your order #${order.orderId} is ready for pickup!`
 : `Your order #${order.orderId} is being prepared`,
-type: 'order',
-
+type: status === 'ready' ? 'ready' : 'status_update',
 orderId: order.orderId,
 isRead: false
+});
+
+// ✅ Send real-time notification to correct customer only (user room)
+emitSocketEvent(`user:${order.userId}`, 'notification:new', {
+    id: notification._id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    orderId: notification.orderId,
+    link: notification.link || `/customer/order-tracking.html?id=${order.orderId}`,
+    isRead: notification.isRead,
+    createdAt: notification.createdAt
 });
 }
 

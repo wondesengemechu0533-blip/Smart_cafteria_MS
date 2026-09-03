@@ -306,7 +306,7 @@ export const MENU_ITEMS = [
             am: "ትኩስ አቮካዶ ከእንጀራ ጋር",
         },
         icon: "🥑",
-        image: "assets/images/food/snacks/avocado-with-injera.jpeg",
+        image: "assets/images/food/snacks/Avocado with injera.jpg",
         preparationTime: 5,
         availability: true,
     },

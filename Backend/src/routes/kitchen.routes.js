@@ -13,6 +13,8 @@ const {
     updateItemAvailability,
     reportStockIssue,
     getStockAlerts,
+    acknowledgeStockAlert,
+    resolveStockAlert,
     getOrderDetails,
     updateItemPreparationStatus,
     addPreparationDelay
@@ -160,5 +162,19 @@ router.get('/stock-alerts', getStockAlerts);
  * Body: { itemId, itemName, alertType, severity, reason }
  */
 router.post('/stock-alerts', reportStockIssue);
+
+/**
+ * @route   PATCH /api/kitchen/stock-alerts/:id/acknowledge
+ * @desc    Acknowledge a stock alert
+ * @access  Private/Kitchen
+ */
+router.patch('/stock-alerts/:id/acknowledge', acknowledgeStockAlert);
+
+/**
+ * @route   PATCH /api/kitchen/stock-alerts/:id/resolve
+ * @desc    Resolve a stock alert
+ * @access  Private/Kitchen
+ */
+router.patch('/stock-alerts/:id/resolve', resolveStockAlert);
 
 module.exports = router;

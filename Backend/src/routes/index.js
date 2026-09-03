@@ -12,12 +12,11 @@ const cartRoutes = require('./cart.routes');
 const orderRoutes = require('./order.routes');
 const paymentRoutes = require('./payment.routes');
 const notificationRoutes = require('./notification.routes');
-const reportRoutes = require('./
-
-report.routes');
+const reportRoutes = require('./report.routes');
 const feedbackRoutes = require('./feedback.routes');
 const cancellationRoutes = require('./cancellation.routes');
 const kitchenRoutes = require('./kitchen.routes');
+const kitchenSettingsRoutes = require('./kitchen-settings.routes');
 
 module.exports = {
     authRoutes,
@@ -31,5 +30,6 @@ module.exports = {
     feedbackRoutes,
 
     cancellationRoutes,
-    kitchenRoutes
+    kitchenRoutes,
+    kitchenSettingsRoutes
 };

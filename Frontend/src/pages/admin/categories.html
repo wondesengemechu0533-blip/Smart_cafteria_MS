@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <title>Categories - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
 
@@ -120,20 +120,27 @@
                     <h4 class="form-section-title mt-4"><i class="fa-solid fa-palette"></i> Appearance</h4>
                     <div class="form-group">
                         <label for="categoryIcon" class="form-label">Icon</label>
-                        <input type="text" name="icon" id="categoryIcon" class="form-control" placeholder="fa-solid fa-utensils or emoji 🍽️">
+                        <input type="text" name="icon" id="categoryIcon" class="form-control" placeholder="fa-solid fa-utensils or emoji">
                     </div>
-                    <div class="form-row upload-row mt-3">
+                    <div class="form-row upload-row">
                         <div class="form-group">
                             <label for="categoryImageFile" class="form-label">Upload Image (JPG, PNG, WEBP, max 2 MB)</label>
                             <input type="file" name="image" id="categoryImageFile" class="form-control" accept="image/jpeg,image/png,image/webp">
                         </div>
                         <div class="form-group">
-                            <label for="categoryImageUrl" class="form-label">...or Image URL (optional)</label>
-                            <input type="url" id="categoryImageUrl" class="form-control" placeholder="https://example.com/category.jpg">
+                            <label for="categoryImageUrl" class="form-label">...or Image URL</label>
+                            <div class="upload-url-row">
+                                <input type="url" id="categoryImageUrl" class="form-control" placeholder="https://example.com/category.jpg">
+                                <div class="url-feedback" id="urlFeedback"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="file-preview" id="categoryImagePreviewRow" style="display:none;">
-                        <img id="categoryImagePreview" alt="Preview">
+                        <div class="image-preview-wrap">
+                            <img id="categoryImagePreview" alt="Preview">
+                            <div class="img-loading" id="imageLoading" style="display:none;"><div class="spinner"></div></div>
+                            <div class="img-error" id="imageError" style="display:none;"><i class="fa-solid fa-circle-exclamation"></i> Failed</div>
+                        </div>
                         <button type="button" class="btn-remove-file" id="removeCategoryImageBtn"><i class="fa-solid fa-trash-can"></i> Remove Image</button>
                     </div>
 
@@ -213,7 +220,7 @@
             </div>
             <div class="modal-body">
                 <div class="detail-hero">
-                    <div class="avatar" id="categoryDetailIcon">🍽️</div>
+                    <div class="avatar" id="categoryDetailIcon">ðŸ½ï¸</div>
                     <div>
                         <h4 id="categoryDetailName">-</h4>
                         <p id="categoryDetailDescription">-</p>

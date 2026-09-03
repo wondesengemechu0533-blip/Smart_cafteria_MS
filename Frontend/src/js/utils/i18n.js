@@ -839,7 +839,7 @@ export const translations = {
     menuPreviewTitle: "በጣም ተወዳጅ ምግቦች",
     menuPreviewSubtitle: "በጣም ተወዳጅ የሆኑ ምግቦቻችንን ይመልከቱ",
     viewFullMenuBtn: "ሙሉ ማውጫውን ይመልከቱ",
-    whyTitle: "ለምን እኛን ይመርጣሉ?",
+    whyTitle: "Why ይምረጡ Us?",
     whySubtitle: "ሥርዓታችንን ልዩ የሚያደርጉት ባህሪያት",
     feat1Title: "ረጅም ወረፋ የለም",
     feat1Desc: "ረጅም ወረፋ ሳይጠብቁ ምግብዎን በቅድመ ሁኔታ ይዘዙ",
@@ -853,7 +853,7 @@ export const translations = {
     feat5Desc: "ያለፉትን ትዕዛዞች እና ታሪክ በማንኛውም ጊዜ ይመልከቱ",
     feat6Title: "ዘመናዊ ሪፖርቶች",
     feat6Desc: "ለአስተዳዳሪዎች ዝርዝር የሽያጭ እና የካፌቴሪያ ሪፖርቶች",
-    testTitle: "ተጠቃሚዎቻችን ምን ይላሉ?",
+    testTitle: "what Our ተጠቃሚዎች Say",
     testSubtitle: "ተጠቃሚዎቻችን ስለ ሥርዓታችን ያላቸው አስተያየት",
     test1Quote: '"ይህ ስርዓት በካፊቴሪያ ውስጥ ረጅም ጊዜ ከመጠበቅ አድኖኛል! በቀላሉ ምግብ አዝዣለሁ እና ዝግጁ በሚሆንበት ጊዜ ማሳወቂያ አገኛለሁ።"',
     test2Quote: '"የኩሽና ዳሽቦርዱ በጣም ምቹ ነው! ትዕዛዞችን በቀላሉ ማየት እና ሁኔታቸውን በቀጥታ ማዘመን እችላለሁ።"',
@@ -978,9 +978,9 @@ export const translations = {
     auth_signin_subtitle: "ወደ ካፌቴሪያ ሂሳብዎ ለመቀጠል ይግቡ።",
     auth_phone_email: "ስልክ ወይም ኢሜይል",
     auth_password: "የይለፍ ቃል",
-    auth_forgot: "የይለፍ ቃል ረሱ?",
+    auth_forgot: "Forgot password?",
     auth_login_btn: "ወደ ሂሳብ ግባ",
-    auth_no_account: "ሂሳብ የለዎትም?",
+    auth_no_account: "Don't have an account?",
     auth_create_account: "ሂሳብ ፍጠር",
     auth_back_home: "ወደ መነሻ ተመለስ",
     auth_good_food: "ጥሩ ምግብ፣ ጥሩ ስሜት።",
@@ -995,7 +995,7 @@ export const translations = {
     auth_phone: "ስልክ ቁጥር",
     auth_confirm_password: "የይለፍ ቃል አረጋግጥ",
     auth_register_btn: "ሂሳብ መዝግብ",
-    auth_has_account: "አስቀድሞ ሂሳብ አለዎት?",
+    auth_has_account: "Already have an account?",
     auth_sign_in: "ግባ",
     auth_smart_dining: "ብልህ አመጋገብ፣ ቀላል የተደረገ።",
     auth_join_desc: "ዛሬ የስማርት ካፌቴሪያ አባል ይሁኑ ተወዳጅ የካምፓስ ምግቦችዎን ይዘዙ፣ ወረፋዎን በቀላሉ ይከታተሉ እና ረጅም ወረፋዎችን ያስወግዱ።",
@@ -1046,7 +1046,7 @@ export const translations = {
     admin_recent_orders: "የቅርብ ትዕዛዞች",
     admin_recent_payments: "የቅርብ ክፍያዎች",
     admin_view_all: "ሁሉንም ይመልከቱ",
-    admin_logout_confirm: "እርግጠኛ ነዎት መውጣት ይፈልጋሉ?",
+    admin_logout_confirm: "Are you sure you want to log out?",
     admin_main: "ዋና",
     admin_management: "አስተዳደር",
     admin_analytics: "ትንታኔ እና ሪፖርቶች",
@@ -1178,7 +1178,278 @@ export const translations = {
     success_added: "ምግቡ ወደ ካርት ታክሏል!",
     success_removed: "ምግቡ ከካርት ተወግዷል!",
     order_confirmed: "ትዕዛዙ ተረጋግጧል!",
-    no_menu_items: "ምንም የምግብ ዝርዝር አልተገኘም"
+    no_menu_items: "ምንም የምግብ ዝርዝር አልተገኘም",
+
+    cart_page_title: "የእርስዎ ካርት - ስማርት ካፌቴሪያ",
+    back_to_menu: "?? ??? ????",
+    my_food_cart: "የምግብ ካርቴ",
+    order_items: "????? ????",
+    clear_all: "???? ???",
+    proceed_to_checkout: "ወደ ክፍያ ሂድ",
+    add_more_food: "ተጨማሪ ምግብ ጨምር",
+    your_cart_is_empty: "ካርትዎ ባዶ ነው!",
+    add_some_delicious_food: "ከማውጫው አንዳንድ ጣፋጭ ምግቦችን ይጨምሩ።",
+    browse_menu: "ምግቦችን ይመልከቱ",
+    checkout_page_title: "ክፍያ - ስማርት ካፌቴሪያ",
+    table_number_placeholder: "e.g., 12",
+    full_name_placeholder: "ያስገቡ የእርስዎ ሙሉ ስም",
+    phone_number_placeholder: "0911223344",
+    phone_format_hint: "Format: 09XXXXXXXX ወይም 07XXXXXXXX",
+    telebirr_desc: "ይክፈሉ በደህንነት በ ቴሌብር",
+    chapa_desc: "ይክፈሉ በደህንነት በ ቻፓ",
+    cbe_birr_desc: "ይክፈሉ በደህንነት በ CBE Birr",
+    chapa_test_info_title: "የቻፓ ሙከራ ሁነታ",
+    chapa_test_info_desc: "You are using Chapa's ሙከራ (sandbox) environment. ሲከፈት the ቻፓ ክፍያ ገጽ opens, ይጠቀሙ these ሙከራ details:",
+    chapa_test_card: "Card: 4242 4242 4242 4242",
+    chapa_test_cvv: "CVV: 123",
+    chapa_test_expiry: "Expiry: ማንኛውም የወደፊት ቀን (e.g. 12/30)",
+    chapa_test_bank_note: "ወይም ይምረጡ አንዱ of Chapa's sandbox ባንኮች on the ክፍያ page. ከ ከፈሉ you'll be ይመለሳሉ ወደ ኋላ and የእርስዎ ደረሰኝ will be ይታያል automatically.",
+    history_page_title: "ያለፉ ትዕዛዞቼ",
+    tracking_page_title: "Track Order - Smart Cafeteria",
+    order_progress: "Order Progress",
+    estimated_time: "Estimated Time",
+    profile_page_title: "መገለጫዬ",
+    profile_avatar: "Profile Picture",
+    change_avatar: "Change Avatar",
+    notifications_page_title: "ማስታወቂያዎች",
+    notifications_title: "ማስታወቂያዎች",
+    no_notifications: "No notifications yet",
+    mark_all_read: "Mark All as Read",
+    feedback_page_title: "አስተያየት",
+    feedback_title: "አስተያየት",
+    feedback_subtitle: "Share your experience with us",
+    feedback_name: "Your Name",
+    feedback_email: "Email",
+    feedback_message: "Your Message",
+    feedback_submit: "Submit Feedback",
+    feedback_success: "Thank you for your feedback!",
+    auth_forgot_password: "Forgot Password?",
+    auth_reset_password: "የይለፍ ቃል ዳግም አስጀምር",
+    auth_send_reset_link: "Send Reset Link",
+    auth_remember_me: "Remember me",
+    footer_quick_links: "Quick Links",
+    footer_roles: "Roles",
+    footer_customer: "ደንበኛ",
+    footer_kitchen: "ኩሽና",
+    footer_admin: "አስተዳዳሪ",
+    footer_contact: "Contact",
+    footer_rights: "All Rights Reserved.",
+    footer_privacy: "Privacy Policy",
+    footer_terms: "Terms of Service",
+    footer_developed_by: "Developed by",
+    admin_dashboard_page_title: "Admin Dashboard - Smart Cafeteria",
+    dashboard_overview: "የዳሽቦርድ አጠቃላይ እይታ",
+    admin_last_updated: "Last updated:",
+    admin_auto_refresh_off: "ራስ-አድስ ጠፍቷል",
+    admin_auto_refresh_on: "Auto-refresh ON",
+    admin_refresh_interval: "Refresh Interval",
+    admin_30_seconds: "30 seconds",
+    admin_1_minute: "1 minute",
+    admin_5_minutes: "5 minutes",
+    admin_export_data: "Export Data",
+    admin_date_range: "Date Range",
+    admin_last_7_days: "ያለፉ 7 ቀናት",
+    admin_last_30_days: "ያለፉ 30 ቀናት",
+    admin_last_90_days: "ያለፉ 90 ቀናት",
+    admin_start_date: "Start Date",
+    admin_end_date: "End Date",
+    admin_apply: "Apply",
+    admin_keyboard_shortcuts: "Keyboard Shortcuts:",
+    admin_refresh_shortcut: "R - Refresh",
+    admin_autorefresh_shortcut: "A - Auto-refresh",
+    admin_export_shortcut: "E - Export",
+    admin_fullscreen_shortcut: "F - Fullscreen Charts",
+    admin_realtime_clock: "Real-time Clock",
+    admin_alerts_panel: "Alerts Panel",
+    admin_total_menu_items: "ጠቅላላ የምግብ ዝርዝር",
+    admin_pending_orders: "በመጠባበቅ ላይ",
+    admin_preparing_orders: "በዝግጅት ላይ",
+    admin_ready_orders: "ዝግጁ ነው",
+    admin_completed_orders: "የተጠናቀቀ",
+    admin_cancelled_orders: "ተሰርዟል",
+    admin_no_data: "ምንም መረጃ የለም",
+    admin_loading: "በመጫን ላይ...",
+    admin_nav_dashboard: "ዳሽቦርድ",
+    admin_nav_users: "ተጠቃሚዎች",
+    admin_nav_menu: "ማውጫ / ምግቦች",
+    admin_nav_categories: "ምድቦች",
+    admin_nav_orders: "ትዕዛዞች",
+    admin_nav_payments: "ክፍያዎች",
+    admin_nav_cancellations: "ስረዛዎች",
+    admin_nav_reports: "ሪፖርቶች",
+    admin_nav_activity: "የእንቅስቃሴ ምዝግቦች",
+    admin_nav_feedback: "አስተያየት",
+    admin_nav_profile: "መገለጫ",
+    admin_nav_settings: "ቅንብሮች",
+    admin_nav_logout: "ውጣ",
+    admin_menu_page_title: "Menu Management - Smart Cafeteria",
+    admin_menu_management: "Menu / Foods Management",
+    admin_menu_subtitle: "Manage menu items, categories, and availability",
+    admin_add_menu_item: "Add Menu Item",
+    admin_edit_menu_item: "Edit Menu Item",
+    admin_view_menu_item: "View Menu Item",
+    admin_delete_menu_item: "Delete Menu Item",
+    admin_menu_name_en: "English Name",
+    admin_menu_name_am: "Amharic Name",
+    admin_menu_category: "ምድብ",
+    admin_menu_price: "Price (ETB)",
+    admin_menu_prep_time: "Preparation Time (min)",
+    admin_menu_availability: "Availability",
+    admin_menu_available: "Available for ordering",
+    admin_menu_not_available: "Not available for ordering",
+    admin_menu_description_en: "Description (English)",
+    admin_menu_description_am: "Description (Amharic)",
+    admin_menu_image_upload: "Upload Image (JPG, PNG, WEBP, max 2 MB)",
+    admin_menu_image_url: "...or Image URL (optional)",
+    admin_menu_image_preview: "Image Preview",
+    admin_remove_image: "Remove Image",
+    admin_save_item: "Save Item",
+    admin_update_item: "Update Item",
+    admin_confirm_delete: "ሰርዝ this ማውጫ item? This cannot be undone.",
+    admin_make_available: "Make available",
+    admin_make_unavailable: "Make unavailable",
+    admin_search_placeholder: "Search by name (EN/AM), description...",
+    admin_all_categories: "All Categories",
+    admin_all_availability: "All Availability",
+    admin_sort_newest: "Newest First",
+    admin_sort_oldest: "Oldest First",
+    admin_sort_name: "Name A-Z",
+    admin_sort_price_asc: "Price Low to High",
+    admin_sort_price_desc: "Price High to Low",
+    admin_reset_filters: "Reset",
+    admin_pagination_info: "Page {page} of {pages} ({total} items)",
+    admin_prev_page: "ቀዳሚ",
+    admin_next_page: "ቀጣይ",
+    admin_metric_total_items: "Total Items",
+    admin_metric_available: "Available Items",
+    admin_metric_out_of_stock: "ያለቀ",
+    admin_metric_categories: "ምድቦች",
+    admin_user_role: "ምድብ",
+    admin_user_status: "ሁኔታ",
+    admin_user_actions: "ተግባራት",
+    admin_user_edit: "አስተካክል",
+    admin_user_delete: "ሰርዝ",
+    admin_user_active: "ንቁ",
+    admin_user_inactive: "Inactive",
+    admin_user_role_customer: "ደንበኛ",
+    admin_user_role_kitchen: "የኩሽና ሰራተኞች",
+    admin_user_role_admin: "አስተዳዳሪ",
+    admin_orders_page_title: "Orders Management - Smart Cafeteria",
+    admin_orders_title: "Orders Management",
+    admin_order_search: "ትዕዛዞችን ፈልግ...",
+    admin_order_filter_status: "Filter by status",
+    admin_order_filter_payment: "Filter by payment",
+    admin_order_date: "ቀን",
+    admin_order_customer: "ደንበኛ",
+    admin_order_items: "Items",
+    admin_order_amount: "Amount",
+    admin_order_payment_method: "የክፍያ ዘዴ",
+    admin_order_payment_status: "Payment Status",
+    admin_order_action: "Action",
+    admin_order_update_status: "Update Status",
+    admin_order_status_pending: "በመጠባበቅ ላይ",
+    admin_order_status_preparing: "በዝግጅት ላይ",
+    admin_order_status_ready: "ዝግጁ ነው",
+    admin_order_status_served: "ተስተናግዷል",
+    admin_order_status_cancelled: "ተሰርዟል",
+    admin_payments_page_title: "Payments - Smart Cafeteria",
+    admin_payments_title: "ክፍያዎች",
+    admin_payment_search: "ክፍያዎችን ፈልግ...",
+    admin_payment_method: "Method",
+    admin_payment_amount: "Amount",
+    admin_payment_status: "ሁኔታ",
+    admin_payment_date: "ቀን",
+    admin_payment_ref: "Reference",
+    admin_reports_page_title: "Reports - Smart Cafeteria",
+    admin_reports_title: "ሪፖርቶች",
+    admin_sales_report: "Sales Report",
+    admin_inventory_report: "Inventory Report",
+    admin_user_report: "User Report",
+    admin_export_report: "Export Report",
+    admin_settings_page_title: "Settings - Smart Cafeteria",
+    admin_settings_title: "System Settings",
+    admin_general_settings: "General Settings",
+    admin_maintenance_mode: "Maintenance Mode",
+    admin_order_availability: "Order Availability",
+    admin_max_order_qty: "Max Order Quantity",
+    admin_currency: "Currency",
+    admin_timezone: "Timezone",
+    admin_save_settings: "Save Settings",
+    admin_categories_page_title: "Categories Management - Smart Cafeteria",
+    admin_categories_title: "Categories Management",
+    admin_add_category: "Add Category",
+    admin_edit_category: "Edit Category",
+    admin_category_name_en: "English Name",
+    admin_category_name_am: "Amharic Name",
+    admin_category_icon: "Icon",
+    admin_category_active: "ንቁ",
+    admin_category_inactive: "Inactive",
+    kitchen_page_title: "የኩሽና ማሳያ ስርዓት",
+    kitchen_dashboard: "Kitchen Dashboard",
+    kitchen_pending_orders: "Pending Orders",
+    kitchen_preparing_orders: "በዝግጅት ላይ",
+    kitchen_ready_orders: "ለመውሰድ ዝግጁ",
+    kitchen_order_number: "Order #",
+    kitchen_order_time: "Order Time",
+    kitchen_customer: "ደንበኛ",
+    kitchen_items: "Items",
+    kitchen_status: "ሁኔታ",
+    kitchen_action: "Action",
+    kitchen_start_preparing: "Start Preparing",
+    kitchen_mark_ready: "Mark Ready",
+    kitchen_complete: "Complete",
+    kitchen_no_orders: "No orders at the moment",
+    kitchen_new_order_sound: "New Order Alert",
+    required_field: "Required",
+    optional_field: "Optional",
+    select_option: "Select an option",
+    yes: "Yes",
+    ok: "OK",
+    apply: "Apply",
+    submit: "Submit",
+    delete_confirm: "Are you sure you want to ሰርዝ this?",
+    unsaved_changes: "You have unsaved changes. Are you sure you want to leave?",
+    page_not_found: "Page not found",
+    session_expired: "Your session has expired. Please log in again.",
+    network_error: "Network error. Please check your connection and try again.",
+    server_error: "Server error. Please try again later.",
+    validation_error: "Please check the form for errors.",
+    food_details_page_title: "Food Details - Smart Cafeteria",
+    food_details_description: "መግለጫ",
+    food_details_price: "ዋጋ",
+    food_details_category: "ምድብ",
+    food_details_prep_time: "Preparation Time",
+    food_details_add_to_cart: "ወደ ካርት ጨምር",
+    food_details_unavailable: "Currently Unavailable",
+    food_details_back_to_menu: "ወደ ማውጫ ተመለስ",
+    cancel_order_page_title: "Cancel Order - Smart Cafeteria",
+    cancel_order_title: "Cancel Order",
+    cancel_order_reason: "Reason for cancellation",
+    cancel_order_reason_placeholder: "Please provide a reason...",
+    cancel_order_submit: "Cancel Order",
+    cancel_order_confirm: "Are you sure you want to ሰርዝ this order?",
+    order_cancelled_success: "Order cancelled successfully",
+    order_cannot_be_cancelled: "This order cannot be cancelled",
+    payment_sim_page_title: "Payment Simulation",
+    payment_sim_title: "Simulate Payment",
+    payment_sim_method: "የክፍያ ዘዴ",
+    payment_sim_phone: "ስልክ ቁጥር",
+    payment_sim_amount: "Amount",
+    payment_sim_pay: "Pay Now",
+    payment_sim_success: "Payment successful!",
+    payment_sim_failed: "Payment failed. Please try again.",
+
+    place_order: "ትዕዛዝ ፈጽም",
+    reorder: "እንደገና እዘዝ",
+    auth_or: "ወይም",
+    admin_cancel: "ሰርዝ",
+    admin_available: "ይገኛል",
+    no: "አይ",
+    reset: "ዳግም አስጀምር",
+    clear: "አፅዳ",
+    update: "አዘምን",
+    create: "ፍጠር",
+    access_denied: "መዳረሻ ተከልክሏል",
 },
   om: {
     nav_home: "Mana",
@@ -1493,7 +1764,7 @@ export const translations = {
     success_added: "Migaa kaartii dabale!",
     success_removed: "Migaa kaartii calale!",
     order_confirmed: "Aadaa hubachii!",
-    no_menu_items: "Migaa menyuu hin argaman"
+    no_menu_items: "Migaa menyuu hin argaman",
   }
 };
 
@@ -1698,23 +1969,554 @@ const directTextMap = {
 
   // ===== MENU SORT / RESULTS =====
   "Price: Low to High": { en: "Price: Low to High", am: "ዋጋ: ከዝቅተኛ ወደ ከፍተኛ" },
-  "Price: High to Low": { en: "Price: High to Low", am: "ዋጋ: ከከፍተኛ ወደ ዝቅተኛ" }
+  "Price: High to Low": { en: "Price: High to Low", am: "ዋጋ: ከከፍተኛ ወደ ዝቅተኛ" },
+"Activity Log - Smart Cafeteria": { en: "Activity Log - Smart Cafeteria", am: "እንቅስቃሴ ምዝግብ - Smart Cafeteria" },
+  "Activity Log": { en: "Activity Log", am: "እንቅስቃሴ ምዝግብ" },
+  "Audit trail of administrative actions. Passwords, tokens, and secret keys are never recorded.": { en: "Audit trail of administrative actions. Passwords, tokens, and secret keys are never recorded.", am: "ኦዲት መዝገብ of administrative ተግባራት. የይለፍ ቃሎች, ቶከኖች, and ሚስጥራዊ ቁልፎች are በጭራሽ የተመዘገበ." },
+  "All Actions": { en: "All Actions", am: "ሁሉም ተግባራት" },
+  "Admin Login": { en: "Admin Login", am: "አስተዳዳሪ ግባ" },
+  "User Created": { en: "User Created", am: "ተጠቃሚ ተፈጥሯል" },
+  "User Updated": { en: "User Updated", am: "ተጠቃሚ ተዘምኗል" },
+  "User Activated": { en: "User Activated", am: "ተጠቃሚ ንቁ ሆኗል" },
+  "User Deactivated": { en: "User Deactivated", am: "ተጠቃሚ ቦዝኗል" },
+  "User Deleted": { en: "User Deleted", am: "ተጠቃሚ ተሰርዟል" },
+  "Role Changed": { en: "Role Changed", am: "ምድብ ተቀይሯል" },
+  "Food Created": { en: "Food Created", am: "ምግብ ተፈጥሯል" },
+  "Food Updated": { en: "Food Updated", am: "ምግብ ተዘምኗል" },
+  "Food Deleted": { en: "Food Deleted", am: "ምግብ ተሰርዟል" },
+  "Food Availability Changed": { en: "Food Availability Changed", am: "ምግብ አቅርቦት ተቀይሯል" },
+  "Order Cancelled": { en: "Order Cancelled", am: "ትዕዛዝ ተሰርዟል" },
+  "Settings Updated": { en: "Settings Updated", am: "ቅንብሮች ተዘምኗል" },
+  "All Entities": { en: "All Entities", am: "ሁሉም አካላት" },
+  "Menu Item": { en: "Menu Item", am: "ማውጫ ምግብ" },
+  "Order": { en: "Order", am: "ትዕዛዝ" },
+  "Setting": { en: "Setting", am: "Setting" },
+  "Agent / Admin": { en: "Agent / Admin", am: "ወኪል / አስተዳዳሪ" },
+  "Entity": { en: "Entity", am: "አካል" },
+  "Entity ID": { en: "Entity ID", am: "አካል መለያ" },
+  "Date & Time": { en: "Date & Time", am: "ቀን & ሰዓት" },
+  "Loading activity logs...": { en: "Loading activity logs...", am: "በመጫን ላይ እንቅስቃሴ ምዝግቦች..." },
+  "Page 1": { en: "Page 1", am: "ገጽ 1" },
+  "Prev": { en: "Prev", am: "ቀዳሚ" },
+  "Privacy: this audit trail records": { en: "Privacy: this audit trail records", am: "ግላዊነት: this ኦዲት መዝገብ records" },
+  "who": { en: "who", am: "who" },
+  "performed each action and": { en: "performed each action and", am: "performed each action and" },
+  "what": { en: "what", am: "what" },
+  "changed. It never logs passwords, JWT tokens, payment-provider secrets, or user credentials.": { en: "changed. It never logs passwords, JWT tokens, payment-provider secrets, or user credentials.", am: "ተቀይሯል. It በጭራሽ ምዝግቦች የይለፍ ቃሎች, JWT ቶከኖች, ክፍያ-provider secrets, or ተጠቃሚ credentials." },
+  "Cancellations - Smart Cafeteria": { en: "Cancellations - Smart Cafeteria", am: "ስረዛዎች - ስማርት ካፌቴሪያ" },
+  "Review and process customer order cancellation requests.": { en: "Review and process customer order cancellation requests.", am: "የደንበኞችን የትዕዛዝ ስረዛ ጥያቄዎች ይገምግሙ እና ያስኬዱ።" },
+  "Total Requests": { en: "Total Requests", am: "ጠቅላላ ጥያቄዎች" },
+  "Refunded": { en: "Refunded", am: "ተመላሽ ተደርጓል" },
+  "Refund Failed": { en: "Refund Failed", am: "ተመላሽ ያልተሳካ" },
+  "Total Refunds": { en: "Total Refunds", am: "ጠቅላላ ተመላሽ" },
+  "Requested": { en: "Requested", am: "የተጠየቀ" },
+  "Approved": { en: "Approved", am: "የተፈቀደ" },
+  "Rejected": { en: "Rejected", am: "ውድቅ ተደርጓል" },
+  "All Payments": { en: "All Payments", am: "ሁሉም ክፍያዎች" },
+  "Paid": { en: "Paid", am: "ተከፍሏል" },
+  "Failed": { en: "Failed", am: "ያልተሳካ" },
+  "All Refunds": { en: "All Refunds", am: "ሁሉም ተመላሽ" },
+  "Not Required": { en: "Not Required", am: "Not Required" },
+  "Refund Requested": { en: "Refund Requested", am: "ተመላሽ የተጠየቀ" },
+  "Processing": { en: "Processing", am: "በሂደት ላይ" },
+  "Amount: High to Low": { en: "Amount: High to Low", am: "መጠን: ከፍተኛ to ዝቅተኛ" },
+  "Cancellation": { en: "Cancellation", am: "Cancellation" },
+  "Reason": { en: "Reason", am: "ምክንያት" },
+  "Payment": { en: "Payment", am: "ክፍያ" },
+  "Refund": { en: "Refund", am: "ተመላሽ" },
+  "Loading cancellations...": { en: "Loading cancellations...", am: "በመጫን ላይ ስረዛዎች..." },
+  "Cancellation Request -": { en: "Cancellation Request -", am: "Cancellation Request -" },
+  "&times;": { en: "&times;", am: "&times;" },
+  "Order:": { en: "Order:", am: "ትዕዛዝ:" },
+  "Customer:": { en: "Customer:", am: "ተጠቃሚ:" },
+  "Phone:": { en: "Phone:", am: "ስልክ:" },
+  "Email:": { en: "Email:", am: "ኢሜይል:" },
+  "Order Type:": { en: "Order Type:", am: "ትዕዛዝ ዓይነት:" },
+  "Table:": { en: "Table:", am: "ጠረጴዛ:" },
+  "Order Status:": { en: "Order Status:", am: "ትዕዛዝ ሁኔታ:" },
+  "Processed:": { en: "Processed:", am: "ተሰርቷል:" },
+  "Order Amount:": { en: "Order Amount:", am: "ትዕዛዝ መጠን:" },
+  "Payment Status:": { en: "Payment Status:", am: "ክፍያ ሁኔታ:" },
+  "Refund Status:": { en: "Refund Status:", am: "ተመላሽ ሁኔታ:" },
+  "Refund Amount:": { en: "Refund Amount:", am: "ተመላሽ መጠን:" },
+  "Refund Ref:": { en: "Refund Ref:", am: "ተመላሽ Ref:" },
+  "Requested At": { en: "Requested At", am: "የተጠየቀበት ሰዓት" },
+  "Admin Note": { en: "Admin Note", am: "የአስተዳዳሪ ማስታወሻ" },
+  "Unit Price": { en: "Unit Price", am: "አሃድ ዋጋ" },
+  "Qty": { en: "Qty", am: "ብዛት" },
+  "No items": { en: "No items", am: "ምንም ዕቃ የለም" },
+  "Subtotal:": { en: "Subtotal:", am: "ንዑስ ድምር:" },
+  "0.00 ETB": { en: "0.00 ETB", am: "0.00 ብር" },
+  "Service Fee:": { en: "Service Fee:", am: "Service Fee:" },
+  "Total:": { en: "Total:", am: "ጠቅላላ:" },
+  "Cancellation Action": { en: "Cancellation Action", am: "Cancellation Action" },
+  "Approve": { en: "Approve", am: "Approve" },
+  "Reject": { en: "Reject", am: "Reject" },
+  "Refund Action": { en: "Refund Action", am: "ተመላሽ Action" },
+  "Request Refund": { en: "Request Refund", am: "Request ተመላሽ" },
+  "Confirm Refund": { en: "Confirm Refund", am: "አረጋግጥ ተመላሽ" },
+  "Mark Failed": { en: "Mark Failed", am: "Mark ያልተሳካ" },
+  "Categories - Smart Cafeteria": { en: "Categories - Smart Cafeteria", am: "ምድቦች - Smart Cafeteria" },
+  "Category Management": { en: "Category Management", am: "ምድብ አስተዳደር" },
+  "Manage menu categories and their visibility.": { en: "Manage menu categories and their visibility.", am: "Manage ማውጫ ምድቦች and their visibility." },
+  "Total Categories": { en: "Total Categories", am: "ጠቅላላ ምድቦች" },
+  "Empty Categories": { en: "Empty Categories", am: "Empty ምድቦች" },
+  "Newest": { en: "Newest", am: "Newest" },
+  "Food Count": { en: "Food Count", am: "ምግብ Count" },
+  "Updated": { en: "Updated", am: "ተዘምኗል" },
+  "Foods": { en: "Foods", am: "Foods" },
+  "Created": { en: "Created", am: "ተፈጥሯል" },
+  "Loading categories...": { en: "Loading categories...", am: "በመጫን ላይ ምድቦች..." },
+  "Add New Category": { en: "Add New Category", am: "ጨምር New ምድብ" },
+  "Basic Information": { en: "Basic Information", am: "Basic Information" },
+  "Category Name": { en: "Category Name", am: "ምድብ ስም" },
+  "Slug / Code": { en: "Slug / Code", am: "Slug / Code" },
+  "Appearance": { en: "Appearance", am: "Appearance" },
+  "Display & Organization": { en: "Display & Organization", am: "Display & Organization" },
+  "Display Order": { en: "Display Order", am: "Display ትዕዛዝ" },
+  "Active categories are visible to customers": { en: "Active categories are visible to customers", am: "ንቁ ምድቦች are visible to ደንበኞች" },
+  "Featured Category": { en: "Featured Category", am: "Featured ምድብ" },
+  "Highlight this category": { en: "Highlight this category", am: "Highlight this ምድብ" },
+  "Show on Homepage": { en: "Show on Homepage", am: "Show on Homepage" },
+  "Display on the landing page": { en: "Display on the landing page", am: "Display on the landing ገጽ" },
+  "Availability & Notes": { en: "Availability & Notes", am: "አቅርቦት & Notes" },
+  "Availability Time": { en: "Availability Time", am: "አቅርቦት ሰዓት" },
+  "Limit when this category is available": { en: "Limit when this category is available", am: "Limit when this ምድብ is ይገኛል" },
+  "Start Time": { en: "Start Time", am: "Start ሰዓት" },
+  "End Time": { en: "End Time", am: "End ሰዓት" },
+  "Admin Notes": { en: "Admin Notes", am: "አስተዳዳሪ Notes" },
+  "Save Category": { en: "Save Category", am: "አስቀምጥ ምድብ" },
+  "Category Details": { en: "Category Details", am: "ምድብ Details" },
+  "Category ID": { en: "Category ID", am: "ምድብ መለያ" },
+  "Slug": { en: "Slug", am: "Slug" },
+  "Featured": { en: "Featured", am: "Featured" },
+  "Notes": { en: "Notes", am: "Notes" },
+  "Foods in this Category": { en: "Foods in this Category", am: "Foods in this ምድብ" },
+  "Food": { en: "Food", am: "ምግብ" },
+  "Stock": { en: "Stock", am: "Stock" },
+  "Real-time statistics from MongoDB â€” updated live from the database.": { en: "Real-time statistics from MongoDB â€” updated live from the database.", am: "Real-ሰዓት statistics from MongoDB â€” ተዘምኗል live from the database." },
+  "30s": { en: "30s", am: "30s" },
+  "Light": { en: "Light", am: "Light" },
+  "Dark": { en: "Dark", am: "Dark" },
+  "System": { en: "System", am: "ስርዓት" },
+  "Auto-refresh": { en: "Auto-refresh", am: "Auto-አድስ" },
+  "Fullscreen Charts": { en: "Fullscreen Charts", am: "Fullscreen Charts" },
+  "Total Feedback": { en: "Total Feedback", am: "ጠቅላላ አስተያየት" },
+  "Resolved": { en: "Resolved", am: "Resolved" },
+  "Avg Rating": { en: "Avg Rating", am: "Avg Rating" },
+  "7D": { en: "7D", am: "7D" },
+  "30D": { en: "30D", am: "30D" },
+  "90D": { en: "90D", am: "90D" },
+  "Feedback Rating Distribution": { en: "Feedback Rating Distribution", am: "አስተያየት Rating Distribution" },
+  "Loading recent orders...": { en: "Loading recent orders...", am: "በመጫን ላይ recent ትዕዛዞች..." },
+  "Transaction": { en: "Transaction", am: "Transaction" },
+  "Provider": { en: "Provider", am: "Provider" },
+  "Loading recent payments...": { en: "Loading recent payments...", am: "በመጫን ላይ recent ክፍያዎች..." },
+  "Feedback - Smart Cafeteria": { en: "Feedback - Smart Cafeteria", am: "አስተያየት - Smart Cafeteria" },
+  "View and manage customer feedback and reviews.": { en: "View and manage customer feedback and reviews.", am: "View and manage ተጠቃሚ አስተያየት and reviews." },
+  "Archived": { en: "Archived", am: "Archived" },
+  "All Ratings": { en: "All Ratings", am: "ሁሉም Ratings" },
+  "5 Stars": { en: "5 Stars", am: "5 Stars" },
+  "4 Stars": { en: "4 Stars", am: "4 Stars" },
+  "3 Stars": { en: "3 Stars", am: "3 Stars" },
+  "2 Stars": { en: "2 Stars", am: "2 Stars" },
+  "1 Star": { en: "1 Star", am: "1 Star" },
+  "ID": { en: "ID", am: "መለያ" },
+  "Rating": { en: "Rating", am: "Rating" },
+  "Dish": { en: "Dish", am: "Dish" },
+  "Loading feedback...": { en: "Loading feedback...", am: "በመጫን ላይ አስተያየት..." },
+  "Feedback Details -": { en: "Feedback Details -", am: "አስተያየት Details -" },
+  "Feedback ID": { en: "Feedback ID", am: "አስተያየት መለያ" },
+  "Submitted": { en: "Submitted", am: "Submitted" },
+  "Comment": { en: "Comment", am: "Comment" },
+  "Admin Reply": { en: "Admin Reply", am: "አስተዳዳሪ Reply" },
+  "Your Reply": { en: "Your Reply", am: "Your Reply" },
+  "Mark as resolved": { en: "Mark as resolved", am: "Mark as resolved" },
+  "Send Reply": { en: "Send Reply", am: "Send Reply" },
+  "All Menu Items": { en: "All Menu Items", am: "ሁሉም ማውጫ ዕቃዎች" },
+  "Page 1 of 1 (0 items)": { en: "Page 1 of 1 (0 items)", am: "ገጽ 1 of 1 (0 ዕቃዎች)" },
+  "Prep Time": { en: "Prep Time", am: "Prep ሰዓት" },
+  "Loading menu items...": { en: "Loading menu items...", am: "በመጫን ላይ ማውጫ ዕቃዎች..." },
+  "Add New Menu Item": { en: "Add New Menu Item", am: "ጨምር New ማውጫ ምግብ" },
+  "Select category": { en: "Select category", am: "Select ምድብ" },
+  "Stock Quantity": { en: "Stock Quantity", am: "Stock ብዛት" },
+  "Low-stock Threshold": { en: "Low-stock Threshold", am: "ዝቅተኛ-stock Threshold" },
+  "Promotion": { en: "Promotion", am: "Promotion" },
+  "Popular": { en: "Popular", am: "Popular" },
+  "Recommended": { en: "Recommended", am: "Recommended" },
+  "Menu Item Details": { en: "Menu Item Details", am: "ማውጫ ምግብ Details" },
+  "Item ID": { en: "Item ID", am: "ምግብ መለያ" },
+  "Description (EN)": { en: "Description (EN)", am: "መግለጫ (EN)" },
+  "Description (AM)": { en: "Description (AM)", am: "መግለጫ (AM)" },
+  "Last Updated": { en: "Last Updated", am: "Last ተዘምኗል" },
+  "Toggle Availability": { en: "Toggle Availability", am: "Toggle አቅርቦት" },
+  "Are you sure you want to change availability?": { en: "Are you sure you want to change availability?", am: "Are you sure you want to change availability?" },
+  "Are you sure you want to delete": { en: "Are you sure you want to delete", am: "Are you sure you want to ሰርዝ" },
+  "This action cannot be undone.": { en: "This action cannot be undone.", am: "This action cannot be undone." },
+  "Update Stock": { en: "Update Stock", am: "Update Stock" },
+  "Current Stock": { en: "Current Stock", am: "Current Stock" },
+  "New Stock Quantity": { en: "New Stock Quantity", am: "New Stock ብዛት" },
+  "Low Stock Threshold": { en: "Low Stock Threshold", am: "ዝቅተኛ Stock Threshold" },
+  "Save Stock": { en: "Save Stock", am: "አስቀምጥ Stock" },
+  "Order Management - Smart Cafeteria": { en: "Order Management - Smart Cafeteria", am: "ትዕዛዝ አስተዳደር - Smart Cafeteria" },
+  "Order Management": { en: "Order Management", am: "ትዕዛዝ አስተዳደር" },
+  "View and manage all orders": { en: "View and manage all orders", am: "View and manage ሁሉም ትዕዛዞች" },
+  "All Payment Status": { en: "All Payment Status", am: "ሁሉም ክፍያ ሁኔታ" },
+  "All Types": { en: "All Types", am: "ሁሉም Types" },
+  "Dine-in": { en: "Dine-in", am: "Dine-in" },
+  "All Time": { en: "All Time", am: "ሁሉም ሰዓት" },
+  "Today": { en: "Today", am: "Today" },
+  "Yesterday": { en: "Yesterday", am: "Yesterday" },
+  "Custom Range": { en: "Custom Range", am: "ብጁ Range" },
+  "Amount (High to Low)": { en: "Amount (High to Low)", am: "መጠን (ከፍተኛ to ዝቅተኛ)" },
+  "Amount (Low to High)": { en: "Amount (Low to High)", am: "መጠን (ዝቅተኛ to ከፍተኛ)" },
+  "From Date": { en: "From Date", am: "From ቀን" },
+  "To Date": { en: "To Date", am: "To ቀን" },
+  "&nbsp;": { en: "&nbsp;", am: "&nbsp;" },
+  "Page 1 of 1 (0 orders)": { en: "Page 1 of 1 (0 orders)", am: "ገጽ 1 of 1 (0 ትዕዛዞች)" },
+  "Loading orders...": { en: "Loading orders...", am: "በመጫን ላይ ትዕዛዞች..." },
+  "Order Details -": { en: "Order Details -", am: "ትዕዛዝ Details -" },
+  "Placed On:": { en: "Placed On:", am: "Placed On:" },
+  "Type:": { en: "Type:", am: "ዓይነት:" },
+  "Payment Method:": { en: "Payment Method:", am: "ክፍያ Method:" },
+  "Transaction:": { en: "Transaction:", am: "Transaction:" },
+  "Ordered Items": { en: "Ordered Items", am: "Ordered ዕቃዎች" },
+  "Ordered": { en: "Ordered", am: "Ordered" },
+  "Status History": { en: "Status History", am: "ሁኔታ History" },
+  "Loading history...": { en: "Loading history...", am: "በመጫን ላይ history..." },
+  "Update Order Status": { en: "Update Order Status", am: "Update ትዕዛዝ ሁኔታ" },
+  "Order statuses follow the flow: PENDING &#8594; PREPARING &#8594; READY &#8594; SERVED &#8594; COMPLETED.": { en: "Order statuses follow the flow: PENDING &#8594; PREPARING &#8594; READY &#8594; SERVED &#8594; COMPLETED.", am: "ትዕዛዝ statuses follow the flow: በመጠባበቅ ላይ &#8594; በዝግጅት ላይ &#8594; ዝግጁ &#8594; ተስተናግዷል &#8594; የተጠናቀቀ." },
+  "Print Receipt": { en: "Print Receipt", am: "Print Receipt" },
+  "Are you sure you want to cancel order": { en: "Are you sure you want to cancel order", am: "Are you sure you want to ሰርዝ ትዕዛዝ" },
+  "This action cannot be undone. The order status will be set to CANCELLED.": { en: "This action cannot be undone. The order status will be set to CANCELLED.", am: "This action cannot be undone. The ትዕዛዝ ሁኔታ will be set to ተሰርዟል." },
+  "Cancellation Reason": { en: "Cancellation Reason", am: "Cancellation ምክንያት" },
+  "Cancelled by admin": { en: "Cancelled by admin", am: "ተሰርዟል by አስተዳዳሪ" },
+  "Customer request": { en: "Customer request", am: "ተጠቃሚ request" },
+  "Out of stock": { en: "Out of stock", am: "Out of stock" },
+  "Duplicate order": { en: "Duplicate order", am: "Duplicate ትዕዛዝ" },
+  "Keep Order": { en: "Keep Order", am: "Keep ትዕዛዝ" },
+  "Payment Management - Smart Cafeteria": { en: "Payment Management - Smart Cafeteria", am: "ክፍያ አስተዳደር - Smart Cafeteria" },
+  "Payment Management": { en: "Payment Management", am: "ክፍያ አስተዳደር" },
+  "View and manage all payments": { en: "View and manage all payments", am: "View and manage ሁሉም ክፍያዎች" },
+  "Total Payments": { en: "Total Payments", am: "ጠቅላላ ክፍያዎች" },
+  "Successful": { en: "Successful", am: "Successful" },
+  "Net Revenue": { en: "Net Revenue", am: "Net Revenue" },
+  "ETB 0": { en: "ETB 0", am: "ብር 0" },
+  "Search & Filter": { en: "Search & Filter", am: "ፈልግ & ማጣሪያ" },
+  "All Methods": { en: "All Methods", am: "ሁሉም Methods" },
+  "Card": { en: "Card", am: "Card" },
+  "Cash": { en: "Cash", am: "Cash" },
+  "Bank Transfer": { en: "Bank Transfer", am: "Bank Transfer" },
+  "Wallet": { en: "Wallet", am: "Wallet" },
+  "Page 1 of 1 (0 payments)": { en: "Page 1 of 1 (0 payments)", am: "ገጽ 1 of 1 (0 ክፍያዎች)" },
+  "Transaction ID": { en: "Transaction ID", am: "Transaction መለያ" },
+  "Loading payments...": { en: "Loading payments...", am: "በመጫን ላይ ክፍያዎች..." },
+  "Payment Details -": { en: "Payment Details -", am: "ክፍያ Details -" },
+  "Amount:": { en: "Amount:", am: "መጠን:" },
+  "Transaction ID:": { en: "Transaction ID:", am: "Transaction መለያ:" },
+  "Provider:": { en: "Provider:", am: "Provider:" },
+  "Currency:": { en: "Currency:", am: "Currency:" },
+  "Order Information": { en: "Order Information", am: "ትዕዛዝ Information" },
+  "Order Status": { en: "Order Status", am: "ትዕዛዝ ሁኔታ" },
+  "Order Total": { en: "Order Total", am: "ትዕዛዝ ጠቅላላ" },
+  "Payment Date": { en: "Payment Date", am: "ክፍያ ቀን" },
+  "Paid At": { en: "Paid At", am: "ተከፍሏል At" },
+  "Refund Amount": { en: "Refund Amount", am: "ተመላሽ መጠን" },
+  "Payment History": { en: "Payment History", am: "ክፍያ History" },
+  "Process Refund": { en: "Process Refund", am: "Process ተመላሽ" },
+  "Refund Amount (ETB)": { en: "Refund Amount (ETB)", am: "ተመላሽ መጠን (ብር)" },
+  "Payment status is read-only. Only verified responses from Chapa / Telebirr can mark a payment as Paid.": { en: "Payment status is read-only. Only verified responses from Chapa / Telebirr can mark a payment as Paid.", am: "ክፍያ ሁኔታ is read-only. Only verified responses from ቻፓ / ቴሌብር can mark a ክፍያ as ተከፍሏል." },
+  "Admin Profile - Smart Cafeteria": { en: "Admin Profile - Smart Cafeteria", am: "አስተዳዳሪ መገለጫ - Smart Cafeteria" },
+  "Admin Profile": { en: "Admin Profile", am: "አስተዳዳሪ መገለጫ" },
+  "View your account details and update your password.": { en: "View your account details and update your password.", am: "View your account details and update your የይለፍ ቃል." },
+  "Admin User": { en: "Admin User", am: "አስተዳዳሪ ተጠቃሚ" },
+  "admin@example.com": { en: "admin@example.com", am: "admin@example.com" },
+  "ADMIN": { en: "ADMIN", am: "አስተዳዳሪ" },
+  "Change Password": { en: "Change Password", am: "Change የይለፍ ቃል" },
+  "Current Password": { en: "Current Password", am: "Current የይለፍ ቃል" },
+  "Confirm New Password": { en: "Confirm New Password", am: "አረጋግጥ New የይለፍ ቃል" },
+  "Update Password": { en: "Update Password", am: "Update የይለፍ ቃል" },
+  "Reports & Analytics": { en: "Reports & Analytics", am: "ሪፖርቶች & Analytics" },
+  "View sales, orders, and payment reports": { en: "View sales, orders, and payment reports", am: "View sales, ትዕዛዞች, and ክፍያ ሪፖርቶች" },
+  "Export CSV": { en: "Export CSV", am: "ላክ CSV" },
+  "Period": { en: "Period", am: "Period" },
+  "This Month": { en: "This Month", am: "This Month" },
+  "Custom Date Range": { en: "Custom Date Range", am: "ብጁ ቀን Range" },
+  "Revenue (This Month)": { en: "Revenue (This Month)", am: "Revenue (This Month)" },
+  "Completed Orders": { en: "Completed Orders", am: "የተጠናቀቀ ትዕዛዞች" },
+  "Cancelled Orders": { en: "Cancelled Orders", am: "ተሰርዟል ትዕዛዞች" },
+  "Most Ordered Foods": { en: "Most Ordered Foods", am: "Most Ordered Foods" },
+  "Rank": { en: "Rank", am: "Rank" },
+  "Food Item": { en: "Food Item", am: "ምግብ ምግብ" },
+  "Total Quantity": { en: "Total Quantity", am: "ጠቅላላ ብዛት" },
+  "Times Ordered": { en: "Times Ordered", am: "Times Ordered" },
+  "Revenue": { en: "Revenue", am: "Revenue" },
+  "Loading report...": { en: "Loading report...", am: "በመጫን ላይ report..." },
+  "Configure your cafeteria system preferences": { en: "Configure your cafeteria system preferences", am: "Configure your cafeteria ስርዓት preferences" },
+  "Manage your personal account details": { en: "Manage your personal account details", am: "Manage your personal account details" },
+  "Profile Image URL": { en: "Profile Image URL", am: "መገለጫ Image URL" },
+  "Save Profile Changes": { en: "Save Profile Changes", am: "አስቀምጥ መገለጫ Changes" },
+  "Security Settings": { en: "Security Settings", am: "Security ቅንብሮች" },
+  "Protect your account with password and 2FA": { en: "Protect your account with password and 2FA", am: "Protect your account with የይለፍ ቃል and 2FA" },
+  "Update Security": { en: "Update Security", am: "Update Security" },
+  "Two-Factor Authentication": { en: "Two-Factor Authentication", am: "Two-Factor Authentication" },
+  "Two-Factor Authentication (2FA)": { en: "Two-Factor Authentication (2FA)", am: "Two-Factor Authentication (2FA)" },
+  "Add an extra layer of security to your account": { en: "Add an extra layer of security to your account", am: "ጨምር an extra layer of security to your account" },
+  "System Configuration": { en: "System Configuration", am: "ስርዓት Configuration" },
+  "Cafeteria operating rules and order limits": { en: "Cafeteria operating rules and order limits", am: "Cafeteria operating rules and ትዕዛዝ limits" },
+  "Default Currency": { en: "Default Currency", am: "Default Currency" },
+  "ETB - Ethiopian Birr": { en: "ETB - Ethiopian Birr", am: "ብር - Ethiopian Birr" },
+  "USD - US Dollar": { en: "USD - US Dollar", am: "USD - US Dollar" },
+  "Max Daily Order Limit": { en: "Max Daily Order Limit", am: "Max Daily ትዕዛዝ Limit" },
+  "Online Ordering": { en: "Online Ordering", am: "Online Ordering" },
+  "Allow customers to place orders through the system": { en: "Allow customers to place orders through the system", am: "Allow ደንበኞች to place ትዕዛዞች through the ስርዓት" },
+  "Save System Config": { en: "Save System Config", am: "አስቀምጥ ስርዓት Config" },
+  "Notification Preferences": { en: "Notification Preferences", am: "Notification Preferences" },
+  "Choose which alerts you want to receive": { en: "Choose which alerts you want to receive", am: "Choose which alerts you want to receive" },
+  "New Order Alerts": { en: "New Order Alerts", am: "New ትዕዛዝ Alerts" },
+  "Get notified for each new order": { en: "Get notified for each new order", am: "Get notified for each new ትዕዛዝ" },
+  "Low Stock Alerts": { en: "Low Stock Alerts", am: "ዝቅተኛ Stock Alerts" },
+  "Alert when menu items are running low": { en: "Alert when menu items are running low", am: "Alert when ማውጫ ዕቃዎች are running ዝቅተኛ" },
+  "Daily Sales Summary Email": { en: "Daily Sales Summary Email", am: "Daily Sales Summary ኢሜይል" },
+  "Receive a daily revenue report": { en: "Receive a daily revenue report", am: "Receive a daily revenue report" },
+  "Security Login Alerts": { en: "Security Login Alerts", am: "Security ግባ Alerts" },
+  "Alert on new device logins": { en: "Alert on new device logins", am: "Alert on new device logins" },
+  "Save Preferences": { en: "Save Preferences", am: "አስቀምጥ Preferences" },
+  "Customize the look and feel of your dashboard": { en: "Customize the look and feel of your dashboard", am: "Customize the look and feel of your ዳሽቦርድ" },
+  "Theme Mode": { en: "Theme Mode", am: "Theme Mode" },
+  "Dashboard Layout": { en: "Dashboard Layout", am: "ዳሽቦርድ Layout" },
+  "Compact": { en: "Compact", am: "Compact" },
+  "Comfortable": { en: "Comfortable", am: "Comfortable" },
+  "Spacious": { en: "Spacious", am: "Spacious" },
+  "Logo": { en: "Logo", am: "Logo" },
+  "Upload File": { en: "Upload File", am: "Upload File" },
+  "Or paste URL": { en: "Or paste URL", am: "Or paste URL" },
+  "Recommended: 200x200px, PNG or JPG, max 2MB": { en: "Recommended: 200x200px, PNG or JPG, max 2MB", am: "Recommended: 200x200px, PNG or JPG, max 2MB" },
+  "Save Appearance": { en: "Save Appearance", am: "አስቀምጥ Appearance" },
+  "Reset to Defaults": { en: "Reset to Defaults", am: "Reset to Defaults" },
+  "Save All Settings": { en: "Save All Settings", am: "አስቀምጥ ሁሉም ቅንብሮች" },
+  "User Management - Smart Cafeteria": { en: "User Management - Smart Cafeteria", am: "ተጠቃሚ አስተዳደር - Smart Cafeteria" },
+  "User Management": { en: "User Management", am: "ተጠቃሚ አስተዳደር" },
+  "Page 1 of 1 (0 users)": { en: "Page 1 of 1 (0 users)", am: "ገጽ 1 of 1 (0 ተጠቃሚዎች)" },
+  "Loading users...": { en: "Loading users...", am: "በመጫን ላይ ተጠቃሚዎች..." },
+  "&mdash;": { en: "&mdash;", am: "&mdash;" },
+  "Phone": { en: "Phone", am: "ስልክ" },
+  "Add New Staff": { en: "Add New Staff", am: "ጨምር New ሰራተኞች" },
+  "Account Status": { en: "Account Status", am: "Account ሁኔታ" },
+  "Save Staff": { en: "Save Staff", am: "አስቀምጥ ሰራተኞች" },
+  "Digital ID Badge": { en: "Digital ID Badge", am: "Digital መለያ Badge" },
+  "Staff Identification Card": { en: "Staff Identification Card", am: "ሰራተኞች Identification Card" },
+  "Smart Cafeteria Ordering System &bull; Authorized Personnel Only": { en: "Smart Cafeteria Ordering System &bull; Authorized Personnel Only", am: "Smart Cafeteria Ordering ስርዓት &bull; Authorized Personnel Only" },
+  "New Password Generated": { en: "New Password Generated", am: "New የይለፍ ቃል Generated" },
+  "Share this password securely with the user.": { en: "Share this password securely with the user.", am: "Share this የይለፍ ቃል securely with the ተጠቃሚ." },
+  "Are you sure?": { en: "Are you sure?", am: "Are you sure?" },
+  "Delete Staff": { en: "Delete Staff", am: "ሰርዝ ሰራተኞች" },
+  "Are you sure you want to delete this user?": { en: "Are you sure you want to delete this user?", am: "Are you sure you want to ሰርዝ this user?" },
+  "Smart Cafeteria Ordering System": { en: "Smart Cafeteria Ordering System", am: "Smart Cafeteria Ordering ስርዓት" },
+  "🇬🇧 English": { en: "🇬🇧 English", am: "🇬🇧 English" },
+  "Fast and secure digital payment via CBE Birr & TeleBirr": { en: "Fast and secure digital payment via CBE Birr & TeleBirr", am: "Fast and secure digital ክፍያ via CBE Birr & ቴሌብር" },
+  "Kidus Birhanu": { en: "Kidus Birhanu", am: "Kidus Birhanu" },
+  "Sintayehu Begashaw": { en: "Sintayehu Begashaw", am: "Sintayehu Begashaw" },
+  "Wondesen Gemechu": { en: "Wondesen Gemechu", am: "Wondesen Gemechu" },
+  "Administrator": { en: "Administrator", am: "Administrator" },
+  "Smart": { en: "Smart", am: "Smart" },
+  "info@smartcafeteria.com": { en: "info@smartcafeteria.com", am: "info@smartcafeteria.com" },
+  "Debre Berhan, Ethiopia": { en: "Debre Berhan, Ethiopia", am: "Debre Berhan, Ethiopia" },
+  "&copy; 2026": { en: "&copy; 2026", am: "&copy; 2026" },
+  ". Developed by": { en: ". Developed by", am: ". Developed by" },
+  "Kidus Birhanu (Arbaminch University), Sintayehu Begashaw (Dredewa University) & Wondesen Gemechu (Debre Tabor University)": { en: "Kidus Birhanu (Arbaminch University), Sintayehu Begashaw (Dredewa University) & Wondesen Gemechu (Debre Tabor University)", am: "Kidus Birhanu (Arbaminch University), Sintayehu Begashaw (Dredewa University) & Wondesen Gemechu (Debre Tabor University)" },
+  "Login | Smart Cafeteria": { en: "Login | Smart Cafeteria", am: "ግባ | Smart Cafeteria" },
+  "Good food,": { en: "Good food,", am: "Good ምግብ," },
+  "&nbsp; Login to Account": { en: "&nbsp; Login to Account", am: "&nbsp; ግባ to Account" },
+  "Registration | Smart Cafeteria": { en: "Registration | Smart Cafeteria", am: "Registration | Smart Cafeteria" },
+  "Smart dining,": { en: "Smart dining,", am: "Smart dining," },
+  "(optional)": { en: "(optional)", am: "(optional)" },
+  "I agree to the Terms & Conditions": { en: "I agree to the Terms & Conditions", am: "I agree to the Terms & Conditions" },
+  "Cancel Order | Smart Cafeteria": { en: "Cancel Order | Smart Cafeteria", am: "ሰርዝ ትዕዛዝ | Smart Cafeteria" },
+  "Back to Orders": { en: "Back to Orders", am: "ተመለስ to ትዕዛዞች" },
+  "Order Items (": { en: "Order Items (", am: "ትዕዛዝ ዕቃዎች (" },
+  "Checkout - Cafeteria Menu": { en: "Checkout - Cafeteria Menu", am: "ክፍያ - Cafeteria ማውጫ" },
+  "You are using Chapa's": { en: "You are using Chapa's", am: "You are using Chapa's" },
+  "test (sandbox)": { en: "test (sandbox)", am: "test (sandbox)" },
+  "environment. When the Chapa payment page opens, use these test details:": { en: "environment. When the Chapa payment page opens, use these test details:", am: "environment. When the ቻፓ ክፍያ ገጽ opens, use these test details:" },
+  "Card:": { en: "Card:", am: "Card:" },
+  "CVV:": { en: "CVV:", am: "CVV:" },
+  "Expiry: any future date (e.g.": { en: "Expiry: any future date (e.g.", am: "Expiry: any future ቀን (e.g." },
+  "Feedback & Reviews - TasteEthio Cafeteria": { en: "Feedback & Reviews - TasteEthio Cafeteria", am: "አስተያየት & Reviews - TasteEthio Cafeteria" },
+  "TasteEthio": { en: "TasteEthio", am: "TasteEthio" },
+  "Abebe K.": { en: "Abebe K.", am: "Abebe K." },
+  "Feedback & Reviews": { en: "Feedback & Reviews", am: "አስተያየት & Reviews" },
+  "We value your opinion! Rate your recent meal or cafeteria service.": { en: "We value your opinion! Rate your recent meal or cafeteria service.", am: "We value your opinion! Rate your recent meal or cafeteria service." },
+  "Overall Experience Rating *": { en: "Overall Experience Rating *", am: "Overall Experience Rating *" },
+  "Your Comments / Review *": { en: "Your Comments / Review *", am: "Your Comments / Review *" },
+  "Food Details | Smart Cafeteria": { en: "Food Details | Smart Cafeteria", am: "ምግብ Details | Smart Cafeteria" },
+  "You Might Also Like": { en: "You Might Also Like", am: "You Might Also Like" },
+  "Menu - Ethiopian Cafeteria & Restaurant": { en: "Menu - Ethiopian Cafeteria & Restaurant", am: "ማውጫ - Ethiopian Cafeteria & Restaurant" },
+  "&copy; 2026 TasteEthio Ordering System. All Rights Reserved.": { en: "&copy; 2026 TasteEthio Ordering System. All Rights Reserved.", am: "&copy; 2026 TasteEthio Ordering ስርዓት. ሁሉም Rights Reserved." },
+  "Notifications - Smart Cafeteria": { en: "Notifications - Smart Cafeteria", am: "ማስታወቂያዎች - Smart Cafeteria" },
+  "Stay updated on your food order status and special cafeteria promotions.": { en: "Stay updated on your food order status and special cafeteria promotions.", am: "Stay ተዘምኗል on your ምግብ ትዕዛዝ ሁኔታ and special cafeteria promotions." },
+  "Order History - Cafeteria Menu": { en: "Order History - Cafeteria Menu", am: "ትዕዛዝ History - Cafeteria ማውጫ" },
+  "Order Status - Cafeteria Menu": { en: "Order Status - Cafeteria Menu", am: "ትዕዛዝ ሁኔታ - Cafeteria ማውጫ" },
+  "Live Order Tracker": { en: "Live Order Tracker", am: "Live ትዕዛዝ Tracker" },
+  "Order Tracker": { en: "Order Tracker", am: "ትዕዛዝ Tracker" },
+  "Order ID:": { en: "Order ID:", am: "ትዕዛዝ መለያ:" },
+  "#ET-0000": { en: "#ET-0000", am: "#ET-0000" },
+  "We have sent your order directly to the kitchen counter.": { en: "We have sent your order directly to the kitchen counter.", am: "We have sent your ትዕዛዝ directly to the ኩሽና counter." },
+  "Live Kitchen Tracker": { en: "Live Kitchen Tracker", am: "Live ኩሽና Tracker" },
+  "Order Received": { en: "Order Received", am: "ትዕዛዝ Received" },
+  "Kitchen notified": { en: "Kitchen notified", am: "ኩሽና notified" },
+  "Chef is cooking": { en: "Chef is cooking", am: "Chef is cooking" },
+  "Serving to table": { en: "Serving to table", am: "Serving to ጠረጴዛ" },
+  "Order Receipt": { en: "Order Receipt", am: "ትዕዛዝ Receipt" },
+  "Customer Name:": { en: "Customer Name:", am: "ተጠቃሚ ስም:" },
+  "Phone Number:": { en: "Phone Number:", am: "ስልክ Number:" },
+  "Dining Option:": { en: "Dining Option:", am: "Dining Option:" },
+  "Table Number:": { en: "Table Number:", am: "ጠረጴዛ Number:" },
+  "Order Date & Time:": { en: "Order Date & Time:", am: "ትዕዛዝ ቀን & ሰዓት:" },
+  "Items Ordered": { en: "Items Ordered", am: "ዕቃዎች Ordered" },
+  "Total Amount Paid / Due": { en: "Total Amount Paid / Due", am: "ጠቅላላ መጠን ተከፍሏል / Due" },
+  "Order More Food": { en: "Order More Food", am: "ትዕዛዝ More ምግብ" },
+  "Cancel order": { en: "Cancel order", am: "ሰርዝ ትዕዛዝ" },
+  "My Profile - TasteEthio Cafeteria": { en: "My Profile - TasteEthio Cafeteria", am: "My መገለጫ - TasteEthio Cafeteria" },
+  "Abebe Kebede": { en: "Abebe Kebede", am: "Abebe Kebede" },
+  "Full Name *": { en: "Full Name *", am: "Full ስም *" },
+  "Phone Number *": { en: "Phone Number *", am: "ስልክ Number *" },
+  "English": { en: "English", am: "English" },
+  "Update your account password for security.": { en: "Update your account password for security.", am: "Update your account የይለፍ ቃል for security." },
+  "Current Password *": { en: "Current Password *", am: "Current የይለፍ ቃል *" },
+  "New Password *": { en: "New Password *", am: "New የይለፍ ቃል *" },
+  "Confirm New Password *": { en: "Confirm New Password *", am: "አረጋግጥ New የይለፍ ቃል *" },
+  "Food Availability - Kitchen": { en: "Food Availability - Kitchen", am: "ምግብ አቅርቦት - ኩሽና" },
+  "← Back to Dashboard": { en: "← Back to Dashboard", am: "← ተመለስ to ዳሽቦርድ" },
+  "🍔 Food Availability": { en: "🍔 Food Availability", am: "🍔 ምግብ አቅርቦት" },
+  "Category:": { en: "Category:", am: "ምድብ:" },
+  "Mains": { en: "Mains", am: "ዋና ምግቦች" },
+  "Status:": { en: "Status:", am: "ሁኔታ:" },
+  "All Items": { en: "All Items", am: "ሁሉም ዕቃዎች" },
+  "🔍 Filter": { en: "🔍 Filter", am: "🔍 ማጣሪያ" },
+  "Loading items...": { en: "Loading items...", am: "በመጫን ላይ ዕቃዎች..." },
+  "Mark as Unavailable": { en: "Mark as Unavailable", am: "Mark as አይገኝም" },
+  "Mark Unavailable": { en: "Mark Unavailable", am: "Mark አይገኝም" },
+  "Kitchen Display System - Smart Cafeteria": { en: "Kitchen Display System - Smart Cafeteria", am: "ኩሽና Display ስርዓት - Smart Cafeteria" },
+  "Full Queue": { en: "Full Queue", am: "Full Queue" },
+  "Stock Alerts": { en: "Stock Alerts", am: "የክምችት ማስጠንቀቂያዎች" },
+  "Current Shift": { en: "Current Shift", am: "Current Shift" },
+  "Order Details - Kitchen": { en: "Order Details - Kitchen", am: "ትዕዛዝ Details - ኩሽና" },
+  "Order Details": { en: "Order Details", am: "ትዕዛዝ Details" },
+  "PENDING": { en: "PENDING", am: "በመጠባበቅ ላይ" },
+  "NORMAL": { en: "NORMAL", am: "NORMAL" },
+  "Customer Information": { en: "Customer Information", am: "ተጠቃሚ Information" },
+  "Order Type": { en: "Order Type", am: "ትዕዛዝ ዓይነት" },
+  "Br 0.00": { en: "Br 0.00", am: "Br 0.00" },
+  "Timeline": { en: "Timeline", am: "Timeline" },
+  "Report Delay": { en: "Report Delay", am: "Report Delay" },
+  "Reason for Delay": { en: "Reason for Delay", am: "ምክንያት for Delay" },
+  "Kitchen Display System - Orders List": { en: "Kitchen Display System - Orders List", am: "ኩሽና Display ስርዓት - ትዕዛዞች List" },
+  "Alerts": { en: "Alerts", am: "Alerts" },
+  "Kitchen Order Queue": { en: "Kitchen Order Queue", am: "ኩሽና ትዕዛዝ Queue" },
+  "Detailed list view for tracking, filtering, and completing kitchen orders.": { en: "Detailed list view for tracking, filtering, and completing kitchen orders.", am: "Detailed list view for tracking, filtering, and completing ኩሽና ትዕዛዞች." },
+  "All Active": { en: "All Active", am: "ሁሉም ንቁ" },
+  "Ticket #": { en: "Ticket #", am: "Ticket #" },
+  "Items & Quantities": { en: "Items & Quantities", am: "ዕቃዎች & Quantities" },
+  "Time Elapsed": { en: "Time Elapsed", am: "ሰዓት Elapsed" },
+  "Stock Alerts - Kitchen": { en: "Stock Alerts - Kitchen", am: "Stock Alerts - ኩሽና" },
+  "🚨 Stock Alerts": { en: "🚨 Stock Alerts", am: "🚨 Stock Alerts" },
+  "+ Report Issue": { en: "+ Report Issue", am: "+ Report Issue" },
+  "Acknowledged": { en: "Acknowledged", am: "Acknowledged" },
+  "No stock alerts at the moment": { en: "No stock alerts at the moment", am: "የለም stock alerts at the moment" },
+  "Report Stock Issue": { en: "Report Stock Issue", am: "Report Stock Issue" },
+  "Item Name *": { en: "Item Name *", am: "ምግብ ስም *" },
+  "Alert Type *": { en: "Alert Type *", am: "Alert ዓይነት *" },
+  "Low Stock": { en: "Low Stock", am: "ዝቅተኛ Stock" },
+  "Ingredient Shortage": { en: "Ingredient Shortage", am: "Ingredient Shortage" },
+  "Quality Issue": { en: "Quality Issue", am: "Quality Issue" },
+  "Severity *": { en: "Severity *", am: "Severity *" },
+  "Low": { en: "Low", am: "ዝቅተኛ" },
+  "Medium": { en: "Medium", am: "Medium" },
+  "High": { en: "High", am: "ከፍተኛ" },
+  "Critical": { en: "Critical", am: "Critical" },
+  "Reason/Details *": { en: "Reason/Details *", am: "ምክንያት/Details *" },
+  "Report Issue": { en: "Report Issue", am: "Report Issue" },
 };
 
 // Support both storage keys for backward compatibility
 const STORAGE_KEYS = ["scos_language", "cafeteria_language"];
 
+// === Centralized translation files (en.json / am.json) ===
+// Single source of truth per requirement: en.json & am.json
+const CENTRAL_LOCALE_PATHS = {
+  en: [
+    "/src/locales/en.json",
+    "/locales/en.json",
+    "/public/locales/en.json",
+    "../locales/en.json",
+    "../../locales/en.json",
+    "./src/locales/en.json"
+  ],
+  am: [
+    "/src/locales/am.json",
+    "/locales/am.json",
+    "/public/locales/am.json",
+    "../locales/am.json",
+    "../../locales/am.json",
+    "./src/locales/am.json"
+  ]
+};
+
+let centralLoaded = false;
+
+async function fetchJsonWithFallback(paths) {
+  for (const p of paths) {
+    try {
+      const res = await fetch(p, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === "object" && Object.keys(data).length > 0) return data;
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function loadCentralizedTranslations() {
+  if (centralLoaded) return;
+  try {
+    const [enData, amData] = await Promise.all([
+      fetchJsonWithFallback(CENTRAL_LOCALE_PATHS.en),
+      fetchJsonWithFallback(CENTRAL_LOCALE_PATHS.am)
+    ]);
+    let updated = false;
+    if (enData) {
+      Object.assign(translations.en, enData);
+      updated = true;
+    }
+    if (amData) {
+      Object.assign(translations.am, amData);
+      // Ensure om fallback if am missing keys - no action needed due to getText fallback
+      updated = true;
+    }
+    if (updated) {
+      centralLoaded = true;
+      applyTranslations();
+    }
+  } catch (_) {}
+  centralLoaded = true;
+}
+
 function readLanguage() {
   for (const k of STORAGE_KEYS) {
     const v = localStorage.getItem(k);
-    if (v === "en" || v === "am" || v === "om") return v;
+    if (v === "en" || v === "am") return v;
+    // backward compat: handle legacy om -> fallback to en
+    if (v === "om") return "en";
   }
   return "en";
 }
 
 function writeLanguage(lang) {
+  const normalized = lang === "am" ? "am" : "en";
   for (const k of STORAGE_KEYS) {
-    localStorage.setItem(k, lang);
+    localStorage.setItem(k, normalized);
   }
   // Also sync profile language preference if exists
   try {
@@ -1722,7 +2524,7 @@ function writeLanguage(lang) {
     if (profileRaw) {
       const p = JSON.parse(profileRaw);
       if (p && typeof p === "object") {
-        p.language = lang;
+        p.language = normalized;
         localStorage.setItem("userProfile", JSON.stringify(p));
       }
     }
@@ -1734,11 +2536,19 @@ export function getCurrentLanguage() {
 }
 
 export function setLanguage(lang) {
-  if (lang !== "en" && lang !== "am" && lang !== "om") return;
+  if (lang !== "en" && lang !== "am") return;
   writeLanguage(lang);
   applyTranslations();
+  // Persist immediately without refresh - update selectors & dispatch events
+  document.querySelectorAll(".scos-lang-select, #langToggleSelect, #preferred-language").forEach((s) => { s.value = lang; });
   window.dispatchEvent(new CustomEvent("language:changed", { detail: { language: lang } }));
   window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: lang } }));
+  // Ensure body class reflects immediately
+  try {
+    document.documentElement.lang = lang;
+    document.body.classList.toggle("lang-am", lang === "am");
+    document.body.classList.toggle("lang-en", lang === "en");
+  } catch (_) {}
 }
 
 export function getText(key) {
@@ -1890,19 +2700,19 @@ export function applyTranslations() {
 export function renderLangSwitcher(containerElement) {
   if (!containerElement) return;
   const currentLang = getCurrentLanguage();
-  // Include globe icon + label for clarity; works on both light/dark headers because background is white
+  // Complete English / Amharic switcher per requirement - immediate switch without refresh
   containerElement.innerHTML = `
     <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;margin:0 8px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
       <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>
       <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">
         <option value="en" ${currentLang === "en" ? "selected" : ""}>🇬🇧 English</option>
         <option value="am" ${currentLang === "am" ? "selected" : ""}>🇪🇹 አማርኛ</option>
-        <option value="om" ${currentLang === "om" ? "selected" : ""}>🇪🇹 Afaan Oromoo</option>
       </select>
     </div>
   `;
   const selectEl = containerElement.querySelector(".scos-lang-select");
   if (selectEl) {
+    selectEl.value = currentLang;
     selectEl.addEventListener("change", (e) => setLanguage(e.target.value));
   }
 }
@@ -1929,6 +2739,10 @@ function ensureSwitcherInjected() {
       if (actions) actions.prepend(wrapper);
       else kdsHeader.appendChild(wrapper);
     }
+    // A real in-navbar/in-header switcher now exists (e.g. rendered by a shared
+    // layout component). Remove any stale floating fallback selector so we never
+    // end up with TWO language dropdowns on the same page.
+    removeStaleFloatingSwitcher();
     return;
   }
 
@@ -1974,9 +2788,14 @@ function ensureSwitcherInjected() {
     }
   }
 
-  // Fallback for auth pages (login/register) – fixed floating selector
-  if (!document.querySelector(".scos-lang-select")) {
+  // Fallback for auth pages (login/register) – fixed floating selector,
+  // but ONLY when the page has no navbar/header that could host one.
+  const hasNavbarTarget = document.querySelector(
+    ".admin-navbar, .kds-header, nav, header, .nav-container, .header-actions, .nav-right, .navbar-header"
+  );
+  if (!document.querySelector(".scos-lang-select") && !hasNavbarTarget) {
     const floating = document.createElement("div");
+    floating.setAttribute("data-i18n-floating", "1");
     floating.style.position = "fixed";
     floating.style.top = "16px";
     floating.style.right = "16px";
@@ -1984,6 +2803,14 @@ function ensureSwitcherInjected() {
     renderLangSwitcher(floating);
     document.body.appendChild(floating);
   }
+}
+
+// Remove any floating (top-right, body-level) fallback language switcher that
+// was injected before a proper navbar/header selector became available.
+function removeStaleFloatingSwitcher() {
+  document.querySelectorAll("[data-i18n-floating]").forEach(function (el) {
+    el.remove();
+  });
 }
 
 // Global window attachments for backward compatibility
@@ -1995,6 +2822,12 @@ window.t = getText;
 
 // Initialize
 function initI18n() {
+  // Load centralized JSON first, then apply (with fallback to embedded)
+  loadCentralizedTranslations().then(() => {
+    applyTranslations();
+    ensureSwitcherInjected();
+  });
+  // Also apply immediately with embedded translations so page not blank while loading
   applyTranslations();
   ensureSwitcherInjected();
   // Listen to any language selector on page

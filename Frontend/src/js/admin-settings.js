@@ -191,19 +191,24 @@
     finally { setLoading(btn, false); }
   }
 
-  /* =============================================
+/* =============================================
      5. APPEARANCE
      ============================================= */
-  function populateAppearance(m) {
-    $('dashboardLayout').value = m.dashboard_layout || 'comfortable';
-    $('logoUrlInput').value = m.appearance_logo_url || '';
-    // Show logo preview if URL exists
-    if (m.appearance_logo_url) {
-      const img = $('logoPreviewImg');
-      const ph = $('logoPlaceholder');
-      if (img && ph) { img.src = m.appearance_logo_url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
-    }
-  }
+   function populateAppearance(m) {
+     $('dashboardLayout').value = m.dashboard_layout || 'comfortable';
+     $('logoUrlInput').value = m.appearance_logo_url || '';
+     // Show logo preview if URL exists
+     if (m.appearance_logo_url) {
+       const img = $('logoPreviewImg');
+       const ph = $('logoPlaceholder');
+       if (img && ph) { img.src = m.appearance_logo_url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
+     }
+     // Populate theme toggle
+     if (m.theme) {
+       $('themeSelect').value = m.theme;
+       window.setTheme(m.theme);
+     }
+   }
 
   async function saveAppearance() {
     const btn = $('saveAppearanceBtn');
@@ -349,35 +354,68 @@
         cb.classList.add('border-gray-300');
       }
     });
+
+    // Password show/hide toggle
+    document.querySelectorAll(".toggle-password-icon").forEach(function (icon) {
+      icon.addEventListener("click", function () {
+        var targetId = icon.getAttribute("data-target");
+        var input = document.getElementById(targetId);
+        if (!input) return;
+        var isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        icon.classList.toggle("fa-eye", !isPassword);
+        icon.classList.toggle("fa-eye-slash", isPassword);
+        icon.title = isPassword ? "Hide password" : "Show password";
+      });
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
+  // Fallback theme application if theme.js not loaded
+  function applyThemeFallback(theme) {
+    var root = document.documentElement;
+    root.classList.remove("theme-light", "theme-dark", "dark", "system");
+    if (theme === "dark") {
+      root.classList.add("theme-dark", "dark");
+    } else if (theme === "system") {
+      root.classList.add("system", "dark");
+      if (!window.matchMedia || !window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        root.classList.remove("dark");
+        root.classList.add("theme-light");
+      }
+    } else {
+      root.classList.add("theme-light");
+    }
+    localStorage.setItem('scos_theme', theme);
+  }
+
   // Expose setTheme for inline script
   window.setTheme = function(theme) {
+    // Coordinate with shared theme.js
+    if (window.ScosTheme && window.ScosTheme.apply) {
+      window.ScosTheme.apply(theme);
+    } else {
+      // Fallback: apply theme manually if theme.js not loaded
+      applyThemeFallback(theme);
+    }
     const sel = $('themeSelect');
     if (sel) sel.value = theme;
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.classList.remove('border-emerald-500', 'bg-emerald-50');
-      btn.classList.add('border-gray-200', 'bg-gray-50');
-      const icon = btn.querySelector('i');
-      if (icon) { icon.classList.remove('text-emerald-600'); icon.classList.add('text-gray-500'); }
-      const span = btn.querySelector('span');
-      if (span) { span.classList.remove('text-emerald-700'); span.classList.add('text-gray-600'); }
-    });
-    const idMap = { light: 'themeLightBtn', dark: 'themeDarkBtn', system: 'themeSystemBtn' };
-    const active = $(idMap[theme]);
-    if (active) {
-      active.classList.add('border-emerald-500', 'bg-emerald-50');
-      active.classList.remove('border-gray-200', 'bg-gray-50');
-      const icon = active.querySelector('i');
-      if (icon) { icon.classList.add('text-emerald-600'); icon.classList.remove('text-gray-500'); }
-      const span = active.querySelector('span');
-      if (span) { span.classList.add('text-emerald-700'); span.classList.remove('text-gray-600'); }
-    }
-    document.documentElement.classList.remove('dark');
-    if (theme === 'dark') document.documentElement.classList.add('dark');
-    else if (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.classList.add('dark');
+    // Update toggle button UI
+    const icon = $('themeToggleIcon');
+    const label = $('themeToggleLabel');
+    const btn = $('themeToggleBtn');
+    if (icon && label && btn) {
+      if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun text-amber-500 text-xl';
+        label.textContent = 'Light';
+        label.className = 'text-sm font-medium text-amber-600';
+        btn.className = btn.className.replace('border-gray-200 bg-gray-50', 'border-amber-500 bg-amber-50');
+      } else {
+        icon.className = 'fa-solid fa-moon text-gray-500 text-xl';
+        label.textContent = 'Dark';
+        label.className = 'text-sm font-medium text-gray-600';
+        btn.className = btn.className.replace('border-amber-500 bg-amber-50', 'border-gray-200 bg-gray-50');
+      }
     }
     localStorage.setItem('scos_theme', theme);
   };

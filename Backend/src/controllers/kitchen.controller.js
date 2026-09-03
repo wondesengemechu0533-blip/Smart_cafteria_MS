@@ -184,17 +184,27 @@ const orderSummary = formatKitchenOrder(order);
 emitSocketEvent('kitchen', 'order:status', orderSummary);
 emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
 
-// ✅ Notify customer
-await Notification.create({
+// ✅ Notify customer - saved for offline, emitted for online (only to correct customer)
+const notification = await Notification.create({
 userId: order.userId,
 title: 'Order Accepted!',
 message: `Your order #${orderId} has been accepted and is being prepared by the kitchen. Estimated time: ${estimatedMinutes} minutes`,
 type: 'status_update',
 orderId: orderId,
-link: `/customer/order-
-
-tracking.html?id=${orderId}`,
+link: `/customer/order-tracking.html?id=${orderId}`,
 isRead: false
+});
+
+// ✅ Send real-time notification to correct customer only (user room)
+emitSocketEvent(`user:${order.userId}`, 'notification:new', {
+    id: notification._id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    orderId: notification.orderId,
+    link: notification.link,
+    isRead: notification.isRead,
+    createdAt: notification.createdAt
 });
 
 res.status(HTTP_STATUS.OK).json({
@@ -256,15 +266,27 @@ const orderSummary = formatKitchenOrder(order);
 emitSocketEvent('kitchen', 'order:status', orderSummary);
 emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
 
-// ✅ Notify customer
-await Notification.create({
+// ✅ Notify customer - saved for offline, emitted for online (only to correct customer)
+const notification = await Notification.create({
 userId: order.userId,
 title: 'Order Ready!',
-message: `Your order #${orderId} is ready for pickup! 🍽️`,
+message: `Your order #${orderId} is ready for pickup.`,
 type: 'ready',
 orderId: orderId,
 link: `/customer/order-tracking.html?id=${orderId}`,
 isRead: false
+});
+
+// ✅ Send real-time notification to correct customer only (user room)
+emitSocketEvent(`user:${order.userId}`, 'notification:new', {
+    id: notification._id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    orderId: notification.orderId,
+    link: notification.link,
+    isRead: notification.isRead,
+    createdAt: notification.createdAt
 });
 
 res.status(HTTP_STATUS.OK).json({
@@ -772,7 +794,7 @@ severity: alert.severity,
 reason: alert.reason,
 status: alert.status,
 reportedBy: alert.reportedBy?.name,
-affectedOrders: alert.affectedOrders.length,
+affectedOrders: alert.affectedOrders?.length || 0,
 createdAt: alert.createdAt
 }))
 });
@@ -783,6 +805,69 @@ res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
 success: false,
 error: MESSAGES.SERVER_ERROR
 });
+}
+};
+
+/**
+* @desc    Acknowledge a stock alert
+* @route   PATCH /api/kitchen/stock-alerts/:id/acknowledge
+* @access  Private/Kitchen
+* Response: { success, message, alert }
+*/
+exports.acknowledgeStockAlert = async (req, res) => {
+try {
+const { id } = req.params;
+const StockAlert = require('../models/StockAlert');
+
+const alert = await StockAlert.findById(id);
+if (!alert) {
+return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Stock alert not found' });
+}
+
+if (alert.status === 'resolved' || alert.status === 'cancelled') {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'This alert is already closed' });
+}
+
+alert.status = 'acknowledged';
+await alert.save();
+
+res.status(HTTP_STATUS.OK).json({ success: true, message: 'Alert acknowledged', alert: { id: alert._id, status: alert.status } });
+} catch (error) {
+console.error('❌ Acknowledge Stock Alert Error:', error);
+res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
+}
+};
+
+/**
+* @desc    Resolve a stock alert
+* @route   PATCH /api/kitchen/stock-alerts/:id/resolve
+* @access  Private/Kitchen
+* Response: { success, message, alert }
+*/
+exports.resolveStockAlert = async (req, res) => {
+try {
+const { id } = req.params;
+const StockAlert = require('../models/StockAlert');
+
+const alert = await StockAlert.findById(id);
+if (!alert) {
+return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Stock alert not found' });
+}
+
+if (alert.status === 'resolved' || alert.status === 'cancelled') {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'This alert is already closed' });
+}
+
+alert.status = 'resolved';
+alert.resolvedBy = req.user._id;
+alert.resolvedAt = new Date();
+alert.resolutionNote = req.body.resolutionNote || null;
+await alert.save();
+
+res.status(HTTP_STATUS.OK).json({ success: true, message: 'Alert marked as resolved', alert: { id: alert._id, status: alert.status } });
+} catch (error) {
+console.error('❌ Resolve Stock Alert Error:', error);
+res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
 }
 };
 

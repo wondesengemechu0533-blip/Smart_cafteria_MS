@@ -1,21 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration | Smart Cafeteria</title>
+    <!-- Prevent Back-Forward Cache -->
+    <script>window.addEventListener('pageshow', function(e){ if(e.persisted) window.location.reload(); });</script>
     <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="stylesheet" href="/public/assets/vendor/fonts/fonts.css">
+    <!-- Shared Theme (light / dark) - loaded in head to avoid flash -->
+    <script src="../../js/theme.js"></script>
     <style>
         * {
             margin: 0;
@@ -212,6 +208,32 @@
         }
         .form-header {
             margin-bottom: 14px;
+        }
+        .form-header-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            background: var(--cream-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+        .back-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
         }
         .form-header h1 {
             font-family: "Playfair Display", serif;
@@ -432,6 +454,86 @@
                 grid-column: span 1;
             }
         }
+        /* ============================================================
+           REGISTER DARK MODE (theme.js sets data-theme="dark")
+           ============================================================ */
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0f172a 0%, #0b1220 50%, #131c31 100%);
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .top-home-logo,
+        [data-theme="dark"] .back-btn {
+            color: #e2e8f0;
+            background: rgba(30, 41, 59, 0.85);
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+        [data-theme="dark"] .register-card,
+        [data-theme="dark"] .form-panel {
+            background: #1e293b;
+            border-color: rgba(148, 163, 184, 0.2);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        }
+        [data-theme="dark"] .food-panel {
+            background:
+                linear-gradient(180deg, rgba(15, 23, 42, 0.0), rgba(15, 23, 42, 0.55)),
+                linear-gradient(150deg, #0f1530, #1e293b);
+        }
+        [data-theme="dark"] .form-header h2,
+        [data-theme="dark"] .form-header p,
+        [data-theme="dark"] .form-group label,
+        [data-theme="dark"] .brand-name {
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .input-box input,
+        [data-theme="dark"] .input-box select {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-color: #334155;
+        }
+        [data-theme="dark"] .input-box input::placeholder { color: #64748b; }
+        [data-theme="dark"] .input-box i,
+        [data-theme="dark"] .toggle-password { color: #94a3b8; }
+        [data-theme="dark"] .login-redirect a { color: #93c5fd; }
+        [data-theme="dark"] .field-error { color: #fca5a5; }
+        [data-theme="dark"] .message { background: #0f172a; }
+        /* ===== Top-right controls: language switcher + theme toggle ===== */
+        .top-controls {
+            position: fixed;
+            top: 14px;
+            right: 18px;
+            z-index: 30;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-corner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f172a;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+            transition: 0.25s ease;
+        }
+        .theme-corner:hover { background: #2563eb; color: #fff; transform: translateY(-2px); }
+        [data-theme="dark"] .top-controls .lang-switcher-widget {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        [data-theme="dark"] .top-controls select {
+            color: #e2e8f0 !important;
+        }
+        [data-theme="dark"] .theme-corner {
+            background: rgba(30, 41, 59, 0.9);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -440,6 +542,20 @@
         <i class="fa-solid fa-arrow-left"></i>
         Smart Cafeteria
     </a>
+
+    <!-- THEME TOGGLE + LANGUAGE SWITCHER (top right, shared cluster) -->
+    <div class="top-controls">
+        <div class="lang-switcher-widget" id="authLangSwitcher" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+            <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>
+            <select class="scos-lang-select" id="authLangSelect" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:105px;">
+                <option value="en">🇬🇧 English</option>
+                <option value="am">🇪🇹 አማርኛ</option>
+            </select>
+        </div>
+        <button type="button" class="theme-corner" data-theme-toggle aria-label="Toggle dark / light mode" title="Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </div>
 
     <div class="main-container">
         <div class="register-card">
@@ -471,6 +587,11 @@
             <!-- RIGHT FORM PANEL -->
             <section class="form-panel">
                 <div class="form-header">
+                    <div class="form-header-top">
+                        <a href="login.html" class="back-btn">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </a>
+                    </div>
                     <h1>Create Account</h1>
                     <p>Fill in your details to get started with Smart Cafeteria.</p>
                 </div>
@@ -482,9 +603,9 @@
                     <div class="form-grid">
                         <!-- FULL NAME -->
                         <div class="form-group full-width" id="fullNameGroup">
-                            <label for="fullName">Full Name <span>*</span></label>
+                            <label for="regFullName">Full Name <span>*</span></label>
                             <div class="input-box">
-                                <input type="text" id="fullName" placeholder="Enter your full name" required maxlength="100">
+                                <input type="text" id="regFullName" placeholder="e.g. John Doe" maxlength="100" required>
                                 <i class="fa-solid fa-user"></i>
                                 <span class="validation-icon">
                                     <i class="fa-solid fa-circle-xmark"></i>
@@ -492,20 +613,6 @@
                                 </span>
                             </div>
                             <div class="field-error" id="fullNameError"></div>
-                        </div>
-
-                        <!-- USERNAME (optional) -->
-                        <div class="form-group full-width" id="usernameGroup">
-                            <label for="regUsername">Username <small style="color:var(--gray)">(optional)</small></label>
-                            <div class="input-box">
-                                <input type="text" id="regUsername" placeholder="e.g. john_doe" maxlength="30">
-                                <i class="fa-solid fa-at"></i>
-                                <span class="validation-icon">
-                                    <i class="fa-solid fa-circle-xmark"></i>
-                                    <i class="fa-solid fa-circle-check"></i>
-                                </span>
-                            </div>
-                            <div class="field-error" id="usernameError"></div>
                         </div>
 
                         <!-- EMAIL -->
@@ -526,7 +633,7 @@
                         <div class="form-group" id="phoneGroup">
                             <label for="regPhone">Phone Number <span>*</span></label>
                             <div class="input-box">
-                                <input type="tel" id="regPhone" placeholder="09XXXXXXXX" required maxlength="11">
+                                <input type="tel" id="regPhone" placeholder="09XXXXXXXX or +2519XXXXXXXX" required maxlength="13">
                                 <i class="fa-solid fa-phone"></i>
                                 <span class="validation-icon">
                                     <i class="fa-solid fa-circle-xmark"></i>
@@ -569,20 +676,6 @@
                             </div>
                             <div class="field-error" id="confirmPasswordError"></div>
                         </div>
-
-                        <!-- ADDRESS (optional) -->
-                        <div class="form-group full-width" id="addressGroup">
-                            <label for="regAddress">Address <small style="color:var(--gray)">(optional)</small></label>
-                            <div class="input-box">
-                                <input type="text" id="regAddress" placeholder="Your delivery or dorm address" maxlength="255">
-                                <i class="fa-solid fa-location-dot"></i>
-                                <span class="validation-icon">
-                                    <i class="fa-solid fa-circle-xmark"></i>
-                                    <i class="fa-solid fa-circle-check"></i>
-                                </span>
-                            </div>
-                            <div class="field-error" id="addressError"></div>
-                        </div>
                     </div>
 
                     <!-- TERMS & CONDITIONS -->
@@ -618,29 +711,24 @@
 
         const fieldGroups = {
             fullName: document.getElementById("fullNameGroup"),
-            username: document.getElementById("usernameGroup"),
             email: document.getElementById("emailGroup"),
             phone: document.getElementById("phoneGroup"),
             password: document.getElementById("passwordGroup"),
-            confirmPassword: document.getElementById("confirmPasswordGroup"),
-            address: document.getElementById("addressGroup")
+            confirmPassword: document.getElementById("confirmPasswordGroup")
         };
 
         const errorEls = {
             fullName: document.getElementById("fullNameError"),
-            username: document.getElementById("usernameError"),
             email: document.getElementById("emailError"),
             phone: document.getElementById("phoneError"),
             password: document.getElementById("passwordError"),
             confirmPassword: document.getElementById("confirmPasswordError"),
-            address: document.getElementById("addressError"),
             agreeTerms: document.getElementById("termsError")
         };
 
         const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const PHONE_REGEX = /^(09|07)[0-9]{8}$/;
+        const PHONE_REGEX = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
         const NAME_REGEX = /^[a-zA-Z\s]+$/;
-        const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
         const SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
 
         document.querySelectorAll(".toggle-password").forEach(function (btn) {
@@ -695,21 +783,12 @@
         function validateField(field, { showValid = true } = {}) {
             switch (field) {
                 case "fullName": {
-                    const v = getValue("fullName");
+                    const v = getValue("regFullName");
                     if (!v) { showFieldError("fullName", "Full name is required."); return false; }
                     if (v.length < 2) { showFieldError("fullName", "Full name must be at least 2 characters."); return false; }
                     if (v.length > 100) { showFieldError("fullName", "Full name cannot exceed 100 characters."); return false; }
                     if (!NAME_REGEX.test(v)) { showFieldError("fullName", "Full name can only contain letters and spaces."); return false; }
                     clearFieldError("fullName", showValid);
-                    return true;
-                }
-                case "username": {
-                    const v = getValue("regUsername");
-                    if (!v) { clearFieldError("username", false); return true; }
-                    if (v.length < 3) { showFieldError("username", "Username must be at least 3 characters."); return false; }
-                    if (v.length > 30) { showFieldError("username", "Username cannot exceed 30 characters."); return false; }
-                    if (!USERNAME_REGEX.test(v)) { showFieldError("username", "Username can only contain letters, numbers, and underscores."); return false; }
-                    clearFieldError("username", showValid);
                     return true;
                 }
                 case "email": {
@@ -722,7 +801,7 @@
                 case "phone": {
                     const v = getValue("regPhone");
                     if (!v) { showFieldError("phone", "Phone number is required."); return false; }
-                    if (!PHONE_REGEX.test(v)) { showFieldError("phone", "Enter a valid phone number (09XXXXXXXX or 07XXXXXXXX)."); return false; }
+                    if (!PHONE_REGEX.test(v)) { showFieldError("phone", "Enter a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)."); return false; }
                     clearFieldError("phone", showValid);
                     return true;
                 }
@@ -745,24 +824,30 @@
                     clearFieldError("confirmPassword", showValid);
                     return true;
                 }
-                case "address": {
-                    const v = getValue("regAddress");
-                    if (v.length > 255) { showFieldError("address", "Address cannot exceed 255 characters."); return false; }
-                    clearFieldError("address", false);
-                    return true;
-                }
                 default:
                     return true;
             }
         }
 
-        ["fullName", "regUsername", "regEmail", "regPhone", "regAddress"].forEach(function (id) {
+        document.getElementById("regFullName").addEventListener("blur", function () {
+            validateField("fullName");
+        });
+        document.getElementById("regFullName").addEventListener("input", function () {
+            if (fieldGroups.fullName.classList.contains("invalid")) {
+                validateField("fullName");
+            }
+        });
+
+        ["regEmail", "regPhone"].forEach(function (id) {
             document.getElementById(id).addEventListener("blur", function () {
-                const field = id === "regUsername" ? "username" :
-                              id === "regEmail" ? "email" :
-                              id === "regPhone" ? "phone" :
-                              id === "regAddress" ? "address" : "fullName";
+                const field = id === "regEmail" ? "email" : "phone";
                 validateField(field);
+            });
+            document.getElementById(id).addEventListener("input", function () {
+                const field = id === "regEmail" ? "email" : "phone";
+                if (fieldGroups[field] && fieldGroups[field].classList.contains("invalid")) {
+                    validateField(field);
+                }
             });
         });
 
@@ -790,18 +875,16 @@
             if (!errors || typeof errors !== "object") return;
             const map = {
                 name: "fullName",
-                fullName: "fullName",
-                username: "username",
                 email: "email",
                 phone: "phone",
                 password: "password",
                 confirmPassword: "confirmPassword",
-                address: "address",
-                agreedToTerms: "agreeTerms"
+                agreedToTerms: "agreeTerms",
+                username: "username"
             };
             Object.keys(errors).forEach(function (key) {
                 const field = map[key];
-                if (field) {
+                if (field && fieldGroups[field]) {
                     showFieldError(field, errors[key]);
                 } else if (key === "agreeTerms") {
                     const termsErr = document.getElementById("termsError");
@@ -818,12 +901,10 @@
 
             const validations = {
                 fullName: validateField("fullName", { showValid: false }),
-                username: validateField("username", { showValid: false }),
                 email: validateField("email", { showValid: false }),
                 phone: validateField("phone", { showValid: false }),
                 password: validateField("password", { showValid: false }),
-                confirmPassword: validateField("confirmPassword", { showValid: false }),
-                address: validateField("address", { showValid: false })
+                confirmPassword: validateField("confirmPassword", { showValid: false })
             };
 
             const agreedToTerms = document.getElementById("agreeTerms").checked;
@@ -846,24 +927,20 @@
             const originalBtnHtml = regSubmitBtn.innerHTML;
             regSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registering...';
 
-            const fullName = getValue("fullName");
-            const username = getValue("regUsername");
+            const fullName = getValue("regFullName");
             const email = getValue("regEmail").toLowerCase();
             const phone = getValue("regPhone");
             const password = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
-            const address = getValue("regAddress");
 
             try {
                 const reqBody = JSON.stringify({
                     name: fullName,
-                    username: username || undefined,
                     email: email,
                     phone: phone,
                     password: password,
                     confirmPassword: confirmPassword,
-                    address: address || undefined,
-                    agreedToTerms: true
+                    agreedToTerms: agreedToTerms
                 });
 
                 let response;
@@ -884,17 +961,39 @@
                 const data = await response.json();
 
                 if (!response.ok || !data.success) {
-                    mapBackendErrors(data.errors);
-                    showRegError(data.error || data.message || "Registration failed. Please try again.");
+                    if (data.errors) {
+                        mapBackendErrors(data.errors);
+                    }
+                    var errMsg = data.error || data.message || "Registration failed. Please try again.";
+                    if (response.status === 409) {
+                        if (data.errorField === "email") {
+                            errMsg = data.error || "This email is already registered. Please use a different email or sign in.";
+                        } else if (data.errorField === "phone") {
+                            errMsg = data.error || "This phone number is already registered. Please use a different phone or sign in.";
+                        } else if (data.errorField === "username") {
+                            errMsg = data.error || "This username is already taken. Please choose a different one.";
+                        } else {
+                            errMsg = data.error || "An account with this email or phone already exists. Please use different credentials or sign in.";
+                        }
+                    }
+                    showRegError(errMsg);
                     regSubmitBtn.disabled = false;
                     regSubmitBtn.innerHTML = originalBtnHtml;
                     return;
                 }
 
-                showRegSuccess("Registration successful! Redirecting to login page...");
+                showRegSuccess("Registration successful! Logging you in...");
+
+                localStorage.setItem("auth_token", data.token);
+                localStorage.setItem("current_user", JSON.stringify(data.user));
+                localStorage.setItem("isLoggedIn", "true");
+                localStorage.setItem("userName", data.user.name || data.user.email);
+                localStorage.setItem("name", data.user.name || data.user.email);
+                localStorage.setItem("userRole", "CUSTOMER");
+                localStorage.setItem("customerLoggedIn", "true");
 
                 setTimeout(function () {
-                    window.location.href = "login.html";
+                    window.location.href = "../customer/menu.html";
                 }, 1500);
 
             } catch (err) {

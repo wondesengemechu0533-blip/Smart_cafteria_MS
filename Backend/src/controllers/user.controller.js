@@ -28,7 +28,7 @@ const isAdminRole = (role) => ADMIN_ROLES.includes(String(role ?? '').trim()) ||
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-const phoneRegex = /^(09|07)[0-9]{8}$/;
+const phoneRegex = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
 
 function sanitizeUser(user) {
   return {

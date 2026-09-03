@@ -265,13 +265,16 @@
    * PATCH /admin/users/:id/password, shows generated password
    * ================================================================== */
   function actionResetPassword(user) {
+    closeAllModals();
     document.getElementById("resetPwdUserName").textContent = user.name + " (" + user.email + ")";
     document.getElementById("resetPwdUserId").value = user.id;
     document.getElementById("resetPwdNewPassword").value = "";
     document.getElementById("resetPwdConfirmPassword").value = "";
+    var confirmBtn = document.getElementById("confirmResetPwdBtn");
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = "Reset Password"; }
     document.getElementById("resetPwdFormFields").style.display = "";
     document.getElementById("resetPwdResult").style.display = "none";
-    document.getElementById("confirmResetPwdBtn").style.display = "";
+    confirmBtn.style.display = "";
     openModal("resetPasswordModal");
   }
 
@@ -581,6 +584,20 @@
     // Delete confirm button
     var confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
     if (confirmDeleteBtn) confirmDeleteBtn.addEventListener("click", confirmDelete);
+
+    // Password show/hide toggle
+    document.querySelectorAll(".toggle-password-icon").forEach(function (icon) {
+      icon.addEventListener("click", function () {
+        var targetId = icon.getAttribute("data-target");
+        var input = document.getElementById(targetId);
+        if (!input) return;
+        var isPassword = input.type === "password";
+        input.type = isPassword ? "text" : "password";
+        icon.classList.toggle("fa-eye", !isPassword);
+        icon.classList.toggle("fa-eye-slash", isPassword);
+        icon.title = isPassword ? "Hide password" : "Show password";
+      });
+    });
   }
 
   /* ----------------------------------------------------------------

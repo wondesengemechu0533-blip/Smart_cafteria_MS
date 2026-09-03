@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Smart Cafeteria</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/public/assets/vendor/js/tailwindcss.js"></script>
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/src/css/admin.css">
     <script>
         tailwind.config = {
@@ -21,7 +21,7 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('/public/assets/vendor/fonts/fonts.css');
         body { font-family: 'Inter', sans-serif; }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
@@ -45,7 +45,9 @@
     <div class="admin-container flex">
         <aside class="admin-sidebar" id="adminSidebar"></aside>
 
-        <main class="admin-main flex-1 p-6 lg:p-8 max-w-6xl mx-auto">
+        <main class="admin-main">
+
+            <div class="max-w-6xl mx-auto">
 
             <!-- Page Header -->
             <div class="mb-8">
@@ -140,15 +142,24 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
-                            <input type="password" id="currentPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter current password">
+                            <div class="input-wrapper">
+                                <input type="password" id="currentPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter current password">
+                                <i class="fa-solid fa-eye toggle-password-icon" data-target="currentPassword" title="Show password"></i>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
-                            <input type="password" id="newPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter new password">
+                            <div class="input-wrapper">
+                                <input type="password" id="newPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Enter new password">
+                                <i class="fa-solid fa-eye toggle-password-icon" data-target="newPassword" title="Show password"></i>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
-                            <input type="password" id="confirmPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Confirm new password">
+                            <div class="input-wrapper">
+                                <input type="password" id="confirmPassword" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none input-focus transition-all" placeholder="Confirm new password">
+                                <i class="fa-solid fa-eye toggle-password-icon" data-target="confirmPassword" title="Show password"></i>
+                            </div>
                         </div>
                     </div>
                     <div class="flex justify-start mb-6">
@@ -353,23 +364,15 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
-                        <!-- Light/Dark Mode -->
+                        <!-- Light/Dark Mode Toggle -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fa-solid fa-circle-half-stroke text-gray-400 mr-1"></i> Theme Mode
                             </label>
                             <div class="flex gap-3">
-                                <button type="button" onclick="setTheme('light')" id="themeLightBtn" class="theme-btn flex-1 flex flex-col items-center gap-2 px-4 py-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 transition-all cursor-pointer">
-                                    <i class="fa-solid fa-sun text-emerald-600 text-xl"></i>
-                                    <span class="text-sm font-medium text-emerald-700">Light</span>
-                                </button>
-                                <button type="button" onclick="setTheme('dark')" id="themeDarkBtn" class="theme-btn flex-1 flex flex-col items-center gap-2 px-4 py-4 rounded-xl border-2 border-gray-200 bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
-                                    <i class="fa-solid fa-moon text-gray-500 text-xl"></i>
-                                    <span class="text-sm font-medium text-gray-600">Dark</span>
-                                </button>
-                                <button type="button" onclick="setTheme('system')" id="themeSystemBtn" class="theme-btn flex-1 flex flex-col items-center gap-2 px-4 py-4 rounded-xl border-2 border-gray-200 bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
-                                    <i class="fa-solid fa-desktop text-gray-500 text-xl"></i>
-                                    <span class="text-sm font-medium text-gray-600">System</span>
+                                <button type="button" id="themeToggleBtn" class="flex-1 flex items-center justify-center gap-2 px-4 py-4 rounded-xl border-2 border-gray-200 bg-gray-50 hover:border-emerald-300 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-moon text-gray-500 text-xl" id="themeToggleIcon"></i>
+                                    <span class="text-sm font-medium text-gray-600" id="themeToggleLabel">Dark</span>
                                 </button>
                             </div>
                             <input type="hidden" id="themeSelect" value="light">
@@ -432,6 +435,7 @@
                     <i class="fa-solid fa-check-double"></i> Save All Settings
                 </button>
             </div>
+            </div>
         </main>
     </div>
 
@@ -461,33 +465,61 @@
             cb.addEventListener('change', updateToggle);
         });
 
-        /* ---------- Theme switcher ---------- */
+        /* ---------- Theme toggle (dark/light) ---------- */
+        function updateToggleUI(theme) {
+            var icon = document.getElementById('themeToggleIcon');
+            var label = document.getElementById('themeToggleLabel');
+            var btn = document.getElementById('themeToggleBtn');
+            if (!icon || !label || !btn) return;
+            if (theme === 'dark') {
+                icon.className = 'fa-solid fa-sun text-amber-500 text-xl';
+                label.textContent = 'Light';
+                label.className = 'text-sm font-medium text-amber-600';
+                btn.className = btn.className.replace('border-gray-200 bg-gray-50', 'border-amber-500 bg-amber-50');
+            } else {
+                icon.className = 'fa-solid fa-moon text-gray-500 text-xl';
+                label.textContent = 'Dark';
+                label.className = 'text-sm font-medium text-gray-600';
+                btn.className = btn.className.replace('border-amber-500 bg-amber-50', 'border-gray-200 bg-gray-50');
+            }
+        }
+
+        function toggleTheme() {
+            var current = localStorage.getItem('scos_theme') || 'light';
+            var next = current === 'dark' ? 'light' : 'dark';
+            if (window.ScosTheme && window.ScosTheme.apply) {
+                window.ScosTheme.apply(next);
+            } else if (window.setTheme) {
+                window.setTheme(next);
+            } else {
+                document.documentElement.classList.remove('dark', 'theme-dark', 'theme-light');
+                if (next === 'dark') {
+                    document.documentElement.classList.add('dark', 'theme-dark');
+                } else {
+                    document.documentElement.classList.add('theme-light');
+                }
+                localStorage.setItem('scos_theme', next);
+            }
+            document.getElementById('themeSelect').value = next;
+            updateToggleUI(next);
+        }
+
         function setTheme(theme) {
             if (window.setTheme) { window.setTheme(theme); return; }
+            if (window.ScosTheme && window.ScosTheme.apply) {
+                window.ScosTheme.apply(theme);
+            } else {
+                document.documentElement.classList.remove('dark', 'theme-dark', 'theme-light');
+                if (theme === 'dark') document.documentElement.classList.add('dark', 'theme-dark');
+                else if (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark', 'theme-dark');
+                } else {
+                    document.documentElement.classList.add('theme-light');
+                }
+                localStorage.setItem('scos_theme', theme);
+            }
             document.getElementById('themeSelect').value = theme;
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('border-emerald-500', 'bg-emerald-50');
-                btn.classList.add('border-gray-200', 'bg-gray-50');
-                const icon = btn.querySelector('i');
-                if (icon) { icon.classList.remove('text-emerald-600'); icon.classList.add('text-gray-500'); }
-                const span = btn.querySelector('span');
-                if (span) { span.classList.remove('text-emerald-700'); span.classList.add('text-gray-600'); }
-            });
-            const active = document.getElementById('theme' + theme.charAt(0).toUpperCase() + theme.slice(1) + 'Btn');
-            if (active) {
-                active.classList.add('border-emerald-500', 'bg-emerald-50');
-                active.classList.remove('border-gray-200', 'bg-gray-50');
-                const icon = active.querySelector('i');
-                if (icon) { icon.classList.add('text-emerald-600'); icon.classList.remove('text-gray-500'); }
-                const span = active.querySelector('span');
-                if (span) { span.classList.add('text-emerald-700'); span.classList.remove('text-gray-600'); }
-            }
-            document.documentElement.classList.remove('dark');
-            if (theme === 'dark') document.documentElement.classList.add('dark');
-            else if (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark');
-            }
-            localStorage.setItem('scos_theme', theme);
+            updateToggleUI(theme);
         }
 
         /* ---------- Logo preview ---------- */
@@ -507,8 +539,15 @@
 
         /* ---------- Init theme on load ---------- */
         (function () {
-            const saved = localStorage.getItem('scos_theme') || 'light';
-            setTheme(saved);
+            var saved = localStorage.getItem('scos_theme') || 'light';
+            document.getElementById('themeSelect').value = saved;
+            updateToggleUI(saved);
+            document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+            if (window.ScosTheme && window.ScosTheme.apply) {
+                window.ScosTheme.apply(saved);
+            } else {
+                setTheme(saved);
+            }
         })();
     </script>
 </body>

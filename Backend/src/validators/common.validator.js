@@ -110,7 +110,8 @@ const validateName = (name, fieldName = 'Name', min = 2, max = 100) => {
 
 const validatePhone = (phone) => {
     if (!phone) return 'Phone number is required';
-    if (!/^(\+?[0-9\s-]{10,15})$/.test(phone)) return 'Invalid phone number format';
+    const phoneRegex = /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/;
+    if (!phoneRegex.test(phone)) return 'Enter a valid Ethiopian phone number (e.g. 09XXXXXXXX or +2519XXXXXXXX)';
     return null;
 };
 

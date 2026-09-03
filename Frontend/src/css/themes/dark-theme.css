@@ -1,177 +1,298 @@
 /* ================================================================
-   SMART CAFETERIA ORDERING SYSTEM - DARK THEME
-   ================================================================ */
+   SMART CAFETERIA ORDERING SYSTEM - DARK THEME
+   ================================================================ */
 
+/* ------------------------------------------------------------------
+   1. BASE VARIABLE OVERRIDES
+   The customer pages define their own :root palettes. We override the
+   variables they actually consume so everything re-themes consistently.
+   The html element is marked with data-theme="dark" by src/js/theme.js.
+------------------------------------------------------------------- */
 [data-theme="dark"] {
-    /* ---- Backgrounds ---- */
-    --white: #1e293b;
-    --gray-50: #0f172a;
-    --gray-100: #1e293b;
-    --gray-200: #334155;
-    --gray-300: #475569;
-    --gray-400: #64748b;
-    --gray-500: #94a3b8;
-    --gray-600: #cbd5e1;
-    --gray-700: #e2e8f0;
-    --gray-800: #f1f5f9;
-    --gray-900: #f8fafc;
+    /* Admin / gray palette (kept for admin.css consumers) */
+    --white: #1e293b;
+    --gray-50: #0f172a;
+    --gray-100: #1e293b;
+    --gray-200: #334155;
+    --gray-300: #475569;
+    --gray-400: #64748b;
+    --gray-500: #94a3b8;
+    --gray-600: #cbd5e1;
+    --gray-700: #e2e8f0;
+    --gray-800: #f1f5f9;
+    --gray-900: #f8fafc;
 
-    /* ---- Primary ---- */
-    --primary-bg: #1e293b;
+    /* style.css palette */
+    --bg-light: #0f172a;
+    --card-bg: #1e293b;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --border-color: #334155;
+    --dark: #f8fafc;
 
-    /* ---- Semantic ---- */
-    --success-bg: #064e3b;
-    --warning-bg: #451a03;
-    --danger-bg: #7f1d1d;
-    --info-bg: #082f49;
+    /* menu.css / cart.css palette */
+    --primary-color: #f59e0b;
+    --primary-hover: #d97706;
+    --secondary-color: #e2e8f0;
+    --text-primary: #f1f5f9;
 
-    /* ---- Shadows ---- */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
-    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.7);
+    /* Semantic bgs */
+    --primary-bg: #1e293b;
+    --success-bg: #064e3b;
+    --warning-bg: #451a03;
+    --danger-bg: #7f1d1d;
+    --info-bg: #082f49;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.7);
 }
 
 [data-theme="dark"] body {
-    background: #0f172a;
-    color: #e2e8f0;
+    background: #0f172a;
+    color: #e2e8f0;
 }
 
-[data-theme="dark"] .card {
-    background: #1e293b;
-    border-color: #334155;
+/* ------------------------------------------------------------------
+   2. CUSTOMER PAGE COMPONENT OVERRIDES
+   The menu/cart/style pages use hardcoded light colours on many
+   surfaces; we explicitly darken them here.
+------------------------------------------------------------------- */
+
+/* Navigation header */
+[data-theme="dark"] .navbar-header,
+[data-theme="dark"] .navbar,
+[data-theme="dark"] .navbar-content {
+    background-color: #1e293b;
+    border-color: #334155;
 }
-[data-theme="dark"] .card .card-header {
-    background: #0f172a;
-    border-color: #334155;
+
+[data-theme="dark"] .nav-left-group .brand-logo,
+[data-theme="dark"] .brand-logo span {
+    color: #f8fafc;
 }
+
+[data-theme="dark"] .btn-back-home,
+[data-theme="dark"] .nav-link-item,
+[data-theme="dark"] .nav-link-track,
+[data-theme="dark"] .cart-btn {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .btn-back-home:hover,
+[data-theme="dark"] .nav-link-item:hover,
+[data-theme="dark"] .nav-link-track:hover,
+[data-theme="dark"] .cart-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Search boxes */
+[data-theme="dark"] .search-box-header input,
+[data-theme="dark"] .search-box-mobile input {
+    background-color: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .search-box-header input::placeholder,
+[data-theme="dark"] .search-box-mobile input::placeholder {
+    color: #64748b;
+}
+
+/* User profile dropdown */
+[data-theme="dark"] .user-profile-btn {
+    color: #cbd5e1;
+}
+[data-theme="dark"] .dropdown-menu {
+    background-color: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+[data-theme="dark"] .dropdown-menu a {
+    color: #cbd5e1;
+}
+[data-theme="dark"] .dropdown-menu a:hover {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+/* Category pills */
+[data-theme="dark"] .category-pill {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+[data-theme="dark"] .category-pill:hover,
+[data-theme="dark"] .category-pill.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border-color: var(--primary-color);
+}
+
+/* Sort selector */
+[data-theme="dark"] .sort-selector select {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+/* Food cards (already use --card-bg var but ensure text too) */
+[data-theme="dark"] .food-card {
+    background-color: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .food-title,
+[data-theme="dark"] .food-card .food-title {
+    color: #f8fafc;
+}
+[data-theme="dark"] .food-description {
+    color: #94a3b8;
+}
+
+/* Buttons */
+[data-theme="dark"] .btn-icon-secondary {
+    background-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .btn-icon-secondary:hover {
+    background-color: #475569;
+}
+[data-theme="dark"] .btn-primary:disabled {
+    background-color: #334155;
+    color: #94a3b8;
+}
+
+/* Empty state */
+[data-theme="dark"] .empty-state {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .empty-state h3 {
+    color: #f8fafc;
+}
+[data-theme="dark"] .empty-state p {
+    color: #94a3b8;
+}
+
+/* Footer */
+[data-theme="dark"] .footer-section {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .footer-content {
+    color: #94a3b8;
+}
+
+/* Cart / checkout surfaces */
+[data-theme="dark"] .card,
+[data-theme="dark"] .cart-item,
+[data-theme="dark"] .checkout-card,
+[data-theme="dark"] .order-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .card .card-header,
 [data-theme="dark"] .card .card-footer {
-    background: #0f172a;
-    border-color: #334155;
+    background: #0f172a;
+    border-color: #334155;
 }
 
-[data-theme="dark"] .form-control {
-    background: #0f172a;
-    border-color: #334155;
-    color: #e2e8f0;
+/* Form controls */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
 }
 [data-theme="dark"] .form-control:focus {
-    border-color: var(--primary-light);
+    border-color: var(--primary-light, #f59e0b);
 }
 
-[data-theme="dark"] .admin-sidebar {
-    background: #0f172a;
-}
-[data-theme="dark"] .admin-header {
-    background: #1e293b;
-    border-color: #334155;
-}
-[data-theme="dark"] .admin-header .header-right .admin-profile:hover {
-    background: #0f172a;
-}
-
-[data-theme="dark"] .stat-card {
-    background: #1e293b;
-}
-[data-theme="dark"] .stat-card .stat-value {
-    color: #f8fafc;
-}
-[data-theme="dark"] .stat-card .stat-label {
-    color: #94a3b8;
-}
-
-[data-theme="dark"] .order-card {
-    background: #1e293b;
-}
-[data-theme="dark"] .order-card .order-header .order-id {
-    color: #f8fafc;
-}
-[data-theme="dark"] .order-card .order-items .item {
-    border-color: #334155;
-}
-[data-theme="dark"] .order-card .order-total {
-    border-color: #334155;
-    color: #f8fafc;
-}
-
+/* Tables */
 [data-theme="dark"] .table th {
-    background: #0f172a;
-    border-color: #334155;
-    color: #94a3b8;
+    background: #0f172a;
+    border-color: #334155;
+    color: #94a3b8;
 }
 [data-theme="dark"] .table td {
-    border-color: #334155;
+    border-color: #334155;
 }
 [data-theme="dark"] .table tbody tr:hover {
-    background: #0f172a;
+    background: #1e293b;
 }
 
-[data-theme="dark"] .navbar {
-    background: #1e293b;
-    border-color: #334155;
-}
-[data-theme="dark"] .navbar .brand span {
-    color: #f8fafc;
-}
-[data-theme="dark"] .navbar .nav-links a {
-    color: #94a3b8;
-}
-
+/* Modals & notifications */
 [data-theme="dark"] .modal {
-    background: #1e293b;
+    background: #1e293b;
 }
 [data-theme="dark"] .modal-header {
-    border-color: #334155;
+    border-color: #334155;
 }
 [data-theme="dark"] .modal-footer {
-    background: #0f172a;
-    border-color: #334155;
+    background: #0f172a;
+    border-color: #334155;
 }
-[data-theme="dark"] .modal-close:hover {
-    background: #0f172a;
-}
-
 [data-theme="dark"] .notification {
-    background: #1e293b;
+    background: #1e293b;
 }
 [data-theme="dark"] .notification.unread {
-    background: #0f172a;
+    background: #0f172a;
 }
 [data-theme="dark"] .notification .content .title {
-    color: #f8fafc;
+    color: #f8fafc;
 }
 [data-theme="dark"] .notification .content .message {
-    color: #cbd5e1;
+    color: #cbd5e1;
 }
 
+/* ------------------------------------------------------------------
+   3. ADMIN / KITCHEN SURFACES
+------------------------------------------------------------------- */
+[data-theme="dark"] .admin-sidebar {
+    background: #0f172a;
+}
+[data-theme="dark"] .admin-header {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .stat-card,
 [data-theme="dark"] .kitchen-stat {
-    background: #1e293b;
+    background: #1e293b;
 }
+[data-theme="dark"] .stat-card .stat-value,
 [data-theme="dark"] .kitchen-stat .number {
-    color: #f8fafc;
+    color: #f8fafc;
 }
+[data-theme="dark"] .stat-card .stat-label,
 [data-theme="dark"] .kitchen-stat .label {
-    color: #94a3b8;
+    color: #94a3b8;
 }
 
-/* Theme Toggle Button */
+/* ------------------------------------------------------------------
+   THEME TOGGLE BUTTON
+------------------------------------------------------------------- */
 .theme-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: var(--font-size-xl);
-    color: var(--gray-600);
-    padding: var(--spacing-2);
-    border-radius: var(--radius-full);
-    transition: all var(--transition-fast);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gray-600);
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 120ms ease;
 }
 .theme-toggle:hover {
-    background: var(--gray-100);
+    background: var(--gray-100);
 }
 [data-theme="dark"] .theme-toggle {
-    color: #fcd34d;
+    color: #fcd34d;
 }
 [data-theme="dark"] .theme-toggle:hover {
-    background: #0f172a;
+    background: #0f172a;
 }

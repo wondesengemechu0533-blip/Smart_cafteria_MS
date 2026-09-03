@@ -443,4 +443,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     renderPastFeedback();
+
+    // Real-time: when admin replies, notification arrives via customer-realtime.js
+    window.addEventListener("customer:notification", (e) => {
+        const n = e.detail;
+        if (n && n.title && n.title.toLowerCase().includes("feedback")) {
+            renderPastFeedback();
+            showToast(n.message, "info");
+        }
+    });
+    window.addEventListener("notification:refresh", renderPastFeedback);
+    // Also listen directly to socket if customer-realtime not loaded
+    if (typeof io !== "undefined") {
+        try {
+            const token = localStorage.getItem("auth_token");
+            if (token) {
+                const s = io("http://localhost:5000", { auth: { token }, transports: ["websocket", "polling"] });
+                s.on("notification:new", (n) => {
+                    if (n && n.title && n.title.toLowerCase().includes("feedback")) {
+                        renderPastFeedback();
+                    }
+                });
+            }
+        } catch {}
+    }
 });

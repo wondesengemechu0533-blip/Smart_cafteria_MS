@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kitchen Display System - Orders List</title>
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <!-- Bootstrap CSS (required for grid + components) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <!-- Shared Kitchen Stylesheet -->
-    <link rel="stylesheet" href="../../css/kitchen.css">
+    <link rel="stylesheet" href="/public/assets/vendor/bootstrap/css/bootstrap.min.css">
+    <!-- Shared Stylesheets -->
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/kitchen.css">
     <style>
         :root {
-
             --bg-dark: #0f172a;
             --panel-dark: #1e293b;
             --accent-orange: #f97316;
@@ -28,30 +29,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .admin-navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 24px;
-            background-color: var(--panel-dark);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent-orange);
-        }
-
-        .brand-logo span { color: var(--text-light); }
-
-        .admin-main {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
+        /* Orders content sits inside the light shared kds-main; re-theme it dark. */
+        .kds-main.orders-main {
+            background-color: var(--bg-dark);
+            min-height: calc(100vh - 64px);
         }
 
         .page-header {
@@ -66,6 +47,7 @@
         .page-header h1 {
             margin: 0 0 4px 0;
             font-size: 1.5rem;
+            color: var(--text-light);
         }
 
         .subtitle {
@@ -80,7 +62,7 @@
             flex-wrap: wrap;
         }
 
-        .btn {
+        .filter-group .btn {
             padding: 8px 16px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -92,7 +74,8 @@
             transition: all 0.2s ease;
         }
 
-        .btn:hover, .btn.active {
+        .filter-group .btn:hover,
+        .filter-group .btn.active {
             background-color: var(--accent-orange);
             border-color: var(--accent-orange);
             color: #fff;
@@ -138,87 +121,197 @@
 </head>
 <body class="admin-body">
 
-    <!-- TOP NAVBAR -->
-    <header class="admin-navbar">
-        <div class="nav-left">
-            <div class="brand-logo">
-                <i class="fa-solid fa-fire-burner"></i>
-                <span>Kitchen Display System</span>
+    <!-- KITCHEN NAVIGATION HEADER -->
+    <header class="kds-header">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <button class="kds-sidebar-toggle" id="kdsSidebarToggle" aria-label="Toggle Sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="kds-header-title">
+                <i class="fa-solid fa-fire-burner fa-xl"></i>
+                <h1>Kitchen Display System</h1>
             </div>
         </div>
-        <div class="nav-right" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <a href="dashboard.html" class="btn">
-                <i class="fa-solid fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="availability.html" class="btn">
-                <i class="fa-solid fa-burger"></i> Availability
-            </a>
-            <a href="stock-alerts.html" class="btn">
-                <i class="fa-solid fa-triangle-exclamation"></i> Alerts
-            </a>
-            <a href="#" class="btn" onclick="toggleUserMenu(); return false;">
-                <i class="fa-solid fa-user-circle"></i> <span id="userName">User</span>
-            </a>
+
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span id="userName">Profile</span>
+                </button>
+                <div class="dropdown-menu-custom" id="userDropdownMenu">
+                    <a href="#" onclick="viewProfile()">
+                        <i class="fa-solid fa-id-card"></i> My Profile
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <button onclick="logout()">
+                        <i class="fa-solid fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN ORDERS LIST CONTENT -->
-    <main class="admin-main">
-        <div class="page-header">
-            <div>
-                
-                <h1>Kitchen Order Queue</h1>
-                <p class="subtitle">Detailed list view for tracking, filtering, and completing kitchen orders.</p>
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div class="kds-sidebar-backdrop" id="kdsSidebarBackdrop"></div>
+
+    <!-- KITCHEN LAYOUT: LEFT SIDEBAR + CONTENT -->
+    <div class="kds-layout">
+        <!-- LEFT SIDEBAR NAVIGATION -->
+        <aside class="kds-sidebar" id="kdsSidebar">
+            <div class="kds-sidebar-brand">
+                <i class="fa-solid fa-fire-burner"></i>
+                <span>Kitchen Menu</span>
             </div>
-            
-           <div class="filter-group">
-    <button class="btn active" data-status="all">All Active</button>
-    <button class="btn" data-status="Pending">Pending</button>
-    <button class="btn" data-status="Preparing">Preparing</button>
-    <button class="btn" data-status="Ready">Ready</button>
-    <button class="btn" data-status="Cancelled">Cancelled</button>
-</div>
-        </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-group">
+                    <span class="sidebar-group-title">Main</span>
+                    <a href="dashboard.html" class="sidebar-link">
+                        <i class="fa-solid fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="orders.html" class="sidebar-link active">
+                        <i class="fa-solid fa-receipt"></i> Orders
+                    </a>
+                    <a href="availability.html" class="sidebar-link">
+                        <i class="fa-solid fa-burger"></i> Availability
+                    </a>
+                    <a href="stock-alerts.html" class="sidebar-link">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Stock Alerts
+                    </a>
+                </div>
+                <div class="sidebar-group" style="margin-top: 16px;">
+                    <span class="sidebar-group-title">Tools</span>
+                    <a href="notifications.html" class="sidebar-link">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                    </a>
+                    <a href="schedule.html" class="sidebar-link">
+                        <i class="fa-solid fa-clock"></i> Preparation Schedule
+                    </a>
+                    <a href="settings.html" class="sidebar-link">
+                        <i class="fa-solid fa-gear"></i> Settings
+                    </a>
+                </div>
+            </nav>
+            <div class="kds-sidebar-footer">
+                <a href="#" class="sidebar-link" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
 
-        <!-- ORDERS TABLE -->
-        <div class="dashboard-card">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Ticket #</th>
-                        <th>Customer</th>
-                        <th>Items & Quantities</th>
-                        <th>Status</th>
-                        <th>Time Elapsed</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="kitchenOrdersBody">
-                    <!-- Dynamic Order Rows Injected by kitchen.js -->
-                </tbody>
-            </table>
-        </div>
-    </main>
+        <!-- MAIN ORDERS CONTENT -->
+        <main class="kds-main orders-main">
+            <div class="page-header">
+                <div>
+                    <h1>Kitchen Order Queue</h1>
+                    <p class="subtitle">Detailed list view for tracking, filtering, and completing kitchen orders.</p>
+                </div>
 
-       <!-- JavaScript Dependencies -->
-    <script type="module" src="/src/js/api.js"></script>
-    <script type="module" src="/src/js/auth.js"></script>
+                <div class="filter-group">
+                    <button class="btn active" data-status="all">All Active</button>
+                    <button class="btn" data-status="Pending">Pending</button>
+                    <button class="btn" data-status="Preparing">Preparing</button>
+                    <button class="btn" data-status="Ready">Ready</button>
+                    <button class="btn" data-status="Cancelled">Cancelled</button>
+                </div>
+            </div>
+
+            <!-- ORDERS TABLE -->
+            <div class="dashboard-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Customer</th>
+                            <th>Items & Quantities</th>
+                            <th>Status</th>
+                            <th>Time Elapsed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kitchenOrdersBody">
+                        <!-- Dynamic Order Rows Injected by kitchen.js -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
+    <script type="module" src="../../js/api.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <script type="module" src="../../js/socket.js"></script>
     <script type="module" src="./kitchen.js"></script>
 
-    <!-- Navigation Script -->
+    <!-- Navigation & User Menu Script -->
     <script>
+        // Toggle User Dropdown Menu
+        function toggleUserMenu() {
+            const menu = document.getElementById('userDropdownMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Toggle Left Sidebar (mobile)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('kdsSidebar');
+            const backdrop = document.getElementById('kdsSidebarBackdrop');
+            sidebar.classList.toggle('open');
+            backdrop.classList.toggle('show', sidebar.classList.contains('open'));
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const userMenu = document.getElementById('userDropdownMenu');
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            if (!userMenu.contains(e.target) && !userMenuBtn.contains(e.target)) {
+                userMenu.classList.remove('active');
+            }
+        });
+
         // Load user name
         document.addEventListener('DOMContentLoaded', () => {
             const userName = localStorage.getItem('userName') || localStorage.getItem('name') || 'User';
-            document.getElementById('userName').textContent = userName.split(' ')[0]; // First name only
+            const nameEl = document.getElementById('userName');
+            if (nameEl) nameEl.textContent = userName.split(' ')[0]; // First name only
+
+            // Bind sidebar toggle + backdrop
+            const sidebarToggle = document.getElementById('kdsSidebarToggle');
+            const sidebar = document.getElementById('kdsSidebar');
+            const backdrop = document.getElementById('kdsSidebarBackdrop');
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            if (backdrop) {
+                backdrop.addEventListener('click', toggleSidebar);
+            }
+            // Close sidebar after clicking a link (mobile)
+            if (sidebar) {
+                sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) sidebar.classList.remove('open');
+                        if (backdrop) backdrop.classList.remove('show');
+                    });
+                });
+            }
         });
 
-        function toggleUserMenu() {
-            alert('User menu coming soon');
+        // View Profile
+        function viewProfile() {
+            alert('Profile page coming soon');
+            document.getElementById('userDropdownMenu').classList.remove('active');
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = '../common/login.html';
+            }
         }
     </script>
-
-    <script type="module" src="../../js/utils/i18n.js"></script>
 </body>
 
 </html>

@@ -6,7 +6,7 @@
     <title>Order Management - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
 
     <!-- Bootstrap CSS (required for grid + components) -->
 
@@ -33,71 +33,59 @@
             </div>
 
             <!-- STATS CARDS -->
-            <div class="row g-4 mb-4">
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-receipt"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Orders</span>
-                            <h2 class="metric-value" id="metricTotalOrders">0</h2>
-                        </div>
+            <div class="metrics-grid mb-4">
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-indigo">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Total Orders</span>
+                        <h2 class="metric-value" id="metricTotalOrders">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-orange">
-                            <i class="fa-solid fa-hourglass-half"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Pending</span>
-                            <h2 class="metric-value" id="metricPendingOrders">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-orange">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Pending</span>
+                        <h2 class="metric-value" id="metricPendingOrders">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-yellow">
-                            <i class="fa-solid fa-fire-burner"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Preparing</span>
-                            <h2 class="metric-value" id="metricPreparingOrders">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-yellow">
+                        <i class="fa-solid fa-fire-burner"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Preparing</span>
+                        <h2 class="metric-value" id="metricPreparingOrders">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-cyan">
-                            <i class="fa-solid fa-bell-concierge"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Ready</span>
-                            <h2 class="metric-value" id="metricReadyOrders">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-cyan">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Ready</span>
+                        <h2 class="metric-value" id="metricReadyOrders">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-green">
-                            <i class="fa-solid fa-check-double"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Completed</span>
-                            <h2 class="metric-value" id="metricCompletedOrders">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-green">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Completed</span>
+                        <h2 class="metric-value" id="metricCompletedOrders">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-4">
-                    <div class="metric-card" data-nav="orders.html">
-                        <div class="metric-icon bg-red">
-                            <i class="fa-solid fa-ban"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Cancelled</span>
-                            <h2 class="metric-value" id="metricCancelledOrders">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="orders.html">
+                    <div class="metric-icon bg-red">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Cancelled</span>
+                        <h2 class="metric-value" id="metricCancelledOrders">0</h2>
                     </div>
                 </div>
             </div>

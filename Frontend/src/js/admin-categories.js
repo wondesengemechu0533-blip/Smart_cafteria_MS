@@ -63,14 +63,32 @@
    * ============================================================ */
   function resetImageState() {
     pendingImage = null;
+    if (catImageUrlDebounce) clearTimeout(catImageUrlDebounce);
     var fileInput = document.getElementById("categoryImageFile");
     var urlInput = document.getElementById("categoryImageUrl");
     var previewRow = document.getElementById("categoryImagePreviewRow");
     var preview = document.getElementById("categoryImagePreview");
+    var loading = document.getElementById("imageLoading");
+    var error = document.getElementById("imageError");
+    var feedback = document.getElementById("urlFeedback");
     if (fileInput) fileInput.value = "";
-    if (urlInput) urlInput.value = "";
+    if (urlInput) { urlInput.value = ""; urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+    if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+    if (loading) loading.style.display = "none";
+    if (error) error.style.display = "none";
     if (previewRow) previewRow.style.display = "none";
-    if (preview) preview.removeAttribute("src");
+    if (preview) { preview.removeAttribute("src"); preview.onerror = null; preview.onload = null; }
+  }
+
+  var catImageUrlDebounce = null;
+
+  function catIsValidUrl(string) {
+    try {
+      var url = new URL(string);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch (_) {
+      return false;
+    }
   }
 
   function handleImageFileChange(file) {
@@ -91,22 +109,64 @@
     reader.onload = function () {
       pendingImage = { type: "file", value: String(reader.result) };
       document.getElementById("categoryImageUrl").value = "";
-      document.getElementById("categoryImagePreview").src = String(reader.result);
+      var catPreview = document.getElementById("categoryImagePreview");
+      var catLoading = document.getElementById("imageLoading");
+      var catError = document.getElementById("imageError");
+      if (catLoading) catLoading.style.display = "none";
+      if (catError) catError.style.display = "none";
+      catPreview.style.display = "none";
+      catPreview.onerror = null;
+      catPreview.onload = function () { catPreview.style.display = "block"; };
+      catPreview.src = String(reader.result);
       document.getElementById("categoryImagePreviewRow").style.display = "flex";
     };
     reader.readAsDataURL(file);
   }
 
   function handleImageUrlInput(value) {
-    if (value && value.trim()) {
-      pendingImage = { type: "url", value: value.trim() };
-      document.getElementById("categoryImageFile").value = "";
-      document.getElementById("categoryImagePreview").src = value.trim();
-      document.getElementById("categoryImagePreviewRow").style.display = "flex";
-    } else if (!pendingImage || pendingImage.type !== "file") {
-      pendingImage = null;
-      document.getElementById("categoryImagePreviewRow").style.display = "none";
-    }
+    if (catImageUrlDebounce) clearTimeout(catImageUrlDebounce);
+    var urlInput = document.getElementById("categoryImageUrl");
+    var feedback = document.getElementById("urlFeedback");
+    var preview = document.getElementById("categoryImagePreview");
+    var loading = document.getElementById("imageLoading");
+    var error = document.getElementById("imageError");
+
+    catImageUrlDebounce = setTimeout(function () {
+      if (value && value.trim()) {
+        var trimmed = value.trim();
+        if (!catIsValidUrl(trimmed)) {
+          if (feedback) { feedback.textContent = "Please enter a valid URL (http:// or https://)"; feedback.className = "url-feedback invalid"; }
+          if (urlInput) urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid");
+          pendingImage = null;
+          return;
+        }
+        if (urlInput) { urlInput.classList.remove("url-invalid"); urlInput.classList.add("url-valid"); }
+        if (feedback) { feedback.textContent = "Loading preview..."; feedback.className = "url-feedback valid"; }
+         pendingImage = { type: "url", value: trimmed };
+        document.getElementById("categoryImageFile").value = "";
+        if (loading) loading.style.display = "flex";
+        if (error) error.style.display = "none";
+        preview.style.display = "none";
+        preview.onerror = function () {
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "flex";
+          preview.style.display = "none";
+        };
+         preview.onload = function () {
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "none";
+          preview.style.display = "block";
+        };
+        preview.src = trimmed;
+        document.getElementById("categoryImagePreviewRow").style.display = "flex";
+      } else {
+        if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+        if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+        pendingImage = null;
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+      }
+    }, 600);
   }
 
   document.addEventListener("click", function(e) {
@@ -241,7 +301,23 @@
 
     if (category.imageUrl) {
       var src = category.imageUrl.indexOf("http") === 0 ? category.imageUrl : "http://localhost:5000" + category.imageUrl;
-      document.getElementById("categoryImagePreview").src = src;
+      var loading = document.getElementById("imageLoading");
+      var error = document.getElementById("imageError");
+      var preview = document.getElementById("categoryImagePreview");
+      if (loading) loading.style.display = "flex";
+      if (error) error.style.display = "none";
+      preview.onerror = function () {
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "flex";
+        preview.style.display = "none";
+      };
+      preview.onload = function () {
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+        preview.style.display = "block";
+      };
+      preview.src = src;
+      preview.style.display = "none";
       document.getElementById("categoryImagePreviewRow").style.display = "flex";
     }
 
@@ -365,7 +441,18 @@
         pendingImage = { type: "remove", value: "" };
         document.getElementById("categoryImageFile").value = "";
         document.getElementById("categoryImageUrl").value = "";
-        document.getElementById("categoryImagePreview").removeAttribute("src");
+        var urlInput = document.getElementById("categoryImageUrl");
+        if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+        var feedback = document.getElementById("urlFeedback");
+        if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+        var preview = document.getElementById("categoryImagePreview");
+        var loading = document.getElementById("imageLoading");
+        var error = document.getElementById("imageError");
+        if (preview) preview.removeAttribute("src");
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+        preview.onerror = null;
+        preview.onload = null;
         document.getElementById("categoryImagePreviewRow").style.display = "none";
       });
     }

@@ -281,12 +281,32 @@
 
     var previewRow = document.getElementById("imagePreviewRow");
     var preview = document.getElementById("itemImagePreview");
+    var loading = document.getElementById("imageLoading");
+    var error = document.getElementById("imageError");
     if (item.image) {
-      preview.src = item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image;
+      var imgSrc = item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image;
+      if (loading) loading.style.display = "flex";
+      if (error) error.style.display = "none";
+      preview.onerror = function () {
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "flex";
+        preview.style.display = "none";
+      };
+       preview.onload = function () {
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+        preview.style.display = "block";
+      };
+      preview.src = imgSrc;
+      preview.style.display = "none";
       previewRow.style.display = "flex";
     } else {
       previewRow.style.display = "none";
       preview.removeAttribute("src");
+      preview.onerror = null;
+      preview.onload = null;
+      if (loading) loading.style.display = "none";
+      if (error) error.style.display = "none";
     }
 
     document.getElementById("menuModalTitle").textContent = "Edit Menu Item";
@@ -381,21 +401,75 @@
     reader.onload = function () {
       pendingImage = { type: "file", value: String(reader.result) };
       document.getElementById("itemImageUrl").value = "";
-      document.getElementById("itemImagePreview").src = String(reader.result);
+      var filePreview = document.getElementById("itemImagePreview");
+      var fileLoading = document.getElementById("imageLoading");
+      var fileError = document.getElementById("imageError");
+      if (fileLoading) fileLoading.style.display = "none";
+      if (fileError) fileError.style.display = "none";
+      filePreview.style.display = "none";
+      filePreview.onerror = null;
+      filePreview.onload = function () { filePreview.style.display = "block"; };
+      filePreview.src = String(reader.result);
       document.getElementById("imagePreviewRow").style.display = "flex";
     };
     reader.readAsDataURL(file);
   }
 
-  function handleImageUrlInput(value) {
-    if (value && value.trim()) {
-      pendingImage = { type: "url", value: value.trim() };
-      document.getElementById("itemImageFile").value = "";
-      document.getElementById("itemImagePreview").src = value.trim();
-      document.getElementById("imagePreviewRow").style.display = "flex";
-    } else {
-      pendingImage = null;
+  var imageUrlDebounce = null;
+
+  function isValidUrl(string) {
+    try {
+      var url = new URL(string);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch (_) {
+      return false;
     }
+  }
+
+  function handleImageUrlInput(value) {
+    if (imageUrlDebounce) clearTimeout(imageUrlDebounce);
+    var urlInput = document.getElementById("itemImageUrl");
+    var feedback = document.getElementById("urlFeedback");
+    var preview = document.getElementById("itemImagePreview");
+    var loading = document.getElementById("imageLoading");
+    var error = document.getElementById("imageError");
+
+    imageUrlDebounce = setTimeout(function () {
+      if (value && value.trim()) {
+        var trimmed = value.trim();
+        if (!isValidUrl(trimmed)) {
+          if (feedback) { feedback.textContent = "Please enter a valid URL (http:// or https://)"; feedback.className = "url-feedback invalid"; }
+          if (urlInput) urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid");
+          pendingImage = null;
+          return;
+        }
+        if (urlInput) { urlInput.classList.remove("url-invalid"); urlInput.classList.add("url-valid"); }
+        if (feedback) { feedback.textContent = "Loading preview..."; feedback.className = "url-feedback valid"; }
+        pendingImage = { type: "url", value: trimmed };
+        document.getElementById("itemImageFile").value = "";
+        if (loading) loading.style.display = "flex";
+        if (error) error.style.display = "none";
+        preview.style.display = "none";
+        preview.onerror = function () {
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "flex";
+          preview.style.display = "none";
+        };
+        preview.onload = function () {
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "none";
+          preview.style.display = "block";
+        };
+        preview.src = trimmed;
+        document.getElementById("imagePreviewRow").style.display = "flex";
+      } else {
+        if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+        if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+        pendingImage = null;
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+      }
+    }, 600);
   }
 
   /* ============================================================
@@ -638,7 +712,18 @@
         pendingImage = { type: "remove", value: "" };
         document.getElementById("itemImageFile").value = "";
         document.getElementById("itemImageUrl").value = "";
-        document.getElementById("itemImagePreview").removeAttribute("src");
+        var urlInput = document.getElementById("itemImageUrl");
+        if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+        var feedback = document.getElementById("urlFeedback");
+        if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+        var preview = document.getElementById("itemImagePreview");
+        var loading = document.getElementById("imageLoading");
+        var error = document.getElementById("imageError");
+        if (preview) preview.removeAttribute("src");
+        if (loading) loading.style.display = "none";
+        if (error) error.style.display = "none";
+        preview.onerror = null;
+        preview.onload = null;
         document.getElementById("imagePreviewRow").style.display = "none";
       });
     }

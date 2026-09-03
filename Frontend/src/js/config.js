@@ -155,7 +155,7 @@ export const DEFAULT_SETTINGS = {
 // ===== 9. REGEX PATTERNS =====
 export const PATTERNS = {
     email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    phone: /^(09|07)[0-9]{8}$/,
+    phone: /^(\+251[0-9]{9}|(09|07)[0-9]{8})$/,
     password: /^.{6,}$/,
     name: /^[a-zA-Z\u1200-\u137F\s]{2,50}$/,
 };

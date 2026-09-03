@@ -37,18 +37,38 @@ const sendFile = (res, filePath) => {
             return;
         }
         const ext = path.extname(filePath).toLowerCase();
-        res.writeHead(200, {
+        // Prevent Back-Forward Cache (bfcache) for HTML which breaks LiveServer/WebSocket reload
+        const isHtml = ext === '.html';
+        const headers = {
             'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-            'Cache-Control': 'no-cache',
-            // Allow Chrome DevTools and Live Server websockets - fixes CSP connect-src violation
-            'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: http:; connect-src 'self' ws://127.0.0.1:* ws://localhost:* http://127.0.0.1:* http://localhost:* https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:"
-        });
+            'Cache-Control': isHtml ? 'no-store, no-cache, must-revalidate' : 'no-cache',
+            // Hybrid CSP - vendored CSS/JS offline + allow Unsplash banners when online, with local fallback onerror
+            'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' ws://127.0.0.1:* ws://localhost:* http://127.0.0.1:* http://localhost:*; img-src 'self' data: blob: https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+        };
+        if (isHtml) headers['Pragma'] = 'no-cache';
+        res.writeHead(200, headers);
         res.end(data);
     });
 };
 
 const server = http.createServer((req, res) => {
-    let urlPath = decodeURIComponent(req.url.split('?')[0]);
+    let rawPath = req.url.split('?')[0];
+    let urlPath;
+    try { urlPath = decodeURIComponent(rawPath); } catch { urlPath = rawPath; }
+    // Handle LiveServer / VSCode injected WebSocket reload endpoint (e.g. /ws , /src/pages/common/login.html/ws)
+    // This is NOT our app's Socket.IO (which is on :5000) - it's the livereload server on :5500/:5501
+    // Return 204 to silence "WebSocket connection to ws://.../ws failed: Page entered Back-Forward Cache"
+    if (urlPath.endsWith('/ws') || urlPath === '/ws' || urlPath.includes('/ws?')) {
+        // If it's a real WebSocket upgrade, just close gracefully
+        if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
+            res.writeHead(426, { 'Content-Type': 'text/plain' });
+            res.end('Upgrade Required - use node server.js (5500) not Live Server');
+            return;
+        }
+        res.writeHead(204, { 'Cache-Control': 'no-store' });
+        res.end('');
+        return;
+    }
     // Silently handle Chrome DevTools well-known probe and favicon (prevents 404 + CSP noise)
     if (urlPath === '/.well-known/appspecific/com.chrome.devtools.json' || urlPath.includes('.well-known/appspecific')) {
         res.writeHead(204, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache', 'Content-Security-Policy': "default-src 'self'; connect-src 'self'" });
@@ -60,7 +80,7 @@ const server = http.createServer((req, res) => {
         res.end('');
         return;
     }
-    if (urlPath === '/') {
+    if (urlPath === '/' || urlPath === '') {
         res.writeHead(302, { Location: DEFAULT_PAGE, 'Cache-Control': 'no-cache' });
         res.end();
         return;
@@ -74,8 +94,13 @@ const server = http.createServer((req, res) => {
         urlPath = '/' + normalized.slice(1).join('/');
     }
 
-    let filePath = path.join(ROOT, urlPath);
-    if (!filePath.startsWith(ROOT)) {
+    // Robust path resolution - prevent directory traversal but allow normal absolute URLs
+    // Use path.resolve and case-insensitive check on Windows
+    let filePath = path.resolve(path.join(ROOT, '.' + urlPath));
+    const rootResolved = path.resolve(ROOT);
+    const isInsideRoot = filePath.toLowerCase().startsWith(rootResolved.toLowerCase());
+    if (!isInsideRoot) {
+        console.warn(`[403] Blocked traversal attempt: ${req.url} -> ${filePath}`);
         res.writeHead(403, { 'Content-Type': 'text/plain' });
         res.end('403 Forbidden');
         return;
@@ -87,6 +112,15 @@ const server = http.createServer((req, res) => {
         }
         sendFile(res, filePath);
     });
+});
+
+ // Gracefully handle stray WebSocket upgrade requests (e.g. LiveServer livereload)
+// Without this, Chrome logs "WebSocket connection to ws://.../ws failed: Page entered Back-Forward Cache"
+server.on('upgrade', (req, socket) => {
+    // Our app's real sockets are on backend :5000 (Socket.IO), not here.
+    // Just destroy livereload upgrades to silence errors.
+    socket.write('HTTP/1.1 426 Upgrade Required\r\n\r\n');
+    socket.destroy();
 });
 
 const start = () => {

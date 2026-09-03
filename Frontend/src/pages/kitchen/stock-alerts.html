@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Alerts - Kitchen</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
+    <!-- Shared Stylesheets -->
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/kitchen.css">
     <style>
         * {
             margin: 0;
@@ -14,7 +19,6 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
-            padding: 20px;
         }
 
         .container {
@@ -29,7 +33,7 @@
             color: #007bff;
             text-decoration: none;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin: 0 0 20px 0;
         }
 
         .back-link:hover {
@@ -315,7 +319,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            z-index: 2000;
             justify-content: center;
             align-items: center;
         }
@@ -375,23 +379,36 @@
             margin-top: 25px;
         }
 
-        .btn-cancel {
+        .modal .btn-cancel,
+        .modal-buttons .btn-cancel {
             padding: 10px 20px;
             border: 1px solid #ddd;
-            background: white;
+            background-color: #ffffff !important;
+            color: #333333 !important;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            opacity: 1;
+            box-shadow: none;
+        }
+        .modal .btn-cancel:hover {
+            background-color: #f1f1f1 !important;
+        }
+        .modal .btn-cancel:focus {
+            outline: none;
+            box-shadow: none;
         }
 
-        .btn-submit {
+        .modal .btn-submit,
+        .modal-buttons .btn-submit {
             padding: 10px 20px;
-            background: #28a745;
-            color: white;
+            background-color: #28a745 !important;
+            color: #ffffff !important;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+            opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -416,34 +433,110 @@
     </style>
 </head>
 <body>
-    <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
 
-    <div class="container">
-        <div class="header">
-            <h1>🚨 Stock Alerts</h1>
-            <button class="btn-report" onclick="openReportModal()">+ Report Issue</button>
-        </div>
-
-        <div id="notificationContainer"></div>
-
-        <div class="filters">
-            <div class="filter-group">
-                <label for="statusFilter">Status:</label>
-                <select id="statusFilter" onchange="filterAlerts()">
-                    <option value="">All</option>
-                    <option value="active">Active</option>
-                    <option value="acknowledged">Acknowledged</option>
-                    <option value="resolved">Resolved</option>
-                </select>
+    <!-- KITCHEN NAVIGATION HEADER -->
+    <header class="kds-header">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <button class="kds-sidebar-toggle" id="kdsSidebarToggle" aria-label="Toggle Sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="kds-header-title">
+                <i class="fa-solid fa-fire-burner fa-xl"></i>
+                <h1>Kitchen Display System</h1>
             </div>
         </div>
-
-        <div class="alerts-list" id="alertsList">
-            <div class="empty-state">
-                <div class="empty-icon">✓</div>
-                <p>No stock alerts at the moment</p>
+        <div class="user-menu">
+            <div class="user-dropdown">
+                <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
+                    <i class="fa-solid fa-user-circle"></i>
+                    <span id="userName">Profile</span>
+                </button>
+                <div class="dropdown-menu-custom" id="userDropdownMenu">
+                    <button onclick="logout()">
+                        <i class="fa-solid fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
+    </header>
+
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div class="kds-sidebar-backdrop" id="kdsSidebarBackdrop"></div>
+
+    <!-- KITCHEN LAYOUT: LEFT SIDEBAR + CONTENT -->
+    <div class="kds-layout">
+        <!-- LEFT SIDEBAR NAVIGATION -->
+        <aside class="kds-sidebar" id="kdsSidebar">
+            <div class="kds-sidebar-brand">
+                <i class="fa-solid fa-fire-burner"></i>
+                <span>Kitchen Menu</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-group">
+                    <span class="sidebar-group-title">Main</span>
+                    <a href="dashboard.html" class="sidebar-link">
+                        <i class="fa-solid fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="orders.html" class="sidebar-link">
+                        <i class="fa-solid fa-receipt"></i> Orders
+                    </a>
+                    <a href="availability.html" class="sidebar-link">
+                        <i class="fa-solid fa-burger"></i> Availability
+                    </a>
+                    <a href="stock-alerts.html" class="sidebar-link active">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Stock Alerts
+                    </a>
+                </div>
+                <div class="sidebar-group" style="margin-top: 16px;">
+                    <span class="sidebar-group-title">Tools</span>
+                    <a href="notifications.html" class="sidebar-link">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                    </a>
+                    <a href="schedule.html" class="sidebar-link">
+                        <i class="fa-solid fa-clock"></i> Preparation Schedule
+                    </a>
+                    <a href="settings.html" class="sidebar-link">
+                        <i class="fa-solid fa-gear"></i> Settings
+                    </a>
+                </div>
+            </nav>
+            <div class="kds-sidebar-footer">
+                <a href="#" class="sidebar-link" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN STOCK ALERTS CONTENT -->
+        <main class="kds-main">
+            <div class="container">
+                <div class="header">
+                    <h1>🚨 Stock Alerts</h1>
+                    <button class="btn-report" onclick="openReportModal()">+ Report Issue</button>
+                </div>
+
+                <div id="notificationContainer"></div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="statusFilter">Status:</label>
+                        <select id="statusFilter" onchange="filterAlerts()">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="acknowledged">Acknowledged</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="alerts-list" id="alertsList">
+                    <div class="empty-state">
+                        <div class="empty-icon">✓</div>
+                        <p>No stock alerts at the moment</p>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- Report Alert Modal -->
@@ -485,6 +578,57 @@
         </div>
     </div>
 
+    <script type="module" src="../../js/utils/i18n.js"></script>
     <script src="../../js/kitchen/stock-alerts.js"></script>
+
+    <!-- Navigation & User Menu Script -->
+    <script>
+        function toggleUserMenu() {
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu) menu.classList.toggle('active');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('kdsSidebar');
+            const backdrop = document.getElementById('kdsSidebarBackdrop');
+            sidebar.classList.toggle('open');
+            backdrop.classList.toggle('show', sidebar.classList.contains('open'));
+        }
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('userDropdownMenu');
+            const btn = document.getElementById('userMenuBtn');
+            if (menu && !menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = localStorage.getItem('userName') || localStorage.getItem('name') || 'User';
+            const nameEl = document.getElementById('userName');
+            if (nameEl) nameEl.textContent = userName.split(' ')[0];
+
+            const sidebarToggle = document.getElementById('kdsSidebarToggle');
+            const sidebar = document.getElementById('kdsSidebar');
+            const backdrop = document.getElementById('kdsSidebarBackdrop');
+            if (sidebarToggle && sidebar) sidebarToggle.addEventListener('click', toggleSidebar);
+            if (backdrop) backdrop.addEventListener('click', toggleSidebar);
+            if (sidebar) {
+                sidebar.querySelectorAll('.sidebar-link').forEach((link) => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) sidebar.classList.remove('open');
+                        if (backdrop) backdrop.classList.remove('show');
+                    });
+                });
+            }
+        });
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                window.location.href = '../common/login.html';
+            }
+        }
+    </script>
 </body>
 </html>

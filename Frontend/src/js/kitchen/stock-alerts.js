@@ -191,8 +191,22 @@ document.getElementById('reportForm')?.addEventListener('submit', async (e) => {
 async function acknowledgeAlert(alertId) {
     try {
         const token = localStorage.getItem('auth_token');
-        // This endpoint would need to be created in the backend
-        showNotification('Alert acknowledged', 'success');
+        const response = await fetch(`${API_BASE}/kitchen/stock-alerts/${alertId}/acknowledge`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            showNotification(data.error || 'Failed to acknowledge alert', 'error');
+            return;
+        }
+
+        showNotification('Alert acknowledged successfully', 'success');
         loadStockAlerts();
 
     } catch (error) {
@@ -206,7 +220,22 @@ async function resolveAlert(alertId) {
 
     try {
         const token = localStorage.getItem('auth_token');
-        // This endpoint would need to be created in the backend
+        const response = await fetch(`${API_BASE}/kitchen/stock-alerts/${alertId}/resolve`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            showNotification(data.error || 'Failed to resolve alert', 'error');
+            return;
+        }
+
         showNotification('Alert marked as resolved', 'success');
         loadStockAlerts();
 

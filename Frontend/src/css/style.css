@@ -775,10 +775,10 @@ a {
 }
 
 .timeline-step.active .step-icon {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: #16a34a;
+    border-color: #16a34a;
     color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 107, 0, 0.3);
+    box-shadow: 0 0 12px rgba(22, 163, 74, 0.4);
 }
 
 .step-label strong {
@@ -803,7 +803,7 @@ a {
 }
 
 .timeline-line.active {
-    background: var(--primary-color);
+    background: #16a34a;
 }
 
 /* Receipt Card */

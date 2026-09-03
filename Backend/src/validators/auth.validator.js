@@ -1,4 +1,4 @@
-    const { validateFullName, validateUsername, validateEmail, validatePhone, validatePassword, validateAddress } = require('./common.validator');
+    const { validateFullName, validateName, validateUsername, validateEmail, validatePhone, validatePassword, validateAddress } = require('./common.validator');
 
 const validateRegisterInput = (data) => {
     const errors = {};

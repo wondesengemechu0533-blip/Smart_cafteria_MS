@@ -315,6 +315,37 @@
   function init() {
     bindEvents();
     loadFeedback();
+    setupRealtime();
+  }
+
+  function setupRealtime() {
+    try {
+      const token = localStorage.getItem("auth_token");
+      if (!token || typeof io === "undefined") {
+        // Try dynamic load
+        if (typeof io === "undefined") {
+          const s = document.createElement("script");
+          s.src = "/public/assets/vendor/js/socket.io-4.7.5.min.js";
+          s.onload = setupRealtime;
+          document.head.appendChild(s);
+        }
+        return;
+      }
+      const socket = io("http://localhost:5000", { auth: { token }, transports: ["websocket", "polling"] });
+      socket.on("connect", () => {
+        socket.emit("join:admin");
+      });
+      socket.on("feedback:new", () => {
+        if (window.AdminToast) window.AdminToast.info("New feedback received");
+        loadFeedback();
+      });
+      socket.on("notification:new", () => {
+        // In case admin also gets notifications
+        loadFeedback();
+      });
+    } catch (e) {
+      console.warn("Admin realtime setup failed", e);
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

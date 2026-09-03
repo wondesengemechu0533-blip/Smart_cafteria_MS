@@ -107,10 +107,20 @@ export function createHeader(options = {}) {
         </a>
     `;
 
-    // ---- Theme & Language Toggles ----
+    // ---- Theme Toggle ----
     const themeIcon = theme === 'dark' ? 'fa-sun' : 'fa-moon';
     const themeLabel = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-    const langLabel = language === 'en' ? 'አማ' : 'EN';
+    const currentLang = (typeof localStorage !== 'undefined' && (localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language'))) || language || 'en';
+
+    // ---- Language Switcher (English / Amharic) - immediate switch without refresh, persisted in localStorage ----
+    const langSwitcherHTML = `
+        <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>
+            <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">
+                <option value="en" ${currentLang==='en'?'selected':''}>🇬🇧 English</option>
+                <option value="am" ${currentLang==='am'?'selected':''}>🇪🇹 አማርኛ</option>
+            </select>
+        </div>`;
 
     // ---- Build Header ----
     return `
@@ -132,14 +142,12 @@ export function createHeader(options = {}) {
                 <nav class="nav" id="mainNav" style="display:flex; align-items:center; gap:24px;">
                     ${navLinksHTML}
 
+                    <!-- Language Switcher -->
+                    ${langSwitcherHTML}
+
                     <!-- Theme Toggle -->
                     <button class="theme-toggle" id="themeToggle" title="${themeLabel}" style="background:none; border:none; cursor:pointer; font-size:18px; color:#64748b; padding:4px; border-radius:50%;">
                         <i class="fas ${themeIcon}"></i>
-                    </button>
-
-                    <!-- Language Toggle -->
-                    <button class="lang-toggle" id="langToggle" title="${language === 'en' ? 'Switch to Amharic' : 'Switch to English'}" style="background:none; border:none; cursor:pointer; font-weight:600; font-size:14px; color:#64748b; padding:4px 8px; border-radius:4px;">
-                        ${langLabel}
                     </button>
 
                     <!-- Cart -->
@@ -170,6 +178,28 @@ export function renderHeader(container, options = {}) {
     if (logoutBtn && typeof options.onLogout === 'function') {
         logoutBtn.addEventListener('click', options.onLogout);
     }
+    // Bind language switcher - immediate without refresh, persisted in localStorage, centralized via i18n.js
+    const langSelect = el.querySelector('.scos-lang-select');
+    if (langSelect) {
+        // Sync with current language
+        try {
+            const cur = localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en';
+            langSelect.value = cur === 'am' ? 'am' : 'en';
+        } catch (_) {}
+        if (!langSelect.dataset.i18nBound) {
+            langSelect.dataset.i18nBound = '1';
+            langSelect.addEventListener('change', function(e) {
+                const lang = e.target.value;
+                if (window.setLanguage) window.setLanguage(lang);
+                else {
+                    try { localStorage.setItem('scos_language', lang); localStorage.setItem('cafeteria_language', lang); } catch(_){}
+                    if (window.applyTranslations) window.applyTranslations();
+                }
+            });
+        }
+    }
+    // Ensure global i18n also handles it
+    if (window.applyTranslations) setTimeout(() => window.applyTranslations(), 0);
 }
 
 export default {
