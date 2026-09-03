@@ -151,9 +151,7 @@
           if (loading) loading.style.display = "none";
           if (error) error.style.display = "flex";
           preview.style.display = "none";
-          pendingImage = null;
-          if (feedback) { feedback.textContent = "Image could not be loaded from this URL. Use a direct link to an image (jpg/png/webp)."; feedback.className = "url-feedback invalid"; }
-          if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.add("url-invalid"); }
+          if (feedback) { feedback.textContent = "Preview unavailable here, but the URL will still be saved."; feedback.className = "url-feedback valid"; }
         };
          preview.onload = function () {
           if (loading) loading.style.display = "none";
