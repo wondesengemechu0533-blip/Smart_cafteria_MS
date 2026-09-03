@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/css/menu.css">
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
+    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -51,10 +52,13 @@
                         <a href="order-history.html"><i class="fa-solid fa-receipt"></i> My Orders</a>
                         <a href="notifications.html"><i class="fa-solid fa-bell"></i> Notifications</a>
                         <a href="feedback.html"><i class="fa-solid fa-comment-dots"></i> Feedback</a>
-                        <hr>
-                        <a href="../common/login.html" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
                     </div>
                 </div>
+                <!-- Logout (top-right) -->
+                <a href="../common/login.html" class="nav-link-item nav-logout logout-link" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
             </div>
         </div>
     </header>
@@ -75,9 +79,6 @@
                 </a>
                 <a href="feedback.html" class="profile-nav-item">
                     <i class="fa-solid fa-comment-dots"></i> Feedback & Reviews
-                </a>
-                <a href="../common/login.html" class="profile-nav-item logout">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a>
             </nav>
         </aside>
@@ -111,7 +112,7 @@
     <script src="/src/js/notification.js" defer></script>
     <script type="module" src="../../js/profile.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>
-<script type="module" src="../../js/theme.js"></script>
     <script type="module" src="../../js/customer-realtime.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

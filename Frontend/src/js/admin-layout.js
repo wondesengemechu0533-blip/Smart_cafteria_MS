@@ -55,12 +55,7 @@
     var html = '<nav class="sidebar-nav">';
 
     SIDEBAR_GROUPS.forEach(function(group) {
-      var groupKey = 'admin_' + group.id;
-      var groupLabel = t(groupKey, group.label);
-      // Map group labels for translations
-      var groupLabelMap = { main: t('admin_main','MAIN'), management: t('admin_management','MANAGEMENT'), analytics: t('admin_analytics','ANALYTICS & REPORTS'), system: t('admin_system','SYSTEM') };
       html += '<div class="sidebar-group">';
-      html += '<span class="sidebar-group-title">' + (groupLabelMap[group.id] || groupLabel) + '</span>';
 
       group.pages.forEach(function(pageId) {
         var page = ADMIN_PAGES.find(function(p) { return p.id === pageId; });
@@ -85,36 +80,10 @@
       html += '</div>';
     });
 
-    // Logout at bottom
-    html += '<div class="sidebar-footer">';
-    html += '<a href="../../pages/common/login.html" class="sidebar-link logout-link">';
-    html += '<i class="fa-solid fa-right-from-bracket"></i>';
-    html += '<span>' + t('admin_logout','Logout') + '</span>';
-    html += '</a>';
-    html += '</div>';
-
     html += '</nav>';
     sidebar.innerHTML = html;
 
-    // Add logout handler
-    var logoutLink = sidebar.querySelector('.logout-link');
-    if (logoutLink) {
-      logoutLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (window.confirm('Are you sure you want to log out?')) {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('role');
-          localStorage.removeItem('userProfile');
-          localStorage.removeItem('adminLoggedIn');
-          localStorage.removeItem('isLoggedIn');
-          localStorage.removeItem('current_user');
-          localStorage.removeItem('userName');
-          localStorage.removeItem('name');
-          window.location.href = '../../pages/common/login.html';
-        }
-      });
-}
+    // Bind other events if any
   }
 
     // Ensure unified i18n is loaded on admin pages (auto-inject if missing)
@@ -132,6 +101,15 @@
     var s = document.createElement('script');
     s.src = '../../js/theme.js';
     document.head.appendChild(s);
+  }
+
+  // Ensure the dark theme stylesheet is loaded so admin surfaces re-theme.
+  function ensureDarkThemeCssLoaded() {
+    if (document.querySelector('link[href*="dark-theme.css"]')) return;
+    var l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = '../../css/themes/dark-theme.css';
+    document.head.appendChild(l);
   }
 
   // Render top navbar
@@ -153,9 +131,6 @@
       + '  <a href="dashboard.html" class="brand-logo"><i class="fa-solid fa-utensils"></i><span>Smart Cafeteria <small>Admin</small></span></a>'
       + '</div>'
       + '<div class="nav-right">'
-      + '  <button type="button" class="btn-icon theme-toggle" id="themeToggle" title="Toggle Theme">'
-      + '    <i class="fa-solid fa-moon"></i>'
-      + '  </button>'
       + '  <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-right:8px;">'
       + '    <i class="fa-solid fa-globe" style="color:#2563eb;font-size:13px;"></i>'
       + '    <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">'
@@ -166,13 +141,16 @@
       + '  <div class="nav-item dropdown">'
       + '    <button class="btn-icon notification-btn" id="notificationBtn" title="Notifications"><i class="fa-solid fa-bell"></i><span class="badge-dot" id="notifBadge"></span></button>'
       + '  </div>'
+      + '  <button type="button" class="btn-icon theme-toggle" id="themeToggle" title="Toggle Theme">'
+      + '    <i class="fa-solid fa-moon"></i>'
+      + '  </button>'
       + '  <div class="user-profile-menu">'
       + '    <div class="avatar" id="adminAvatar">' + avatarLetter + '</div>'
       + '    <div class="user-info">'
       + '      <strong id="adminNameDisplay">' + adminName + '</strong>'
       + '      <small>Administrator</small>'
       + '    </div>'
-      + '    <button id="logoutBtn" class="btn-logout-icon" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>'
+      + '    <button id="logoutBtn" class="btn-logout-icon" title="Logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>'
       + '  </div>'
       + '</div>';
 
@@ -191,21 +169,10 @@
     }
     if (window.applyTranslations) setTimeout(function(){ window.applyTranslations(); }, 0);
 
-    // Bind theme toggle
-    var themeToggle = document.getElementById('themeToggle');
-    var themeIcon = themeToggle ? themeToggle.querySelector('i') : null;
-    if (themeToggle) {
-      function syncThemeIcon() {
-        var isDark = document.documentElement.classList.contains('dark');
-        if (themeIcon) themeIcon.className = 'fa-solid ' + (isDark ? 'fa-sun' : 'fa-moon');
-        themeToggle.title = isDark ? 'Light Mode' : 'Dark Mode';
-      }
-      themeToggle.addEventListener('click', function() {
-        var next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-        if (window.ScosTheme) window.ScosTheme.apply(next);
-        syncThemeIcon();
-      });
-      syncThemeIcon();
+    // Wire theme toggle + sync its icon (theme.js owns the click handler to
+    // avoid double-toggling; refresh() binds/syncs dynamically-injected headers)
+    if (window.ScosTheme) {
+      try { window.ScosTheme.refresh(); } catch(e) {}
     }
 
     // Attach sidebar toggle
@@ -213,6 +180,11 @@
     var sidebar = document.getElementById('adminSidebar');
     if (sidebarToggle && sidebar) {
       sidebarToggle.addEventListener('click', function() {
+        // Desktop: collapse/expand the sidebar (icon rail). Mobile: slide it in.
+        if (window.innerWidth > 992) {
+          sidebar.classList.toggle('collapsed');
+          return;
+        }
         sidebar.classList.toggle('open');
         var backdrop = document.querySelector('.sidebar-backdrop');
         if (!backdrop) {
@@ -313,6 +285,7 @@
 
     // 2. Load theme module
     ensureThemeLoaded();
+    ensureDarkThemeCssLoaded();
 
     // 3. Render layout
     renderNavbar();

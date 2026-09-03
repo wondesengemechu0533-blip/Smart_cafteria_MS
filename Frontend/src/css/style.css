@@ -224,6 +224,44 @@ a {
     box-shadow: 0 0 8px #10b981;
 }
 
+/* --- Unified admin-style header controls --- */
+/* Notification bell (admin style) */
+.unified-notif.notification-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 17px;
+    text-decoration: none;
+    transition: background 120ms ease, color 120ms ease;
+}
+.unified-notif.notification-btn:hover {
+    background: #e2e8f0;
+    color: #1f2937;
+}
+.unified-notif-dot {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    background: #dc2626;
+    box-shadow: 0 0 8px #dc2626;
+}
+
+/* Dark overrides for the unified controls */
+[data-theme="dark"] .unified-notif.notification-btn {
+    background: #334155;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .unified-notif.notification-btn:hover {
+    background: #475569;
+    color: #f8fafc;
+}
+
 .hero h1 {
     font-size: clamp(2.5rem, 4.5vw, 4rem);
     color: #ffffff;
@@ -1164,6 +1202,17 @@ a {
 .nav-link-item:hover {
     background-color: #f1f5f9;
     color: var(--primary-color, #ff6b00);
+}
+
+/* Logout button (always visible in header top-right) */
+.nav-link-item.nav-logout,
+.nav-icon-link.nav-logout {
+    color: #ef4444;
+}
+.nav-link-item.nav-logout:hover,
+.nav-icon-link.nav-logout:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
 }
 
 /* ==========================================================================

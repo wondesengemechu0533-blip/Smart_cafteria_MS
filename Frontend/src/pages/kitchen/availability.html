@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -372,6 +372,7 @@
             }
         }
     </style>
+    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -390,15 +391,15 @@
             <button type="button" class="kds-nav-btn theme-toggle" id="kitchenThemeToggle" data-theme-toggle aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <i class="fa-solid fa-moon"></i>
             </button>
+            <button type="button" class="kds-nav-btn kds-logout-btn" onclick="logout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
             <div class="user-dropdown">
                 <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
                     <i class="fa-solid fa-user-circle"></i>
                     <span id="userName">Profile</span>
                 </button>
                 <div class="dropdown-menu-custom" id="userDropdownMenu">
-                    <button onclick="logout()">
-                        <i class="fa-solid fa-sign-out-alt"></i> Logout
-                    </button>
                 </div>
             </div>
         </div>
@@ -417,7 +418,6 @@
             </div>
             <nav class="sidebar-nav">
                 <div class="sidebar-group">
-                    <span class="sidebar-group-title">Main</span>
                     <a href="dashboard.html" class="sidebar-link">
                         <i class="fa-solid fa-tachometer-alt"></i> Dashboard
                     </a>
@@ -432,7 +432,6 @@
                     </a>
                 </div>
                 <div class="sidebar-group" style="margin-top: 16px;">
-                    <span class="sidebar-group-title">Tools</span>
                     <a href="notifications.html" class="sidebar-link">
                         <i class="fa-solid fa-bell"></i> Notifications
                     </a>
@@ -444,18 +443,13 @@
                     </a>
                 </div>
             </nav>
-            <div class="kds-sidebar-footer">
-                <a href="#" class="sidebar-link" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
-            </div>
         </aside>
 
         <!-- MAIN AVAILABILITY CONTENT -->
         <main class="kds-main">
             <div class="container">
                 <div class="header">
-                    <h1>🍔 Food Availability</h1>
+                    <h1>ðŸ” Food Availability</h1>
                 </div>
 
                 <div id="alertContainer"></div>
@@ -481,7 +475,7 @@
                             <option value="unavailable">Unavailable</option>
                         </select>
                     </div>
-                    <button class="btn-filter" onclick="filterItems()">🔍 Filter</button>
+                    <button class="btn-filter" onclick="filterItems()">ðŸ” Filter</button>
                 </div>
 
                 <div class="items-grid" id="itemsGrid">
@@ -564,6 +558,6 @@
             }
         }
     </script>
-<script src="../../js/theme.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

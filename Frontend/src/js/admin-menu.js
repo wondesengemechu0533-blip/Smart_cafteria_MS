@@ -47,10 +47,28 @@
   }
 
   function categoryLabel(cat) {
-    var found = (window.__categories || FALLBACK_CATEGORIES).find(function (c) {
-      return String(c.id).toLowerCase() === String(cat).toLowerCase();
-    });
-    if (found) return found.name;
+    function idOf(value) {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "object") {
+        return value.id != null ? String(value.id).toLowerCase() : null;
+      }
+      return String(value).toLowerCase();
+    }
+    function nameOf(c) {
+      if (!c) return "";
+      if (c.name && typeof c.name === "object") return c.name.en || c.name.am || c.name || c.id || "";
+      return c.name || c.id || "";
+    }
+
+    var id = idOf(cat);
+    if (id) {
+      var found = (window.__categories || FALLBACK_CATEGORIES).find(function (c) {
+        return idOf(c) === id;
+      });
+      if (found) return nameOf(found);
+    }
+
+    if (cat && typeof cat === "object") return nameOf(cat);
     return cat || "—";
   }
 
@@ -202,11 +220,11 @@
           "</div>" +
         "</td>" +
         '<td><span class="cat-pill">' + escapeHtml(categoryLabel(item.category)) + "</span></td>" +
-        "<td><strong>" + money(item.price) + " ETB</strong></td>" +
-        '<td>' + Number(item.stockQuantity || 0) + (Number(item.stockQuantity || 0) <= Number(item.lowStockThreshold || 0) ? ' <span class="order-badge suspended-badge">Low</span>' : '') + "</td>" +
-        "<td>" + (item.preparationTime || 10) + " min</td>" +
+        '<td class="price-cell">' + money(item.price) + " ETB</td>" +
+        '<td class="stock-cell">' + Number(item.stockQuantity || 0) + (Number(item.stockQuantity || 0) <= Number(item.lowStockThreshold || 0) ? ' <span class="order-badge suspended-badge">Low</span>' : '') + "</td>" +
+        '<td class="prep-cell">' + (item.preparationTime || 10) + " min</td>" +
         "<td>" + availabilityBadge(item) + "</td>" +
-        "<td>" + window.AdminAPI.formatDate(item.updatedAt) + "</td>" +
+        '<td class="date-cell">' + window.AdminAPI.formatDate(item.updatedAt) + "</td>" +
         "<td>" +
           '<div class="table-actions">' +
             '<button class="action-btn" data-action="view" data-id="' + item.id + '" title="View details"><i class="fa-solid fa-eye"></i></button>' +
@@ -265,7 +283,10 @@
     document.getElementById("itemId").value = item.id;
     document.getElementById("itemNameEn").value = item.name.en || "";
     document.getElementById("itemNameAm").value = item.name.am || "";
-    document.getElementById("itemCategory").value = item.category;
+    document.getElementById("itemCategory").value =
+      item.category && typeof item.category === "object"
+        ? (item.category.id != null ? item.category.id : (item.category.name && item.category.name.en))
+        : item.category;
     document.getElementById("itemPrice").value = item.price;
     document.getElementById("itemPrepTime").value = item.preparationTime || 10;
     document.getElementById("itemStockQuantity").value = item.stockQuantity || 0;

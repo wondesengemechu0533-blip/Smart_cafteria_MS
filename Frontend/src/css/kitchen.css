@@ -551,6 +551,14 @@
 .kds-nav-btn.active {
   background-color: #f97316;
 }
+.kds-logout-btn {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+.kds-logout-btn:hover {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
 .user-menu {
   display: flex;
   gap: 8px;

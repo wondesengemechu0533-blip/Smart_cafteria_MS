@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/src/css/style.css">
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
+    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -24,6 +25,7 @@
                 <a href="profile.html" class="nav-icon-link" title="Profile"><i class="fa-solid fa-user"></i></a>
                 <a href="notifications.html" class="nav-icon-link" title="Notifications"><i class="fa-solid fa-bell"></i></a>
                 <a href="feedback.html" class="nav-icon-link" title="Feedback"><i class="fa-solid fa-comment-dots"></i></a>
+                <a href="../common/login.html" class="nav-icon-link nav-logout" title="Logout" onclick="localStorage.clear()"><i class="fa-solid fa-right-from-bracket"></i></a>
             </div>
         </div>
     </header>
@@ -52,10 +54,10 @@
 
     <!-- Connect Scripts -->
     <script type="module" src="../../js/utils/i18n.js"></script>
-<script type="module" src="../../js/theme.js"></script>
 <script type="module" src="../../js/customer-orders-sync.js"></script>
 <script type="module" src="../../js/order-history.js"></script>
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
     <script type="module" src="../../js/customer-realtime.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

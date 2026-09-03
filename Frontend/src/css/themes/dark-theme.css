@@ -296,3 +296,158 @@
 [data-theme="dark"] .theme-toggle:hover {
     background: #0f172a;
 }
+
+/* ------------------------------------------------------------------
+   4. ADMIN (admin.css) SURFACES
+   admin.css flips its CSS variables on .dark but keeps surfaces pinned
+   to light literals; darken each surface here explicitly.
+------------------------------------------------------------------- */
+[data-theme="dark"] .admin-navbar {
+    background: #0f172a;
+    border-bottom: 1px solid #334155;
+}
+[data-theme="dark"] .admin-navbar .brand-logo,
+[data-theme="dark"] .admin-navbar .brand-logo span,
+[data-theme="dark"] .admin-navbar .brand-logo small {
+    color: #f8fafc;
+}
+[data-theme="dark"] .admin-navbar .btn-icon,
+[data-theme="dark"] .admin-navbar .navbar-link,
+[data-theme="dark"] .admin-navbar .nav-link {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .admin-main {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .admin-sidebar,
+[data-theme="dark"] .sidebar-footer,
+[data-theme="dark"] .sidebar-footer-box {
+    background: #0f172a;
+}
+[data-theme="dark"] .sidebar-brand,
+[data-theme="dark"] .sidebar-brand span {
+    color: #f8fafc;
+}
+[data-theme="dark"] .sidebar-group-title {
+    color: #64748b;
+}
+[data-theme="dark"] .admin-sidebar .sidebar-link {
+    color: #cbd5e1;
+}
+[data-theme="dark"] .admin-sidebar .sidebar-link:hover,
+[data-theme="dark"] .admin-sidebar .sidebar-link.active {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+/* Page header */
+[data-theme="dark"] .page-header h1,
+[data-theme="dark"] .page-header .page-title {
+    color: #f8fafc;
+}
+[data-theme="dark"] .page-header .subtitle,
+[data-theme="dark"] .subtitle {
+    color: #94a3b8;
+}
+
+/* Metric / stat cards */
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .stats-grid .stat-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .metric-label,
+[data-theme="dark"] .stat-card .stat-label {
+    color: #94a3b8;
+}
+[data-theme="dark"] .metric-value,
+[data-theme="dark"] .stat-card .stat-value {
+    color: #f8fafc;
+}
+
+/* Admin tables */
+[data-theme="dark"] .admin-table th {
+    background: #0f172a;
+    color: #94a3b8;
+}
+[data-theme="dark"] .admin-table td {
+    color: #e2e8f0;
+    border-color: #334155;
+}
+[data-theme="dark"] .admin-table tbody tr:hover {
+    background: #1e293b;
+}
+[data-theme="dark"] .admin-table .user-cell strong,
+[data-theme="dark"] .admin-table .food-cell strong {
+    color: #f8fafc;
+}
+[data-theme="dark"] .admin-table .user-cell small,
+[data-theme="dark"] .admin-table .date-cell,
+[data-theme="dark"] .admin-table .prep-cell {
+    color: #94a3b8;
+}
+[data-theme="dark"] .admin-table .food-image-thumb {
+    border-color: #334155;
+}
+[data-theme="dark"] .table-empty {
+    color: #94a3b8;
+}
+
+/* Action buttons (row actions) */
+[data-theme="dark"] .action-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+[data-theme="dark"] .action-btn:hover {
+    background: #0f172a;
+    color: var(--color-primary, #a5f3fc);
+}
+
+/* Toolbar / search / filter */
+[data-theme="dark"] .search-wrap,
+[data-theme="dark"] .filter-bar,
+[data-theme="dark"] .toolbar {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .search-wrap i {
+    color: #94a3b8;
+}
+[data-theme="dark"] .search-wrap .form-control,
+[data-theme="dark"] .search-wrap input {
+    background: transparent;
+    color: #e2e8f0;
+}
+
+/* Card internals (admin.css .card) */
+[data-theme="dark"] .card-body {
+    background: transparent;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .card-title {
+    color: #f8fafc;
+}
+
+/* Form controls (admin) */
+[data-theme="dark"] .admin-main .form-control,
+[data-theme="dark"] .admin-main .form-select,
+[data-theme="dark"] .admin-main input,
+[data-theme="dark"] .admin-main textarea {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .admin-main .form-control::placeholder {
+    color: #64748b;
+}
+
+/* Category pills */
+[data-theme="dark"] .cat-pill {
+    background: var(--color-primary-light, #0e7490);
+    color: var(--color-primary-text, #f8fafc);
+}

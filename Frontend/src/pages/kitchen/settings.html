@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -117,6 +117,7 @@
         .loading-spinner i { font-size: 2rem; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
+    <script src="../../js/theme.js"></script>
 </head>
 <body class="admin-body">
 
@@ -135,6 +136,9 @@
             <button type="button" class="kds-nav-btn theme-toggle" id="kitchenThemeToggle" data-theme-toggle aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <i class="fa-solid fa-moon"></i>
             </button>
+            <button type="button" class="kds-nav-btn kds-logout-btn" onclick="logout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
             <div class="user-dropdown">
                 <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
                     <i class="fa-solid fa-user-circle"></i>
@@ -143,8 +147,6 @@
                 <div class="dropdown-menu-custom" id="userDropdownMenu">
                     <a href="#" onclick="viewProfile()"><i class="fa-solid fa-id-card"></i> My Profile</a>
                     <a href="#" onclick="viewCurrentShift()"><i class="fa-solid fa-clock"></i> Current Shift</a>
-                    <div class="dropdown-divider"></div>
-                    <button onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
         </div>
@@ -184,11 +186,6 @@
                     </a>
                 </div>
             </nav>
-            <div class="kds-sidebar-footer">
-                <a href="#" class="sidebar-link" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
-            </div>
         </aside>
 
         <main class="kds-main">
@@ -259,6 +256,6 @@
             }
         }
     </script>
-<script src="../../js/theme.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

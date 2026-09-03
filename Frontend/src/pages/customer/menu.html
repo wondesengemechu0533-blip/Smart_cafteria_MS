@@ -26,6 +26,7 @@
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
+    <script src="../../js/theme.js"></script>
 </head>
 
 <body>
@@ -172,19 +173,15 @@
                         Feedback
                     </a>
 
-                    <hr>
-
-                    <a href="../common/login.html"
-                       class="logout-link">
-
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        Logout
-
-                    </a>
-
                 </div>
 
             </div>
+
+            <!-- Logout (top-right) -->
+            <a href="../common/login.html" class="nav-link-item nav-logout logout-link" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
 
         </div>
 
@@ -473,7 +470,6 @@
      JAVASCRIPT
 ========================================================= -->
 <script type="module" src="../../js/utils/i18n.js"></script>
-    <script type="module" src="../../js/theme.js"></script>
 <script type="module" src="../../js/customer-menu.js"></script>
 <script type="module" src="../../js/menu.js"></script>
 <script type="module" src="../../js/cart.js"></script>
@@ -489,5 +485,6 @@
 
 
 
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

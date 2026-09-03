@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -119,6 +119,7 @@
         .badge-preparing { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
         .badge-ready { background-color: rgba(16, 185, 129, 0.2); color: #10b981; }
     </style>
+    <script src="../../js/theme.js"></script>
 </head>
 <body class="admin-body">
 
@@ -139,6 +140,9 @@
             <button type="button" class="kds-nav-btn theme-toggle" id="kitchenThemeToggle" data-theme-toggle aria-label="Toggle theme" title="Toggle Dark/Light Mode">
                 <i class="fa-solid fa-moon"></i>
             </button>
+            <button type="button" class="kds-nav-btn kds-logout-btn" onclick="logout()" title="Logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
             <div class="user-dropdown">
                 <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
                     <i class="fa-solid fa-user-circle"></i>
@@ -148,10 +152,6 @@
                     <a href="#" onclick="viewProfile()">
                         <i class="fa-solid fa-id-card"></i> My Profile
                     </a>
-                    <div class="dropdown-divider"></div>
-                    <button onclick="logout()">
-                        <i class="fa-solid fa-sign-out-alt"></i> Logout
-                    </button>
                 </div>
             </div>
         </div>
@@ -170,7 +170,6 @@
             </div>
             <nav class="sidebar-nav">
                 <div class="sidebar-group">
-                    <span class="sidebar-group-title">Main</span>
                     <a href="dashboard.html" class="sidebar-link">
                         <i class="fa-solid fa-tachometer-alt"></i> Dashboard
                     </a>
@@ -185,7 +184,6 @@
                     </a>
                 </div>
                 <div class="sidebar-group" style="margin-top: 16px;">
-                    <span class="sidebar-group-title">Tools</span>
                     <a href="notifications.html" class="sidebar-link">
                         <i class="fa-solid fa-bell"></i> Notifications
                     </a>
@@ -197,11 +195,6 @@
                     </a>
                 </div>
             </nav>
-            <div class="kds-sidebar-footer">
-                <a href="#" class="sidebar-link" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
-            </div>
         </aside>
 
         <!-- MAIN ORDERS CONTENT -->
@@ -316,7 +309,7 @@
             }
         }
     </script>
-<script src="../../js/theme.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 
 </html>

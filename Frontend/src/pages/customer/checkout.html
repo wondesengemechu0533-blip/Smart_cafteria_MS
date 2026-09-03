@@ -11,6 +11,7 @@
      <link rel="stylesheet" href="/src/css/cart.css">
       <link rel="stylesheet" href="/src/css/menu.css">
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
+    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -22,8 +23,9 @@
                 <i class="fa-solid fa-arrow-left"></i> Back to Cart
             </a>
             <h2><i class="fa-solid fa-receipt"></i> Checkout</h2>
-            <div>
+            <div style="display:flex;align-items:center;gap:6px;">
                 <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Toggle theme" title="Toggle Dark/Light Mode"><i class="fa-solid fa-moon"></i></button>
+                <a href="../common/login.html" class="nav-icon-link nav-logout" title="Logout" onclick="localStorage.clear()"><i class="fa-solid fa-right-from-bracket"></i></a>
             </div>
         </div>
     </header>
@@ -150,7 +152,6 @@
 
     <!-- Connect scripts -->
     <script type="module" src="../../js/utils/i18n.js"></script>
-<script type="module" src="../../js/theme.js"></script>
     <script type="module" src="../../js/checkout.js"></script>
     <script type="module" src="../../js/utils/storage.js"></script>
     <script type="module" src="../../js/utils/validators.js"></script>
@@ -158,5 +159,6 @@
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
     <script type="module" src="../../js/customer-realtime.js"></script>
    
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

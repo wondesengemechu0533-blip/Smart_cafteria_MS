@@ -31,6 +31,7 @@
             display: none !important;
         }
     </style>
+    <script src="../../js/theme.js"></script>
 </head>
 
 <body>
@@ -78,6 +79,15 @@
 
                     <!-- UNIQUE ID -->
                     <span id="navbar-cart-count">0</span>
+                </a>
+
+                <a
+                    href="../common/login.html"
+                    class="nav-icon-link nav-logout"
+                    title="Logout"
+                    onclick="localStorage.clear()"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
                 </a>
 
             </div>
@@ -232,11 +242,11 @@
 
     <!-- Cart JavaScript -->
     <script type="module" src="../../js/utils/i18n.js"></script>
-<script type="module" src="../../js/theme.js"></script>
     <script type="module" src="../../js/cart.js"></script>
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
     <script type="module" src="../../js/customer-realtime.js"></script>
 
+    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 
 </html>
