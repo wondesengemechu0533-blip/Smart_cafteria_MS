@@ -1408,6 +1408,38 @@
 
         let order = null;
         let loadWarning = null;
+        let fetchFailed = false;
+
+        // Dedicated timeout so the page never hangs on the loading state even
+        // if the underlying fetch/API client stalls (belt-and-suspenders on top
+        // of ApiClient's own 15s default timeout).
+        const FETCH_TIMEOUT_MS = 10000;
+
+        function withTimeout(
+            promise,
+            ms
+        ) {
+            return new Promise((resolve, reject) => {
+                const timer = setTimeout(() => {
+                    reject(
+                        new Error(
+                            'Timed out while loading order details. Please try again.'
+                        )
+                    );
+                }, ms);
+
+                promise.then(
+                    (value) => {
+                        clearTimeout(timer);
+                        resolve(value);
+                    },
+                    (error) => {
+                        clearTimeout(timer);
+                        reject(error);
+                    }
+                );
+            });
+        }
 
 
         // =========================================================
@@ -1459,14 +1491,17 @@
             if (order) {
                 order.orderId = orderId;
             } else {
-                // Fetch the authoritative order from the backend. Any network
-                // or API error is captured and surfaced to the UI, while a
-                // minimal local order is kept as a fallback so the form is
-                // still reachable (the server re-resolves on submit).
+                // Fetch the authoritative order from the backend inside a
+                // robust try/catch with an explicit timeout. Any network or
+                // API error is captured and surfaced to the UI instead of
+                // leaving the page stuck on the loading state.
                 try {
                     const data =
-                        await api.get(
-                            `/orders/${encodeURIComponent(orderId)}`
+                        await withTimeout(
+                            api.get(
+                                `/orders/${encodeURIComponent(orderId)}`
+                            ),
+                            FETCH_TIMEOUT_MS
                         );
 
                     if (data?.order) {
@@ -1486,20 +1521,8 @@
                     loadWarning =
                         error?.message ||
                         'Could not load order details. Please try again.';
+                    fetchFailed = true;
                 }
-            }
-
-            if (!order) {
-                // Last resort: build a minimal order so the cancellation form
-                // is reachable. The server re-resolves the real order on submit.
-                order = {
-                    orderId: orderId,
-                    id: orderId,
-                    status: 'pending',
-                    orderStatus: 'pending',
-                    items: [],
-                    orderTime: Date.now()
-                };
             }
 
         }
@@ -1542,6 +1565,94 @@
                     'alert';
 
             }, 5000);
+
+        }
+
+
+        // =========================================================
+        // Render an error state with a Retry action when the order
+        // details could not be fetched from the backend at all.
+        // =========================================================
+
+        function renderRetryError(errorMessage) {
+
+            container.innerHTML = `
+
+                <div
+                    class="cancel-card"
+                    style="
+                        text-align:center;
+                        padding:40px 24px;
+                    "
+                >
+
+                    <i
+                        class="fas fa-cloud-arrow-down"
+                        style="
+                            font-size:48px;
+                            color:#dc2626;
+                            display:block;
+                            margin-bottom:14px;
+                        "
+                    ></i>
+
+                    <h3>
+                        Unable to Load Order
+                    </h3>
+
+                    <p
+                        style="
+                            color:#64748b;
+                            margin:0 auto;
+                            max-width:520px;
+                        "
+                    >
+                        ${errorMessage || 'We could not load your order details at the moment.'}
+                    </p>
+
+                    <div
+                        style="
+                            display:flex;
+                            gap:10px;
+                            justify-content:center;
+                            flex-wrap:wrap;
+                            margin-top:20px;
+                        "
+                    >
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            id="retryOrderBtn"
+                            style="cursor:pointer;"
+                        >
+                            <i class="fas fa-rotate"></i>
+                            Retry
+                        </button>
+
+                        <a
+                            href="order-history.html"
+                            class="btn btn-secondary"
+                        >
+                            <i class="fas fa-list"></i>
+                            Back to Orders
+                        </a>
+                    </div>
+
+                </div>
+
+            `;
+
+            const retryBtn =
+                document.getElementById('retryOrderBtn');
+
+            if (retryBtn) {
+                retryBtn.addEventListener(
+                    'click',
+                    () => {
+                        window.location.reload();
+                    }
+                );
+            }
 
         }
 
@@ -1615,6 +1726,18 @@
             setTimeout(() => {
                 window.location.href = 'order-history.html';
             }, 2500);
+
+        }
+
+        else if (fetchFailed && !order) {
+
+                // =====================================================
+                // Order Details Could Not Be Loaded (backend/network/timeout)
+                // =====================================================
+
+                renderRetryError(
+                    loadWarning
+                );
 
         }
 
