@@ -191,51 +191,6 @@
     finally { setLoading(btn, false); }
   }
 
-/* =============================================
-     5. APPEARANCE
-     ============================================= */
-   function populateAppearance(m) {
-     $('dashboardLayout').value = m.dashboard_layout || 'comfortable';
-     $('logoUrlInput').value = m.appearance_logo_url || '';
-     // Show logo preview if URL exists
-     if (m.appearance_logo_url) {
-       const img = $('logoPreviewImg');
-       const ph = $('logoPlaceholder');
-       if (img && ph) { img.src = m.appearance_logo_url; img.classList.remove('hidden'); ph.classList.add('hidden'); }
-     }
-     // Populate theme toggle
-     if (m.theme) {
-       $('themeSelect').value = m.theme;
-       window.setTheme(m.theme);
-     }
-   }
-
-  async function saveAppearance() {
-    const btn = $('saveAppearanceBtn');
-    setLoading(btn, true);
-    try {
-      // Handle logo file
-      let logoUrl = val('logoUrlInput');
-      const logoFile = $('logoFileInput').files[0];
-      if (logoFile) {
-        if (logoFile.size > 2 * 1024 * 1024) { showAlert('Logo must be under 2MB', 'error'); setLoading(btn, false); return; }
-        logoUrl = await new Promise((res, rej) => {
-          const r = new FileReader();
-          r.onload = ev => res(ev.target.result);
-          r.onerror = rej;
-          r.readAsDataURL(logoFile);
-        });
-      }
-      await saveSetting('theme', val('themeSelect'));
-      await saveSetting('appearance_logo_url', logoUrl);
-      await saveSetting('dashboard_layout', val('dashboardLayout'));
-      // Apply favicon
-      const favLink = document.querySelector('link[rel="icon"]');
-      if (favLink && val('faviconUrl')) favLink.href = val('faviconUrl');
-      showAlert('Appearance saved');
-    } catch (e) { showAlert('Failed to save appearance: ' + e.message, 'error'); }
-    finally { setLoading(btn, false); }
-  }
 
   /* =============================================
      SAVE ALL / RESET
@@ -254,22 +209,8 @@
         notify_new_orders: chk('notifyNewOrders'),
         notify_low_stock: chk('notifyLowStock'),
         notify_daily_sales: chk('notifyDailySales'),
-        notify_security_login: chk('notifySecurityLogin'),
-        theme: val('themeSelect'),
-        dashboard_layout: val('dashboardLayout')
+        notify_security_login: chk('notifySecurityLogin')
       };
-      // Handle logo file for save all
-      let logoUrl = val('logoUrlInput');
-      const logoFile = $('logoFileInput').files[0];
-      if (logoFile) {
-        logoUrl = await new Promise((res, rej) => {
-          const r = new FileReader();
-          r.onload = ev => res(ev.target.result);
-          r.onerror = rej;
-          r.readAsDataURL(logoFile);
-        });
-      }
-      all.appearance_logo_url = logoUrl;
       for (const [k, v] of Object.entries(all)) await saveSetting(k, v);
       showAlert('All settings saved successfully');
     } catch (e) { showAlert('Failed to save all: ' + e.message, 'error'); }
@@ -282,8 +223,7 @@
       cafeteria_opening_time: '07:00', cafeteria_closing_time: '22:00',
       currency: 'ETB', max_daily_orders: 100, order_availability: true,
       two_factor_enabled: false, notify_new_orders: true, notify_low_stock: true,
-      notify_daily_sales: false, notify_security_login: true,
-      theme: 'light', appearance_logo_url: '', dashboard_layout: 'comfortable'
+      notify_daily_sales: false, notify_security_login: true
     };
     const btn = $('resetSettingsBtn');
     setLoading(btn, true);
@@ -291,14 +231,7 @@
       for (const [k, v] of Object.entries(defaults)) await saveSetting(k, v);
       populateSystemConfig(defaults);
       populateNotifications(defaults);
-      populateAppearance(defaults);
       $('twoFactorEnabled').checked = false;
-      // Reset logo preview
-      const img = $('logoPreviewImg'); const ph = $('logoPlaceholder');
-      if (img) { img.classList.add('hidden'); img.src = ''; }
-      if (ph) ph.classList.remove('hidden');
-      // Reset theme buttons
-      if (typeof window.setTheme === 'function') window.setTheme('light');
       showAlert('Settings reset to defaults');
     } catch (e) { showAlert('Failed to reset: ' + e.message, 'error'); }
     finally { setLoading(btn, false); }
@@ -313,7 +246,6 @@
     $('twoFactorEnabled')?.addEventListener('change', save2FA);
     $('saveSystemConfigBtn')?.addEventListener('click', saveSystemConfig);
     $('saveNotificationsBtn')?.addEventListener('click', saveNotifications);
-    $('saveAppearanceBtn')?.addEventListener('click', saveAppearance);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
     $('resetSettingsBtn')?.addEventListener('click', resetSettings);
 
@@ -335,7 +267,6 @@
       const map = await loadSettingsMap();
       populateSystemConfig(map);
       populateNotifications(map);
-      populateAppearance(map);
     } catch (e) { showAlert('Failed to load settings: ' + e.message, 'error'); }
 
     // Re-apply toggle styling after settings are loaded from backend
@@ -397,25 +328,6 @@
     } else {
       // Fallback: apply theme manually if theme.js not loaded
       applyThemeFallback(theme);
-    }
-    const sel = $('themeSelect');
-    if (sel) sel.value = theme;
-    // Update toggle button UI
-    const icon = $('themeToggleIcon');
-    const label = $('themeToggleLabel');
-    const btn = $('themeToggleBtn');
-    if (icon && label && btn) {
-      if (theme === 'dark') {
-        icon.className = 'fa-solid fa-sun text-amber-500 text-xl';
-        label.textContent = 'Light';
-        label.className = 'text-sm font-medium text-amber-600';
-        btn.className = btn.className.replace('border-gray-200 bg-gray-50', 'border-amber-500 bg-amber-50');
-      } else {
-        icon.className = 'fa-solid fa-moon text-gray-500 text-xl';
-        label.textContent = 'Dark';
-        label.className = 'text-sm font-medium text-gray-600';
-        btn.className = btn.className.replace('border-amber-500 bg-amber-50', 'border-gray-200 bg-gray-50');
-      }
     }
     localStorage.setItem('scos_theme', theme);
   };
