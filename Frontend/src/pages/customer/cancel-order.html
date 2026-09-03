@@ -1172,7 +1172,34 @@
             ====================================================== -->
 
             <div id="cancelContent">
-                <!-- Will be injected -->
+                <div
+                    class="cancel-card"
+                    style="
+                        text-align:center;
+                        padding:48px 24px;
+                    "
+                    id="cancelLoadingState"
+                >
+                    <i
+                        class="fas fa-spinner fa-spin"
+                        style="
+                            font-size:40px;
+                            color:#64748b;
+                            display:block;
+                            margin-bottom:14px;
+                        "
+                        aria-hidden="true"
+                    ></i>
+                    <h3>Loading Order Details</h3>
+                    <p
+                        style="
+                            color:#64748b;
+                            margin:0;
+                        "
+                    >
+                        Please wait while we load your order...
+                    </p>
+                </div>
             </div>
 
         </div>
@@ -1375,14 +1402,17 @@
             new URLSearchParams(window.location.search);
 
         const orderId =
-            urlParams.get('id');
+            String(urlParams.get('id') || '')
+                .trim()
+                .replace(/^#/, '');
+
+        let order = null;
+        let loadWarning = null;
 
 
         // =========================================================
         // Load Order From Backend API
         // =========================================================
-
-        let order = null;
 
         if (orderId) {
 
@@ -1429,6 +1459,10 @@
             if (order) {
                 order.orderId = orderId;
             } else {
+                // Fetch the authoritative order from the backend. Any network
+                // or API error is captured and surfaced to the UI, while a
+                // minimal local order is kept as a fallback so the form is
+                // still reachable (the server re-resolves on submit).
                 try {
                     const data =
                         await api.get(
@@ -1437,18 +1471,27 @@
 
                     if (data?.order) {
                         order = data.order;
+                    } else if (!data?.success) {
+                        loadWarning =
+                            data?.error ||
+                            data?.message ||
+                            'Order not found on the server.';
                     }
                 } catch (error) {
                     console.error(
                         'Failed to load order:',
                         error
                     );
+
+                    loadWarning =
+                        error?.message ||
+                        'Could not load order details. Please try again.';
                 }
             }
 
-            // Last resort: build a minimal order so the cancellation form is
-            // reachable. The server re-resolves the real order on submit.
             if (!order) {
+                // Last resort: build a minimal order so the cancellation form
+                // is reachable. The server re-resolves the real order on submit.
                 order = {
                     orderId: orderId,
                     id: orderId,
@@ -1539,7 +1582,17 @@
                             margin:0;
                         "
                     >
-                        Please select an order from your history.
+                        No order id was provided. Please select an order from your history.
+                    </p>
+
+                    <p
+                        style="
+                            color:#64748b;
+                            margin:12px 0 0;
+                            font-size:14px;
+                        "
+                    >
+                        Redirecting to your order history...
                     </p>
 
                     <a
@@ -1556,6 +1609,12 @@
                 </div>
 
             `;
+
+            // Redirect the user back to the orders list so they are never
+            // stuck on an empty page.
+            setTimeout(() => {
+                window.location.href = 'order-history.html';
+            }, 2500);
 
         }
 
@@ -1616,6 +1675,16 @@
         }
 
         else {
+
+                // Surface any backend/network error that occurred while trying
+                // to fetch the authoritative order, so the user knows the form
+                // may be showing locally-cached data.
+                if (loadWarning) {
+                    showToast(
+                        loadWarning,
+                        'error'
+                    );
+                }
 
                 // =================================================
                 // Check if Cancellable
