@@ -117,79 +117,6 @@
       refundBadge.textContent = d.cancellations.pending || 0;
       refundBadge.style.display = d.cancellations.pending > 0 ? "inline-block" : "none";
     }
-
-    // Render critical alerts
-    renderAlerts(d);
-  }
-
-  function renderAlerts(d) {
-    var alertsContainer = document.getElementById("alertsContainer");
-    if (!alertsContainer) return;
-
-    var alerts = [];
-
-    // Pending cancellations
-    if (d.cancellations && d.cancellations.pending > 0) {
-      alerts.push({
-        type: "warning",
-        icon: "fa-triangle-exclamation",
-        title: "Pending Cancellations",
-        message: d.cancellations.pending + " cancellation request(s) awaiting review",
-        action: { text: "View Cancellations", url: "cancellations.html" }
-      });
-    }
-
-    // Failed payments
-    if (d.payments && d.payments.failed > 0) {
-      alerts.push({
-        type: "danger",
-        icon: "fa-circle-exclamation",
-        title: "Failed Payments",
-        message: d.payments.failed + " payment(s) failed in the last 24 hours",
-        action: { text: "View Payments", url: "payments.html" }
-      });
-    }
-
-    // Out of stock items
-    if (d.menu && d.menu.unavailable > 0) {
-      alerts.push({
-        type: "warning",
-        icon: "fa-box-open",
-        title: "Out of Stock Items",
-        message: d.menu.unavailable + " menu item(s) currently unavailable",
-        action: { text: "View Menu", url: "menu.html" }
-      });
-    }
-
-    // Pending orders
-    if (d.orders && d.orders.pending > 5) {
-      alerts.push({
-        type: "info",
-        icon: "fa-clock",
-        title: "High Pending Orders",
-        message: d.orders.pending + " orders awaiting processing",
-        action: { text: "View Orders", url: "orders.html" }
-      });
-    }
-
-    if (alerts.length === 0) {
-      alertsContainer.innerHTML = '<div class="alert alert-success"><i class="fa-solid fa-check-circle"></i><span>All systems operating normally. No critical alerts.</span></div>';
-      return;
-    }
-
-    alertsContainer.innerHTML = alerts.map(function(alert) {
-      var actionHtml = alert.action ? '<a href="' + alert.action.url + '" class="alert-action">' + alert.action.text + '</a>' : '';
-      return (
-        '<div class="alert alert-' + alert.type + '">' +
-        '  <i class="fa-solid ' + alert.icon + '"></i>' +
-        '  <div class="alert-content">' +
-        '    <strong>' + alert.title + '</strong>' +
-        '    <span>' + alert.message + '</span>' +
-        '  </div>' +
-        '  ' + actionHtml +
-        '</div>'
-      );
-    }).join("");
   }
 
   /* ====================================================================
@@ -543,57 +470,6 @@
     });
   }
 
-  /* ====================================================================
-   * REAL-TIME CLOCK
-   * ==================================================================== */
-  function startClock() {
-    var clockEl = document.getElementById("realtimeClock");
-    if (!clockEl) return;
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    function updateClock() {
-      var now = new Date();
-      clockEl.textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    }
-  }
-
-  /* ====================================================================
-   * KEYBOARD SHORTCUTS
-   * ==================================================================== */
-  function setupKeyboardShortcuts() {
-    document.addEventListener("keydown", function(e) {
-      // R - Refresh
-      if (e.key === "r" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-          e.preventDefault();
-          loadDashboard();
-        }
-      }
-      // F - Toggle fullscreen for charts
-      if (e.key === "f" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-          e.preventDefault();
-          toggleChartsFullscreen();
-        }
-      }
-      // A - Toggle auto-refresh
-      if (e.key === "a" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-          e.preventDefault();
-          toggleAutoRefresh();
-        }
-      }
-      // E - Export
-      if (e.key === "e" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-          e.preventDefault();
-          exportDashboardData();
-        }
-      }
-    });
-  }
-
   function toggleChartsFullscreen() {
     var chartsGrid = document.querySelector(".charts-grid");
     if (!chartsGrid) return;
@@ -709,8 +585,6 @@
 
     // Setup
     setupStatCardNavigation();
-    setupKeyboardShortcuts();
-    startClock();
 
     // Load initial data
     loadDashboard();
