@@ -82,112 +82,87 @@
             <div id="alertsContainer" class="mb-4"></div>
 
             <!-- STATISTICS CARDS -->
-            <div class="row g-4 mb-4">
+            <div class="metrics-grid mb-4">
                 <!-- Users / Menu -->
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="users.html">
-                        <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Users</span>
-                            <h2 class="metric-value" id="statTotalUsers">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="users.html">
+                    <div class="metric-icon bg-indigo">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Total Users</span>
+                        <h2 class="metric-value" id="statTotalUsers">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="users.html">
-                        <div class="metric-icon bg-blue">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Customers</span>
-                            <h2 class="metric-value" id="statCustomers">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="users.html">
+                    <div class="metric-icon bg-blue">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Customers</span>
+                        <h2 class="metric-value" id="statCustomers">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="menu.html">
-                        <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-bowl-food"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Menu Items</span>
-                            <h2 class="metric-value" id="statTotalMenu">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="menu.html">
+                    <div class="metric-icon bg-indigo">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Total Menu Items</span>
+                        <h2 class="metric-value" id="statTotalMenu">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="menu.html">
-                        <div class="metric-icon bg-green">
-                            <i class="fa-solid fa-circle-check"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Available Now</span>
-                            <h2 class="metric-value" id="statAvailableMenu">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="menu.html">
+                    <div class="metric-icon bg-green">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Available Now</span>
+                        <h2 class="metric-value" id="statAvailableMenu">0</h2>
                     </div>
                 </div>
-            </div>
-
-            <!-- FEEDBACK STATS -->
-            <div class="row g-4 mb-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="feedback.html">
-                        <div class="metric-icon purple">
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Feedback</span>
-                            <h2 class="metric-value" id="statTotalFeedback">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="feedback.html">
+                    <div class="metric-icon purple">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Total Feedback</span>
+                        <h2 class="metric-value" id="statTotalFeedback">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="feedback.html">
-                        <div class="metric-icon info">
-                            <i class="fa-solid fa-clock"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Pending</span>
-                            <h2 class="metric-value" id="statPendingFeedback">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="feedback.html">
+                    <div class="metric-icon info">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Pending</span>
+                        <h2 class="metric-value" id="statPendingFeedback">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="feedback.html">
-                        <div class="metric-icon success">
-                            <i class="fa-solid fa-check-circle"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Resolved</span>
-                            <h2 class="metric-value" id="statResolvedFeedback">0</h2>
-                        </div>
+                <div class="metric-card" data-nav="feedback.html">
+                    <div class="metric-icon success">
+                        <i class="fa-solid fa-check-circle"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Resolved</span>
+                        <h2 class="metric-value" id="statResolvedFeedback">0</h2>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="metric-card" data-nav="feedback.html">
-                        <div class="metric-icon warning">
-                            <i class="fa-solid fa-star-half-stroke"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Avg Rating</span>
-                            <h2 class="metric-value" id="statAvgRating">0.0</h2>
-                        </div>
+                <div class="metric-card" data-nav="feedback.html">
+                    <div class="metric-icon warning">
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Avg Rating</span>
+                        <h2 class="metric-value" id="statAvgRating">0.0</h2>
                     </div>
                 </div>
-            </div>
-
-            <div class="row g-4 mb-4">
-                <div class="col-xl-6 offset-xl-3">
-                    <div class="metric-card revenue-total" data-nav="payments.html">
-                        <div class="metric-icon bg-indigo">
-                            <i class="fa-solid fa-sack-dollar"></i>
-                        </div>
-                        <div class="metric-content">
-                            <span class="metric-label">Total Revenue</span>
-                            <h2 id="statTotalRevenue">0 <small>ETB</small></h2>
-                        </div>
+                <div class="metric-card revenue-total" data-nav="payments.html">
+                    <div class="metric-icon bg-indigo">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Total Revenue</span>
+                        <h2 id="statTotalRevenue">0 <small>ETB</small></h2>
                     </div>
                 </div>
             </div>
