@@ -182,8 +182,12 @@ function updateCancelButton(s) {
                 <i class="fa-solid fa-ban"></i> Cancelled
             </button>
         `;
-    } else if (s !== "completed" && s !== "ready" && s !== "served") {
-        // Active, non-completed order → allow cancellation request
+    } else if (s !== "completed" && s !== "served") {
+        // Active, non-terminal order → allow cancellation request.
+        // NOTE: "ready" is intentionally cancellable here to match the
+        // backend requestCancellation guard (which only blocks CANCELLED /
+        // COMPLETED / SERVED) and the cancel-order.html page, so the button
+        // is never shown disabled for an order that can actually be cancelled.
         const url = new URL(window.location.href);
         const id = url.searchParams.get("orderId") || url.searchParams.get("id");
         cancelWrapper.innerHTML = `
