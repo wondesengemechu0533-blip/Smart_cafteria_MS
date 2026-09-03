@@ -318,8 +318,7 @@ async function loadLiveOrder(orderId, fallbackOrderData) {
     const token = localStorage.getItem("auth_token");
     if (token && orderId) {
         try {
-            const res = await api.get(`/orders/${encodeURIComponent(orderId)}`);
-            const live = res?.data?.order || res?.order;
+            const live = await fetchLiveStatus(orderId);
             if (live && live.status) {
                 const merged = { ...(fallbackOrderData || {}), ...live };
                 renderOrder(merged);
@@ -335,6 +334,18 @@ async function loadLiveOrder(orderId, fallbackOrderData) {
         renderOrder(fallbackOrderData);
     }
     return fallbackOrderData;
+}
+
+/**
+ * Fetch only the live status for an order from the backend.
+ * Returns the order object (or null) without touching the UI, so it can be
+ * used both for the initial render and for background polling.
+ */
+async function fetchLiveStatus(orderId) {
+    const token = localStorage.getItem("auth_token");
+    if (!token || !orderId) return null;
+    const res = await api.get(`/orders/${encodeURIComponent(orderId)}`);
+    return res?.data?.order || res?.order || null;
 }
 
 function setupRealtime(orderId) {
@@ -356,6 +367,10 @@ function setupRealtime(orderId) {
         // "notification:new" socket event, so we do NOT duplicate it here.
     });
 
+    // Fallback: poll the backend periodically so the timeline advances even if
+    // the socket is unreachable/disconnected. Stop once the order is terminal.
+    startStatusPolling(orderId);
+
     // Join this order's room on the socket server (guarantees targeted events)
     socketClient.on("connect", () => {
         socketClient.joinOrderRoom(orderId);
@@ -367,6 +382,37 @@ function setupRealtime(orderId) {
     } catch (e) {
         console.log("Socket connect skipped:", e?.message);
     }
+}
+
+let statusPollTimer = null;
+
+/**
+ * Poll the backend for the live order status every few seconds and advance the
+ * timeline (received -> preparing -> ready) as the kitchen updates it. This is
+ * a reliability fallback for the socket: even if realtime fails, the tracker
+ * still reflects the kitchen's actions. Polling stops once the order reaches a
+ * terminal state (ready/served/completed/cancelled).
+ */
+function startStatusPolling(orderId) {
+    if (!orderId) return;
+    try { clearInterval(statusPollTimer); } catch (e) {}
+    statusPollTimer = setInterval(async () => {
+        try {
+            const live = await fetchLiveStatus(orderId);
+            if (!live || !live.status) return;
+            const s = normalizeStatus(live.status);
+            // Only update the timeline + heading; avoid re-rendering the whole
+            // receipt on every poll to not disrupt the page.
+            renderTimeline(s);
+            setStatusText(s);
+            persistStatus(orderId, live.status);
+            if (s === "ready" || s === "served" || s === "completed" || s === "cancelled") {
+                try { clearInterval(statusPollTimer); statusPollTimer = null; } catch (e) {}
+            }
+        } catch (err) {
+            // Backend unreachable or not logged in; keep local state as-is.
+        }
+    }, 5000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

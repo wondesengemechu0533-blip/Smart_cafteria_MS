@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         totalAmount,
 
                     status:
-                        "Received"
+                        "pending"
                 };
 
 
@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         orderId: createdOrderId,
                         paymentMethod: paymentMethod,
                         paymentStatus: "PENDING",
-                        status: "In Progress"
+                        status: "pending"
                     };
                     try {
                         localStorage.setItem("latestOrder", JSON.stringify(orderRecord));
