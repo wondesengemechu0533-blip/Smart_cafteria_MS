@@ -182,12 +182,10 @@ function updateCancelButton(s) {
                 <i class="fa-solid fa-ban"></i> Cancelled
             </button>
         `;
-    } else if (s !== "completed" && s !== "served") {
-        // Active, non-terminal order → allow cancellation request.
-        // NOTE: "ready" is intentionally cancellable here to match the
-        // backend requestCancellation guard (which only blocks CANCELLED /
-        // COMPLETED / SERVED) and the cancel-order.html page, so the button
-        // is never shown disabled for an order that can actually be cancelled.
+    } else if (s === "pending" || s === "received") {
+        // Cancellation is only allowed BEFORE preparation begins (status
+        // pending/received). A full refund applies because the order has not
+        // been cooked yet.
         const url = new URL(window.location.href);
         const id = url.searchParams.get("orderId") || url.searchParams.get("id");
         cancelWrapper.innerHTML = `
@@ -198,9 +196,11 @@ function updateCancelButton(s) {
             </a>
         `;
     } else {
+        // Preparing / Ready / Served / Completed → cannot cancel anymore.
+        const isPrepped = s === "preparing" || s === "ready";
         cancelWrapper.innerHTML = `
-            <button class="btn btn-success" disabled style="width: 100%; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 6px; background: #d4edda; cursor: not-allowed;">
-                <i class="fa-solid fa-circle-check"></i> ${statusLabel(s)}
+            <button class="btn btn-secondary" disabled title="${isPrepped ? 'The kitchen has already started preparing this order and it can no longer be cancelled.' : ''}" style="width: 100%; color: #6b7280; border: 1px solid #d1d5db; padding: 10px; border-radius: 6px; background: #f3f4f6; cursor: not-allowed;">
+                <i class="fa-solid fa-ban"></i> ${isPrepped ? 'Cannot Cancel (Preparing)' : statusLabel(s)}
             </button>
         `;
     }

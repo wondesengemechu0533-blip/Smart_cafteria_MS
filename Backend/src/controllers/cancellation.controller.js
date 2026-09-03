@@ -117,8 +117,18 @@ exports.requestCancellation = async (req, res) => {
     }
 
     const current = String(order.orderStatus || order.status || '').toUpperCase();
-    if (['CANCELLED', 'COMPLETED', 'SERVED'].includes(current)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: `Order cannot be cancelled (status: ${current})` });
+
+    // Cancellation is only allowed while the order is still awaiting
+    // preparation (PENDING / RECEIVED). Once the kitchen begins preparing the
+    // order, the food may already be cooked, so a cancellation is no longer
+    // permitted. This guarantees any approved cancellation always happened
+    // before preparation, so a full refund is always valid.
+    const CANCELLABLE = ['PENDING', 'RECEIVED'];
+    if (!CANCELLABLE.includes(current)) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: `This order can no longer be cancelled because it has already entered the "${current || 'active'}" stage. Cancellation is only available before preparation begins.`
+      });
     }
 
     const { cancellation } = await svc.createCancellation(
@@ -353,13 +363,17 @@ exports.approveCancellation = async (req, res) => {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Order not found' });
     }
 
-    // Validate order status before cancellation
+    // Validate order status before cancellation. Per policy, a cancellation is
+    // only approved if the order is still awaiting preparation (PENDING /
+    // RECEIVED). If the kitchen has already started preparing/ready/served, the
+    // request is no longer valid and is rejected instead of auto-approving.
     const current = String(order.orderStatus || order.status || '').toUpperCase();
-    if (['CANCELLED', 'COMPLETED'].includes(current)) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: `Order cannot be cancelled (status: ${current})` });
-    }
-    if (current === 'SERVED' && !allowServed) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, error: 'Order has already been served; cancellation requires explicit allowance' });
+    const CANCELLABLE = ['PENDING', 'RECEIVED'];
+    if (!CANCELLABLE.includes(current) && !allowServed) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: `Order has already entered the "${current || 'active'}" stage and can no longer be cancelled (cancellation is only available before preparation).`
+      });
     }
 
     const previousStatus = current;
