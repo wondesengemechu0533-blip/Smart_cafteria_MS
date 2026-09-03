@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/css/admin.css">
     <link rel="stylesheet" href="/src/css/kitchen.css">
+    <link rel="stylesheet" href="../../css/themes/dark-theme.css">
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -135,6 +136,9 @@
 
         <!-- User Menu -->
         <div class="user-menu">
+            <button type="button" class="kds-nav-btn theme-toggle" id="kitchenThemeToggle" data-theme-toggle aria-label="Toggle theme" title="Toggle Dark/Light Mode">
+                <i class="fa-solid fa-moon"></i>
+            </button>
             <div class="user-dropdown">
                 <button class="kds-nav-btn" id="userMenuBtn" onclick="toggleUserMenu()">
                     <i class="fa-solid fa-user-circle"></i>
@@ -312,6 +316,7 @@
             }
         }
     </script>
+<script src="../../js/theme.js"></script>
 </body>
 
 </html>

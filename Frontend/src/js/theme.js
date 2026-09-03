@@ -148,4 +148,12 @@
     syncToggleIcons();
     setupToggleButtons();
   }
+
+  // Public helper: (re)wire theme toggle buttons + sync icons. Safe to call
+  // multiple times (setupToggleButtons guards against double-binding). Used by
+  // pages whose header/toggle is injected dynamically after DOMContentLoaded.
+  window.ScosTheme.refresh = function () {
+    syncToggleIcons();
+    setupToggleButtons();
+  };
 })();

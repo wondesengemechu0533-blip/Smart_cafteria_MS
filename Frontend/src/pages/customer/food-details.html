@@ -1367,6 +1367,12 @@
         );
 
 
+        // Re-wire theme toggle (header injected after DOMContentLoaded)
+        if (window.ScosTheme && window.ScosTheme.refresh) {
+            window.ScosTheme.refresh();
+        }
+
+
         // =========================================================
         // RENDER FOOTER
         // =========================================================
