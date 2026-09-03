@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Smart Cafeteria</title>
+    <title data-i18n="admin_dashboard_page_title">Admin Dashboard - Smart Cafeteria</title>
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
@@ -29,34 +29,34 @@
         <main class="admin-main">
             <div class="page-header">
                 <div>
-                    <h1>Dashboard Overview</h1>
+                    <h1 data-i18n="admin_overview">Dashboard Overview</h1>
                 </div>
             </div>
 
             <!-- DATE RANGE FILTER -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> Date Range</h3>
+                    <h3 class="section-title" data-i18n="admin_date_range"><i class="fa-solid fa-calendar-days"></i> Date Range</h3>
                 </div>
                 <div class="card-body">
                     <div class="btn-group date-range-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary date-range-btn active" data-range="7d">Last 7 Days</button>
-                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="30d">Last 30 Days</button>
-                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="90d">Last 90 Days</button>
-                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="custom">Custom</button>
+                        <button type="button" class="btn btn-outline-secondary date-range-btn active" data-range="7d" data-i18n="admin_last_7_days">Last 7 Days</button>
+                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="30d" data-i18n="admin_last_30_days">Last 30 Days</button>
+                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="90d" data-i18n="admin_last_90_days">Last 90 Days</button>
+                        <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="custom" data-i18n="admin_custom">Custom</button>
                     </div>
                     <div class="custom-date-inputs mt-3" style="display:none;">
                         <div class="row g-2">
                             <div class="col-md-4">
-                                <label class="form-label">Start Date</label>
-                                <input type="date" id="startDateInput" class="form-control custom-date-input">
+                                <label class="form-label" data-i18n="admin_start_date"><i class="fa-solid fa-calendar-days"></i> Start Date</label>
+                                <input type="date" id="startDateInput" class="form-control custom-date-input" placeholder="mm/dd/yyyy">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">End Date</label>
-                                <input type="date" id="endDateInput" class="form-control custom-date-input">
+                                <label class="form-label" data-i18n="admin_end_date"><i class="fa-solid fa-calendar-days"></i> End Date</label>
+                                <input type="date" id="endDateInput" class="form-control custom-date-input" placeholder="mm/dd/yyyy">
                             </div>
                             <div class="col-md-4 d-flex align-items-end">
-                                <button type="button" class="btn btn-primary" id="applyCustomDateBtn">
+                                <button type="button" class="btn btn-primary" id="applyCustomDateBtn" data-i18n="admin_apply">
                                     <i class="fa-solid fa-filter"></i> Apply
                                 </button>
                             </div>
@@ -73,7 +73,7 @@
                         <i class="fa-solid fa-users"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Total Users</span>
+                        <span class="metric-label" data-i18n="admin_total_users">Total Users</span>
                         <h2 class="metric-value" id="statTotalUsers">0</h2>
                     </div>
                 </div>
@@ -82,7 +82,7 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Customers</span>
+                        <span class="metric-label" data-i18n="admin_customers">Customers</span>
                         <h2 class="metric-value" id="statCustomers">0</h2>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                         <i class="fa-solid fa-bowl-food"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Total Menu Items</span>
+                        <span class="metric-label" data-i18n="admin_total_menu_items">Total Menu Items</span>
                         <h2 class="metric-value" id="statTotalMenu">0</h2>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                         <i class="fa-solid fa-circle-check"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Available Now</span>
+                        <span class="metric-label" data-i18n="admin_available_now">Available Now</span>
                         <h2 class="metric-value" id="statAvailableMenu">0</h2>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                         <i class="fa-solid fa-star"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Total Feedback</span>
+                        <span class="metric-label" data-i18n="admin_total_feedback">Total Feedback</span>
                         <h2 class="metric-value" id="statTotalFeedback">0</h2>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                         <i class="fa-solid fa-clock"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Pending</span>
+                        <span class="metric-label" data-i18n="admin_pending">Pending</span>
                         <h2 class="metric-value" id="statPendingFeedback">0</h2>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
                         <i class="fa-solid fa-check-circle"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Resolved</span>
+                        <span class="metric-label" data-i18n="admin_resolved">Resolved</span>
                         <h2 class="metric-value" id="statResolvedFeedback">0</h2>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
                         <i class="fa-solid fa-star-half-stroke"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Avg Rating</span>
+                        <span class="metric-label" data-i18n="admin_avg_rating">Avg Rating</span>
                         <h2 class="metric-value" id="statAvgRating">0.0</h2>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                         <i class="fa-solid fa-sack-dollar"></i>
                     </div>
                     <div class="metric-content">
-                        <span class="metric-label">Total Revenue</span>
+                        <span class="metric-label" data-i18n="admin_total_revenue">Total Revenue</span>
                         <h2 id="statTotalRevenue">0 <small>ETB</small></h2>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
             <div class="charts-grid mb-4">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title"><i class="fa-solid fa-chart-pie"></i> Order Status Overview</h3>
+                        <h3 class="card-title" data-i18n="admin_order_status_overview"><i class="fa-solid fa-chart-pie"></i> Order Status Overview</h3>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-sm btn-outline-secondary date-range-btn active" data-range="7d">7D</button>
                             <button type="button" class="btn btn-outline-secondary date-range-btn" data-range="30d">30D</button>
@@ -168,7 +168,7 @@
                 </div>
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title"><i class="fa-solid fa-chart-column"></i> Revenue (Last 7 Days)</h3>
+                        <h3 class="card-title" data-i18n="admin_revenue_last7"><i class="fa-solid fa-chart-column"></i> Revenue (Last 7 Days)</h3>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="revenueChart"></canvas>
@@ -176,7 +176,7 @@
                 </div>
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title"><i class="fa-solid fa-star"></i> Feedback Rating Distribution</h3>
+                        <h3 class="card-title" data-i18n="admin_feedback_rating_distribution"><i class="fa-solid fa-star"></i> Feedback Rating Distribution</h3>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="feedbackRatingChart"></canvas>
@@ -190,26 +190,26 @@
                 <div class="col-xl-6">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h3 class="card-title"><i class="fa-solid fa-list-check"></i> Recent Orders</h3>
+                            <h3 class="card-title" data-i18n="admin_recent_orders"><i class="fa-solid fa-list-check"></i> Recent Orders</h3>
                             <div class="d-flex gap-2">
-                                <input type="text" id="orderSearchInput" class="form-control form-control-sm" placeholder="Search orders..." style="width: 200px; max-width: 100%;">
-                                <a href="orders.html" class="btn btn-sm btn-outline-primary">View All</a>
+                                <input type="text" id="orderSearchInput" class="form-control form-control-sm" placeholder="Search orders..." data-i18n-placeholder="admin_search_orders" style="width: 200px; max-width: 100%;">
+                                <a href="orders.html" class="btn btn-sm btn-outline-primary" data-i18n="admin_view_all">View All</a>
                             </div>
                         </div>
                         <div class="table-wrapper">
                             <table class="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Amount</th>
-                                        <th>Payment</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th data-i18n="admin_col_order_id">Order ID</th>
+                                        <th data-i18n="admin_col_customer">Customer</th>
+                                        <th data-i18n="admin_col_amount">Amount</th>
+                                        <th data-i18n="admin_col_payment">Payment</th>
+                                        <th data-i18n="admin_col_status">Status</th>
+                                        <th data-i18n="admin_col_date">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="recentOrdersTableBody">
-                                    <tr><td colspan="6" class="table-empty">Loading recent orders...</td></tr>
+                                    <tr><td colspan="6" class="table-empty" data-i18n="admin_loading_recent_orders">Loading recent orders...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -220,26 +220,26 @@
                 <div class="col-xl-6">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h3 class="card-title"><i class="fa-solid fa-credit-card"></i> Recent Payments</h3>
+                            <h3 class="card-title" data-i18n="admin_recent_payments"><i class="fa-solid fa-credit-card"></i> Recent Payments</h3>
                             <div class="d-flex gap-2">
-                                <input type="text" id="paymentSearchInput" class="form-control form-control-sm" placeholder="Search payments..." style="width: 200px; max-width: 100%;">
-                                <a href="payments.html" class="btn btn-sm btn-outline-primary">View All</a>
+                                <input type="text" id="paymentSearchInput" class="form-control form-control-sm" placeholder="Search payments..." data-i18n-placeholder="admin_search_payments" style="width: 200px; max-width: 100%;">
+                                <a href="payments.html" class="btn btn-sm btn-outline-primary" data-i18n="admin_view_all">View All</a>
                             </div>
                         </div>
                         <div class="table-wrapper">
                             <table class="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Transaction</th>
-                                        <th>Customer</th>
-                                        <th>Amount</th>
-                                        <th>Provider</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th data-i18n="admin_col_transaction">Transaction</th>
+                                        <th data-i18n="admin_col_customer">Customer</th>
+                                        <th data-i18n="admin_col_amount">Amount</th>
+                                        <th data-i18n="admin_col_provider">Provider</th>
+                                        <th data-i18n="admin_col_status">Status</th>
+                                        <th data-i18n="admin_col_date">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="recentPaymentsTableBody">
-                                    <tr><td colspan="6" class="table-empty">Loading recent payments...</td></tr>
+                                    <tr><td colspan="6" class="table-empty" data-i18n="admin_loading_recent_payments">Loading recent payments...</td></tr>
                                 </tbody>
                             </table>
                         </div>

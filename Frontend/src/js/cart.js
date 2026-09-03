@@ -93,10 +93,47 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalElement = document.getElementById("summary-total");
 
 
+    function showCartLoginRequired() {
+        if (document.getElementById("login-required-modal")) return;
+
+        const isAm = getLang() === "am";
+        const title = isAm ? "እባክዎ ይመዝገቡ ወይም ይግቡ" : "Please register or log in to order";
+        const message = isAm ? "እቃ ለማዘዝ መግባት ያስፈልግዎታል።" : "You need to log in to proceed to checkout and place your order.";
+        const loginText = isAm ? "ግባ" : "Login";
+        const registerText = isAm ? "ተመዝገብ" : "Register";
+
+        const modal = document.createElement("div");
+        modal.id = "login-required-modal";
+        modal.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;";
+        modal.innerHTML = `
+            <div style="background:#ffffff;color:#0f172a;border-radius:16px;max-width:420px;width:100%;padding:32px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Poppins',sans-serif;">
+                <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+                <h3 style="margin:0 0 10px;font-size:1.35rem;font-weight:700;color:#0f172a;">${title}</h3>
+                <p style="margin:0 0 24px;font-size:0.95rem;color:#475569;line-height:1.5;">${message}</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <a href="../common/login.html" style="display:block;width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#ffffff;text-decoration:none;font-weight:600;font-size:0.95rem;text-align:center;">${loginText}</a>
+                    <a href="../common/register.html" style="display:block;width:100%;padding:12px;border-radius:10px;background:transparent;color:#2563eb;border:2px solid #2563eb;text-decoration:none;font-weight:600;font-size:0.95rem;text-align:center;box-sizing:border-box;">${registerText}</a>
+                    <button type="button" id="login-required-close-cart" style="margin-top:6px;border:none;background:none;color:#64748b;cursor:pointer;font-size:0.85rem;text-decoration:underline;padding:6px;">Close</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        const close = modal.querySelector("#login-required-close-cart");
+        if (close) {
+            close.addEventListener("click", function () {
+                modal.remove();
+            });
+        }
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) modal.remove();
+        });
+    }
+
+
     function updateCart() {
 
         const cart = getCart();
-
         let totalQuantity = 0;
         let subtotal = 0;
 
@@ -279,6 +316,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (increaseButton) {
 
+            if (localStorage.getItem("isLoggedIn") !== "true" && !localStorage.getItem("auth_token")) {
+                window.location.href = "../common/register.html";
+                return;
+            }
+
             const id = String(
                 increaseButton.dataset.id
             );
@@ -303,6 +345,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         if (decreaseButton) {
+
+            if (localStorage.getItem("isLoggedIn") !== "true" && !localStorage.getItem("auth_token")) {
+                window.location.href = "../common/register.html";
+                return;
+            }
 
             const id = String(
                 decreaseButton.dataset.id
@@ -402,6 +449,13 @@ document.addEventListener("DOMContentLoaded", function () {
             function (event) {
 
                 event.preventDefault();
+
+                const isLoggedIn = localStorage.getItem("isLoggedIn") === "true" || Boolean(localStorage.getItem("auth_token"));
+                if (!isLoggedIn) {
+                    localStorage.setItem("redirect_after_auth", "cart.html");
+                    window.location.href = "../common/register.html";
+                    return;
+                }
 
                 const cart = getCart();
 

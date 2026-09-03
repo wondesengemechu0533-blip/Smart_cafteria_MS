@@ -200,7 +200,13 @@
     var avatar = document.getElementById("adminAvatar");
     if (profile) {
       if (nameDisplay) nameDisplay.textContent = profile.name || "Admin";
-      if (avatar && profile.name) avatar.textContent = profile.name.charAt(0).toUpperCase();
+      if (avatar) {
+        if (profile.avatar) {
+          avatar.innerHTML = '<img src="' + profile.avatar + '" alt="Avatar" class="navbar-avatar-img">';
+        } else if (profile.name) {
+          avatar.textContent = profile.name.charAt(0).toUpperCase();
+        }
+      }
     } else {
       if (nameDisplay) nameDisplay.textContent = "Admin";
     }

@@ -361,6 +361,14 @@ exports.updateOrderStatus = async (req, res) => {
     await order.save();
     await OrderStatusHistory.create({ orderId: order._id, previousStatus: current, newStatus: next, changedBy: req.user.id });
 
+    await logAction({
+      req,
+      action: 'ORDER_STATUS_UPDATED',
+      entityType: 'Order',
+      entityId: String(order.orderId || order._id),
+      description: `Updated order #${order.orderId} status from ${current.replace(/_/g, ' ')} to ${next.replace(/_/g, ' ')}`,
+    });
+
     try {
       await Notification.create({
         userId: order.userId,

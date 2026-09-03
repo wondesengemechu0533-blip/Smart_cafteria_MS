@@ -126,6 +126,55 @@ document.addEventListener("DOMContentLoaded", function () {
         return (L[lang] && L[lang][key]) || (L.en[key] || key);
     }
 
+    function isUserLoggedIn() {
+        return localStorage.getItem("isLoggedIn") === "true" ||
+            Boolean(localStorage.getItem("auth_token"));
+    }
+
+    function showLoginRequiredModal() {
+        if (document.getElementById("login-required-modal")) return;
+
+        // Preserve the page the user was on so they can return to order after
+        // registering/logging in.
+        try {
+            localStorage.setItem("redirect_after_auth", window.location.pathname + window.location.search);
+        } catch (e) {}
+
+        const lang = getLang();
+        const isAm = lang === "am";
+        const title = isAm ? "እባክዎ ይመዝገቡ ወይም ይግቡ" : "Please register or log in to order";
+        const message = isAm ? "እቃ ለማዘዝ መግባት ያስፈልግዎታል።" : "You need to log in to add items to your cart and place orders.";
+        const loginText = isAm ? "ግባ" : "Login";
+        const registerText = isAm ? "ተመዝገብ" : "Register";
+
+        const modal = document.createElement("div");
+        modal.id = "login-required-modal";
+        modal.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;";
+        modal.innerHTML = `
+            <div style="background:#ffffff;color:#0f172a;border-radius:16px;max-width:420px;width:100%;padding:32px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Poppins',sans-serif;">
+                <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+                <h3 style="margin:0 0 10px;font-size:1.35rem;font-weight:700;color:#0f172a;">${title}</h3>
+                <p style="margin:0 0 24px;font-size:0.95rem;color:#475569;line-height:1.5;">${message}</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <a href="../common/register.html" id="login-required-register-btn" style="display:block;width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#ffffff;text-decoration:none;font-weight:600;font-size:0.95rem;text-align:center;">${registerText} →</a>
+                    <a href="../common/login.html" style="display:block;width:100%;padding:12px;border-radius:10px;background:transparent;color:#2563eb;border:2px solid #2563eb;text-decoration:none;font-weight:600;font-size:0.95rem;text-align:center;box-sizing:border-box;">${loginText}</a>
+                    <button type="button" id="login-required-close" style="margin-top:6px;border:none;background:none;color:#64748b;cursor:pointer;font-size:0.85rem;text-decoration:underline;padding:6px;">Close</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        const close = document.getElementById("login-required-close");
+        if (close) {
+            close.addEventListener("click", function () {
+                modal.remove();
+            });
+        }
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) modal.remove();
+        });
+    }
+
 
     // =========================================================
     // RENDER
@@ -419,6 +468,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 // document-level add-to-cart listener, so stop it from firing
                 // a second (duplicate) cart insertion.
                 event.stopImmediatePropagation();
+
+                if (!isUserLoggedIn()) {
+                    try {
+                        const pending = {
+                            menuItemId: addButton.dataset.id,
+                            name: addButton.dataset.name,
+                            price: Number(addButton.dataset.price) || 0,
+                            image: addButton.dataset.image || "",
+                            quantity: 1
+                        };
+                        localStorage.setItem("pending_order_item", JSON.stringify(pending));
+                        localStorage.setItem("redirect_after_auth", "menu.html");
+                    } catch (e) {}
+
+                    event.preventDefault();
+                    window.location.href = "../common/register.html";
+                    return;
+                }
+
                 const itemId = addButton.dataset.id;
                 let cart = [];
                 try { cart = JSON.parse(localStorage.getItem(CUSTOMER_MENU.CART_KEY) || "[]"); } catch (e) { cart = []; }
@@ -450,8 +518,83 @@ document.addEventListener("DOMContentLoaded", function () {
     // INITIAL LOAD + LANGUAGE LISTENER
     // =========================================================
 
+    function updateCartBadges() {
+        try {
+            const cart = JSON.parse(localStorage.getItem(CUSTOMER_MENU.CART_KEY) || "[]");
+            const count = cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
+            document.querySelectorAll("#cart-badge-count, #mobile-cart-badge, #navbar-cart-count").forEach(badge => {
+                badge.textContent = count;
+            });
+        } catch (e) {}
+    }
+
+    // After a guest clicks "Add" and is sent to register, then logs in, add the
+    // item they wanted to the cart automatically so they can complete ordering.
+    function processPendingOrderItem() {
+        try {
+            const pending = JSON.parse(localStorage.getItem("pending_order_item") || "null");
+            if (!pending || !isUserLoggedIn()) return;
+
+            let cart = JSON.parse(localStorage.getItem(CUSTOMER_MENU.CART_KEY) || "[]");
+            const existing = cart.find(item => String(item.menuItemId || item.id) === String(pending.menuItemId));
+            if (existing) {
+                existing.quantity = Number(existing.quantity || 0) + Number(pending.quantity || 1);
+            } else {
+                cart.push(pending);
+            }
+            localStorage.setItem(CUSTOMER_MENU.CART_KEY, JSON.stringify(cart));
+            localStorage.removeItem("pending_order_item");
+            localStorage.removeItem("redirect_after_auth");
+            document.querySelectorAll("#cart-badge-count, #mobile-cart-badge, #navbar-cart-count").forEach(badge => {
+                badge.textContent = cart.reduce((total, item) => total + Number(item.quantity || 0), 0);
+            });
+        } catch (e) {}
+    }
+
+    // Keep the menu header honest for public browsing. Guests see a simple
+    // public menu (no fake customer profile / logout). Logged-in customers
+    // keep the full header.
+    function adaptCustomerHeader() {
+        const loggedIn = isUserLoggedIn();
+
+        const profileMenu = document.querySelector(".user-profile-menu");
+        const logoutLink = document.querySelector(".nav-logout, .logout-link, a[title='Logout']");
+
+        if (!loggedIn) {
+            if (profileMenu) profileMenu.style.display = "none";
+            if (logoutLink) logoutLink.style.display = "none";
+
+            // Add Login / Register buttons for guests.
+            if (!document.getElementById("guest-auth-links") && document.querySelector(".header-actions")) {
+                const guestLinks = document.createElement("div");
+                guestLinks.id = "guest-auth-links";
+                guestLinks.style.cssText = "display:flex;align-items:center;gap:8px;";
+                guestLinks.innerHTML = `
+                    <a href="../common/register.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;">Register</a>
+                    <a href="../common/login.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:2px solid #2563eb;color:#2563eb;text-decoration:none;font-size:0.85rem;font-weight:600;">Login</a>`;
+                document.querySelector(".header-actions").insertBefore(guestLinks, document.querySelector(".header-actions").firstChild);
+            }
+        } else {
+            if (profileMenu) profileMenu.style.display = "";
+            if (logoutLink) logoutLink.style.display = "";
+            const guestLinks = document.getElementById("guest-auth-links");
+            if (guestLinks) guestLinks.remove();
+
+            // Show the real name instead of the hardcoded placeholder.
+            const nameEl = document.querySelector(".user-name");
+            const savedName = localStorage.getItem("name") ||
+                localStorage.getItem("userName") || "";
+            if (nameEl && savedName) {
+                nameEl.textContent = savedName;
+            }
+        }
+    }
+
     loadActiveCategoryFilters();
     loadMenu();
+    updateCartBadges();
+    processPendingOrderItem();
+    adaptCustomerHeader();
 
     window.addEventListener("language:changed", loadMenu);
     window.addEventListener("languageChanged", loadMenu);

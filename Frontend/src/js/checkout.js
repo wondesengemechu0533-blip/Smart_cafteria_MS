@@ -3,7 +3,7 @@ import { validateName, validatePhone, validateRequired } from "./utils/validator
 
 // Check authentication before loading checkout
 const authToken = localStorage.getItem("auth_token");
-if (!authToken) {
+if (!authToken && localStorage.getItem("isLoggedIn") !== "true") {
     alert("Please log in to place an order.");
     window.location.href = "../common/login.html";
 }

@@ -54,7 +54,9 @@
 
   function refText(value) {
     var v = value || "—";
-    return '<span class="mono-ref">' + window.esc(v) + "</span>";
+    // Long transaction references are truncated with CSS ellipsis; the full value
+    // is exposed on hover via the native title tooltip.
+    return '<span class="mono-ref" title="' + window.esc(v) + '">' + window.esc(v) + "</span>";
   }
 
   function getDateRange() {

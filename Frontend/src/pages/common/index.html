@@ -1454,7 +1454,7 @@
         </div>
         <div style="text-align: center; margin-top: 40px">
           <a
-            href="/src/pages/common/register.html"
+            href="/src/pages/customer/menu.html"
             class="btn-custom btn-primary-custom"
             id="viewFullMenuBtn"
           >
@@ -1603,7 +1603,7 @@
               <div>
                     <h4>Quick Links</h4>
                     <a href="index.html">Home</a>
-                    <a href="/src/pages/common/register.html">Menu</a>
+                    <a href="/src/pages/customer/menu.html">Menu</a>
                     <a href="/src/pages/common/login.html">Login</a>
                     <a href="/src/pages/common/register.html">Register</a>
                 </div>
@@ -1730,7 +1730,7 @@
             const amName = item.name?.am || '';
             const image = resolveImage(item);
             return `
-                <div class="menu-card" style="cursor:pointer;" onclick="window.location.href='/src/pages/common/register.html'">
+                <div class="menu-card" style="cursor:pointer;" onclick="window.location.href='/src/pages/customer/menu.html'">
                     <div class="menu-img">
                         <img src="${image}" alt="${name}" onerror="this.onerror=null;this.style.display='none';this.parentElement.classList.add('img-missing')">
                     </div>
@@ -1739,7 +1739,7 @@
                         <h4>${name}</h4>
                         ${amName ? '<p style="color:#64748b;font-size:0.85rem;margin:2px 0 6px;">' + amName + '</p>' : ''}
                         <div class="menu-price">${item.price || 0} ብር</div>
-                        <button class="btn-custom btn-primary-custom" style="width:100%;margin-top:10px;padding:8px 16px;font-size:0.9rem;" onclick="event.stopPropagation();window.location.href='/src/pages/common/register.html'">
+                        <button class="btn-custom btn-primary-custom" style="width:100%;margin-top:10px;padding:8px 16px;font-size:0.9rem;" onclick="event.stopPropagation();window.location.href='/src/pages/customer/menu.html'">
                             <i class="fas fa-shopping-cart"></i> Order Now
                         </button>
                     </div>

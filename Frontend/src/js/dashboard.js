@@ -22,8 +22,24 @@
   var refreshIntervalMs = 30000; // 30 seconds default
 
   function money(value) {
-    if (value === null || value === undefined) return "0";
-    return Number(value).toLocaleString("en-US");
+    if (value === null || value === undefined) return "0.00";
+    return Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function t(key, fallback) {
+    try {
+      if (window.t) {
+        var v = window.t(key);
+        if (v && v !== key) return v;
+      }
+    } catch (e) {}
+    return fallback === undefined ? key : fallback;
+  }
+
+  function langIsAmharic() {
+    try {
+      return (localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en') === 'am';
+    } catch (e) { return false; }
   }
 
   function setText(id, value) {
@@ -44,15 +60,51 @@
     return String(status || "").toLowerCase();
   }
 
+  // Formalised order-status badge (mirrors admin-orders.js) so the dashboard
+  // renders exactly like the full Orders page: colour-coded + title-cased label.
+  function statusBadge(status) {
+    var cls = "order-badge";
+    var s = String(status || "").toUpperCase();
+    switch (s) {
+      case "PENDING": cls += " pend"; break;
+      case "PREPARING": cls += " prep"; break;
+      case "READY": cls += " rd"; break;
+      case "SERVED": cls += " svd"; break;
+      case "COMPLETED": cls += " cmp"; break;
+      case "CANCELLED": cls += " cxl"; break;
+      default: cls += " pend"; break;
+    }
+    var labelKeyMap = {
+      PENDING: "admin_pending",
+      PREPARING: "admin_preparing",
+      READY: "admin_ready",
+      SERVED: "admin_ready",
+      COMPLETED: "admin_completed",
+      CANCELLED: "admin_cancelled"
+    };
+    var label = (labelKeyMap[s] ? t(labelKeyMap[s], s.charAt(0) + s.slice(1).toLowerCase()) : (s.charAt(0) + s.slice(1).toLowerCase()));
+    return '<span class="' + cls + '">' + label + "</span>";
+  }
+
+  function paymentBadge(paymentStatus) {
+    var cls = "order-badge";
+    var label = String(paymentStatus || "PENDING").toUpperCase();
+    switch (label) {
+      case "PAID": cls += " cmp"; break;
+      case "FAILED": cls += " cxl"; break;
+      case "CANCELLED": cls += " cxl"; break;
+      default: cls += " pend"; break;
+    }
+    var displayText = label.charAt(0) + label.slice(1).toLowerCase();
+    return '<span class="' + cls + '">' + displayText + "</span>";
+  }
+
   function formatDate(value) {
     return window.AdminAPI ? window.AdminAPI.formatDate(value) : "—";
   }
 
   function formatDateTime(value) {
-    if (!value) return "—";
-    var d = new Date(value);
-    if (isNaN(d.getTime())) return "—";
-    return d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    return window.AdminAPI ? window.AdminAPI.formatDateTime(value) : "—";
   }
 
   /* ====================================================================
@@ -126,7 +178,14 @@
     var canvas = document.getElementById("orderStatusChart");
     if (!canvas || typeof Chart === "undefined") return;
 
-    var labels = ["Pending", "Preparing", "Ready", "Served", "Completed", "Cancelled"];
+    var labels = [
+      t("admin_pending", "Pending"),
+      t("admin_preparing", "Preparing"),
+      t("admin_ready", "Ready"),
+      "Served",
+      t("admin_completed", "Completed"),
+      t("admin_cancelled", "Cancelled")
+    ];
     var keys = ["pending", "preparing", "ready", "served", "completed", "cancelled"];
     var colors = ["#f59e0b", "#3b82f6", "#06b6d4", "#10b981", "#0d9488", "#ef4444"];
     var data = keys.map(function (k) { return (orders && orders[k]) || 0; });
@@ -180,7 +239,7 @@
         labels: labels,
         datasets: [
           {
-            label: "Revenue (ETB)",
+            label: t("admin_revenue_series", "Revenue (ETB)"),
             data: revenue,
             backgroundColor: "rgba(79, 70, 229, 0.75)",
             borderColor: "#4f46e5",
@@ -188,7 +247,7 @@
             yAxisID: "y"
           },
           {
-            label: "Orders",
+            label: t("admin_orders_count_series", "Orders"),
             data: orderCounts,
             type: "line",
             borderColor: "#10b981",
@@ -204,8 +263,8 @@
         interaction: { mode: "index", intersect: false },
         plugins: { legend: { position: "bottom" } },
         scales: {
-          y: { beginAtZero: true, position: "left", title: { display: true, text: "Revenue (ETB)" } },
-          y1: { beginAtZero: true, position: "right", title: { display: true, text: "Orders" }, grid: { drawOnChartArea: false } }
+          y: { beginAtZero: true, position: "left", title: { display: true, text: t("admin_revenue_series", "Revenue (ETB)") } },
+          y1: { beginAtZero: true, position: "right", title: { display: true, text: t("admin_orders_count_series", "Orders") }, grid: { drawOnChartArea: false } }
         }
       }
     });
@@ -219,7 +278,7 @@
     var dist = feedback && feedback.ratingDistribution;
     if (!dist) return;
 
-    var labels = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
+    var labels = ["1 " + t("admin_star", "Star"), "2 " + t("admin_star", "Star") + "s", "3 " + t("admin_star", "Star") + "s", "4 " + t("admin_star", "Star") + "s", "5 " + t("admin_star", "Star") + "s"];
     var keys = ["1", "2", "3", "4", "5"];
     var colors = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#22c55e"];
     var data = keys.map(function (k) { return dist[k] || 0; });
@@ -229,7 +288,7 @@
       data: {
         labels: labels,
         datasets: [{
-          label: "Number of Ratings",
+          label: t("admin_number_of_ratings", "Number of Ratings"),
           data: data,
           backgroundColor: colors.map(function(c) { return c + "CC"; }),
           borderColor: colors,
@@ -252,7 +311,7 @@
           }
         },
         scales: {
-          y: { beginAtZero: true, title: { display: true, text: "Count" } }
+          y: { beginAtZero: true, title: { display: true, text: t("admin_rating_count", "Count") } }
         }
       }
     });
@@ -267,22 +326,24 @@
     if (!tbody) return;
 
     if (!orders || orders.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No orders recorded yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">' + t("admin_no_orders_yet", "No orders recorded yet.") + '</td></tr>';
       return;
     }
 
     tbody.innerHTML = orders.map(function (o) {
       var status = o.status || "pending";
       var payment = o.paymentStatus || "PENDING";
+      var orderId = o.orderId || "ET-0000";
+      var customer = o.customerName || (o.customer && o.customer.name) || "Customer";
       return (
-        '<tr>' +
-        '<td><strong>' + window.esc(o.orderId || "ET-0000") + '</strong></td>' +
-        '<td>' + window.esc(o.customerName || "Customer") + '</td>' +
-        '<td>' + money(o.totalAmount) + ' ETB</td>' +
-        '<td><span class="order-badge ' + badgeClass(payment) + '">' + window.esc(payment) + '</span></td>' +
-        '<td><span class="order-badge ' + badgeClass(status) + '">' + window.esc(status.charAt(0).toUpperCase() + status.slice(1)) + '</span></td>' +
-        '<td>' + formatDateTime(o.createdAt) + '</td>' +
-        '</tr>'
+        "<tr>" +
+        "<td><strong>" + window.esc(orderId) + "</strong></td>" +
+        "<td>" + window.esc(customer) + "</td>" +
+        "<td><strong>" + money(o.totalAmount) + " ETB</strong></td>" +
+        "<td>" + paymentBadge(payment) + "</td>" +
+        "<td>" + statusBadge(status) + "</td>" +
+        "<td>" + formatDateTime(o.createdAt) + "</td>" +
+        "</tr>"
       );
     }).join("");
   }
@@ -292,7 +353,7 @@
     if (!tbody) return;
 
     if (!payments || payments.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No payments recorded yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">' + t("admin_no_payments_yet", "No payments recorded yet.") + '</td></tr>';
       return;
     }
 
@@ -547,8 +608,8 @@
       }
       var oBody = document.getElementById("recentOrdersTableBody");
       var pBody = document.getElementById("recentPaymentsTableBody");
-      if (oBody) oBody.innerHTML = '<tr><td colspan="6" class="table-empty">Could not load orders from server.</td></tr>';
-      if (pBody) pBody.innerHTML = '<tr><td colspan="6" class="table-empty">Could not load payments from server.</td></tr>';
+      if (oBody) oBody.innerHTML = '<tr><td colspan="6" class="table-empty">' + t("admin_no_orders_yet", "Could not load orders from server.") + '</td></tr>';
+      if (pBody) pBody.innerHTML = '<tr><td colspan="6" class="table-empty">' + t("admin_no_payments_yet", "Could not load payments from server.") + '</td></tr>';
     }
   }
 
@@ -601,5 +662,34 @@
     loadDashboard: loadDashboard
   };
 
+  // Re-render dynamic (data-driven) content in the active language. Static
+  // labels are handled by i18n.js's own data-i18n re-apply and the direct-text
+  // map; here we re-fetch and re-render everything this module produces from
+  // data (charts labels, table rows / badges / empty states) so it follows the
+  // newly selected language immediately.
+  function applyDashboardLanguageCharts() {
+    if (window.AdminAPI && typeof loadDashboard === "function") {
+      loadDashboard();
+    }
+  }
+
+  // Register with the unified i18n engine so every language switch re-renders
+  // this page's dynamic content in the new language.
+  function registerLanguageSync() {
+    var register = window.onLanguageChange || window.i18nOnLanguageChange;
+    if (register) {
+      try { register(applyDashboardLanguageCharts); } catch (e) {}
+    } else {
+      // Fallback: listen to the globally-dispatched language events.
+      window.addEventListener("language:changed", function () {
+        setTimeout(applyDashboardLanguageCharts, 0);
+      });
+      window.addEventListener("languageChanged", function () {
+        setTimeout(applyDashboardLanguageCharts, 0);
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", registerLanguageSync);
 })();

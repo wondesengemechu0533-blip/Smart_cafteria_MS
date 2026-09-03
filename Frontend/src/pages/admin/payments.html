@@ -148,12 +148,12 @@
                         <div class="col-md-12" id="customDateRangeContainer" style="display:none; margin-top: 10px;">
                             <div class="row g-2">
                                 <div class="col-md-4">
-                                    <label class="form-label">From Date</label>
-                                    <input type="date" id="paymentDateFrom" class="form-control">
+                                    <label class="form-label"><i class="fa-solid fa-calendar-days"></i> Start Date</label>
+                                    <input type="date" id="paymentDateFrom" class="form-control" placeholder="mm/dd/yyyy">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">To Date</label>
-                                    <input type="date" id="paymentDateTo" class="form-control">
+                                    <label class="form-label"><i class="fa-solid fa-calendar-days"></i> End Date</label>
+                                    <input type="date" id="paymentDateTo" class="form-control" placeholder="mm/dd/yyyy">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">&nbsp;</label>
@@ -171,7 +171,7 @@
                     <span class="badge bg-secondary" id="paymentPaginationInfo">Page 1 of 1 (0 payments)</span>
                 </div>
                 <div class="table-wrapper">
-                    <table class="admin-table">
+                    <table class="admin-table" id="paymentsTable">
                         <thead>
                             <tr>
                                 <th>Transaction ID</th>

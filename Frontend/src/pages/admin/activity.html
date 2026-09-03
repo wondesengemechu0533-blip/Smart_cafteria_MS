@@ -56,6 +56,11 @@
                             <option value="FOOD_DELETED">Food Deleted</option>
                             <option value="FOOD_AVAILABILITY_CHANGED">Food Availability Changed</option>
                             <option value="ORDER_CANCELLED">Order Cancelled</option>
+                            <option value="ORDER_STATUS_UPDATED">Order Status Updated</option>
+                            <option value="CATEGORY_CREATED">Category Created</option>
+                            <option value="CATEGORY_UPDATED">Category Updated</option>
+                            <option value="CATEGORY_STATUS_CHANGED">Category Status Changed</option>
+                            <option value="CATEGORY_DELETED">Category Deleted</option>
                             <option value="SETTINGS_UPDATED">Settings Updated</option>
                         </select>
                         <select id="logEntityFilter" class="form-select">
@@ -63,10 +68,21 @@
                             <option value="User">User</option>
                             <option value="MenuItem">Menu Item</option>
                             <option value="Order">Order</option>
+                            <option value="Category">Category</option>
                             <option value="Setting">Setting</option>
                         </select>
-                        <input type="date" id="logStartDate" class="form-control" title="From date">
-                        <input type="date" id="logEndDate" class="form-control" title="To date">
+                        <div class="date-filter-field">
+                            <label class="form-date-label"><i class="fa-solid fa-calendar-days"></i> Start Date</label>
+                            <div class="date-input-wrap">
+                                <input type="date" id="logStartDate" class="form-control" placeholder="mm/dd/yyyy" title="Start date">
+                            </div>
+                        </div>
+                        <div class="date-filter-field">
+                            <label class="form-date-label"><i class="fa-solid fa-calendar-days"></i> End Date</label>
+                            <div class="date-input-wrap">
+                                <input type="date" id="logEndDate" class="form-control" placeholder="mm/dd/yyyy" title="End date">
+                            </div>
+                        </div>
                         <button class="btn btn-secondary" id="resetLogFiltersBtn" title="Reset filters">
                             <i class="fa-solid fa-filter-circle-xmark"></i> Reset
                         </button>
@@ -74,7 +90,7 @@
                 </div>
 
                 <div class="table-wrapper">
-                    <table class="admin-table orders-table">
+                    <table class="admin-table orders-table" id="logsTable">
                         <thead>
                             <tr>
                                 <th>Agent / Admin</th>

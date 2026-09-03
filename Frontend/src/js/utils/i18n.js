@@ -521,6 +521,34 @@ export const translations = {
     admin_view_all: "View All",
     admin_no_data: "No data available",
     admin_loading: "Loading...",
+    admin_total_feedback: "Total Feedback",
+    admin_resolved: "Resolved",
+    admin_avg_rating: "Avg Rating",
+    admin_feedback_rating_distribution: "Feedback Rating Distribution",
+    admin_search_orders: "Search orders...",
+    admin_search_payments: "Search payments...",
+    admin_loading_recent_orders: "Loading recent orders...",
+    admin_loading_recent_payments: "Loading recent payments...",
+    admin_no_orders_yet: "No orders recorded yet.",
+    admin_no_payments_yet: "No payments recorded yet.",
+    admin_col_order_id: "Order ID",
+    admin_col_customer: "Customer",
+    admin_col_amount: "Amount",
+    admin_col_payment: "Payment",
+    admin_col_provider: "Provider",
+    admin_col_status: "Status",
+    admin_col_date: "Date",
+    admin_col_transaction: "Transaction",
+    admin_currency_etb: "ETB",
+    admin_brand: "Smart Cafeteria",
+    admin_brand_admin: "Admin",
+    admin_role_administrator: "Administrator",
+    admin_notifications_shortcut_title: "Notifications",
+    admin_orders_count_series: "Orders",
+    admin_revenue_series: "Revenue (ETB)",
+    admin_rating_count: "Count",
+    admin_star: "Star",
+    admin_number_of_ratings: "Number of Ratings",
 
     // ===== ADMIN SIDEBAR NAV =====
     admin_nav_dashboard: "Dashboard",
@@ -1046,6 +1074,34 @@ export const translations = {
     admin_recent_orders: "የቅርብ ትዕዛዞች",
     admin_recent_payments: "የቅርብ ክፍያዎች",
     admin_view_all: "ሁሉንም ይመልከቱ",
+    admin_total_feedback: "ጠቅላላ አስተያየት",
+    admin_resolved: "የተፈታ",
+    admin_avg_rating: "አማካይ ደረጃ",
+    admin_feedback_rating_distribution: "የአስተያየት ደረጃ ስርጭት",
+    admin_search_orders: "ትዕዛዞችን ፈልግ...",
+    admin_search_payments: "ክፍያዎችን ፈልግ...",
+    admin_loading_recent_orders: "የቅርብ ትዕዛዞችን በመጫን ላይ...",
+    admin_loading_recent_payments: "የቅርብ ክፍያዎችን በመጫን ላይ...",
+    admin_no_orders_yet: "እስካሁን የተመዘገቡ ትዕዛዞች የሉም።",
+    admin_no_payments_yet: "እስካሁን የተመዘገቡ ክፍያዎች የሉም።",
+    admin_col_order_id: "የትዕዛዝ መለያ",
+    admin_col_customer: "ደንበኛ",
+    admin_col_amount: "መጠን",
+    admin_col_payment: "ክፍያ",
+    admin_col_provider: "አቅራቢ",
+    admin_col_status: "ሁኔታ",
+    admin_col_date: "ቀን",
+    admin_col_transaction: "ግብይት",
+    admin_currency_etb: "ETB",
+    admin_brand: "ስማርት ካፌቴሪያ",
+    admin_brand_admin: "አስተዳዳሪ",
+    admin_role_administrator: "አስተዳዳሪ",
+    admin_notifications_shortcut_title: "ማሳወቂያዎች",
+    admin_orders_count_series: "ትዕዛዞች",
+    admin_revenue_series: "ገቢ (ETB)",
+    admin_rating_count: "ብዛት",
+    admin_star: "ኮከብ",
+    admin_number_of_ratings: "የደረጃ አሰጣጦች ብዛት",
     admin_logout_confirm: "Are you sure you want to log out?",
     admin_main: "ዋና",
     admin_management: "አስተዳደር",
@@ -1237,7 +1293,7 @@ export const translations = {
     footer_privacy: "Privacy Policy",
     footer_terms: "Terms of Service",
     footer_developed_by: "Developed by",
-    admin_dashboard_page_title: "Admin Dashboard - Smart Cafeteria",
+    admin_dashboard_page_title: "የአስተዳዳሪ ዳሽቦርድ - ስማርት ካፌቴሪያ",
     dashboard_overview: "የዳሽቦርድ አጠቃላይ እይታ",
     admin_last_updated: "Last updated:",
     admin_auto_refresh_off: "ራስ-አድስ ጠፍቷል",
@@ -1247,13 +1303,13 @@ export const translations = {
     admin_1_minute: "1 minute",
     admin_5_minutes: "5 minutes",
     admin_export_data: "Export Data",
-    admin_date_range: "Date Range",
+    admin_date_range: "የቀን ክልል",
     admin_last_7_days: "ያለፉ 7 ቀናት",
     admin_last_30_days: "ያለፉ 30 ቀናት",
     admin_last_90_days: "ያለፉ 90 ቀናት",
-    admin_start_date: "Start Date",
-    admin_end_date: "End Date",
-    admin_apply: "Apply",
+    admin_start_date: "የመጀመሪያ ቀን",
+    admin_end_date: "የመጨረሻ ቀን",
+    admin_apply: "አመልክት",
     admin_keyboard_shortcuts: "Keyboard Shortcuts:",
     admin_refresh_shortcut: "R - Refresh",
     admin_autorefresh_shortcut: "A - Auto-refresh",
@@ -1842,6 +1898,22 @@ const directTextMap = {
   "Refresh": { en: "Refresh", am: "አድስ" },
   "Export": { en: "Export", am: "ላክ" },
   "View All": { en: "View All", am: "ሁሉንም ይመልከቱ" },
+  "Date Range": { en: "Date Range", am: "የቀን ክልል" },
+  "Last 7 Days": { en: "Last 7 Days", am: "ያለፉ 7 ቀናት" },
+  "Last 30 Days": { en: "Last 30 Days", am: "ያለፉ 30 ቀናት" },
+  "Last 90 Days": { en: "Last 90 Days", am: "ያለፉ 90 ቀናት" },
+  "Custom": { en: "Custom", am: "ብጁ" },
+  "Start Date": { en: "Start Date", am: "የመጀመሪያ ቀን" },
+  "End Date": { en: "End Date", am: "የመጨረሻ ቀን" },
+  "Apply": { en: "Apply", am: "አመልክት" },
+  "Order Status Overview": { en: "Order Status Overview", am: "የትዕዛዝ ሁኔታ አጠቃላይ እይታ" },
+  "Revenue (Last 7 Days)": { en: "Revenue (Last 7 Days)", am: "ገቢ (ያለፉ 7 ቀናት)" },
+  "Recent Orders": { en: "Recent Orders", am: "የቅርብ ትዕዛዞች" },
+  "Recent Payments": { en: "Recent Payments", am: "የቅርብ ክፍያዎች" },
+  "Order ID": { en: "Order ID", am: "የትዕዛዝ መለያ" },
+  "Amount": { en: "Amount", am: "መጠን" },
+  "Status": { en: "Status", am: "ሁኔታ" },
+  "Date": { en: "Date", am: "ቀን" },
   "Auto-refresh OFF": { en: "Auto-refresh OFF", am: "ራስ-አድስ ጠፍቷል" },
   "Kitchen Display System": { en: "Kitchen Display System", am: "የኩሽና ማሳያ ስርዓት" },
   "Station 1": { en: "Station 1", am: "ጣቢያ 1" },
@@ -2102,16 +2174,16 @@ const directTextMap = {
   "Auto-refresh": { en: "Auto-refresh", am: "Auto-አድስ" },
   "Fullscreen Charts": { en: "Fullscreen Charts", am: "Fullscreen Charts" },
   "Total Feedback": { en: "Total Feedback", am: "ጠቅላላ አስተያየት" },
-  "Resolved": { en: "Resolved", am: "Resolved" },
-  "Avg Rating": { en: "Avg Rating", am: "Avg Rating" },
+  "Resolved": { en: "Resolved", am: "የተፈታ" },
+  "Avg Rating": { en: "Avg Rating", am: "አማካይ ደረጃ" },
   "7D": { en: "7D", am: "7D" },
   "30D": { en: "30D", am: "30D" },
   "90D": { en: "90D", am: "90D" },
-  "Feedback Rating Distribution": { en: "Feedback Rating Distribution", am: "አስተያየት Rating Distribution" },
-  "Loading recent orders...": { en: "Loading recent orders...", am: "በመጫን ላይ recent ትዕዛዞች..." },
-  "Transaction": { en: "Transaction", am: "Transaction" },
-  "Provider": { en: "Provider", am: "Provider" },
-  "Loading recent payments...": { en: "Loading recent payments...", am: "በመጫን ላይ recent ክፍያዎች..." },
+  "Feedback Rating Distribution": { en: "Feedback Rating Distribution", am: "የአስተያየት ደረጃ ስርጭት" },
+  "Loading recent orders...": { en: "Loading recent orders...", am: "የቅርብ ትዕዛዞች በመጫን ላይ..." },
+  "Transaction": { en: "Transaction", am: "ግብይት" },
+  "Provider": { en: "Provider", am: "አቅራቢ" },
+  "Loading recent payments...": { en: "Loading recent payments...", am: "የቅርብ ክፍያዎች በመጫን ላይ..." },
   "Feedback - Smart Cafeteria": { en: "Feedback - Smart Cafeteria", am: "አስተያየት - Smart Cafeteria" },
   "View and manage customer feedback and reviews.": { en: "View and manage customer feedback and reviews.", am: "View and manage ተጠቃሚ አስተያየት and reviews." },
   "Archived": { en: "Archived", am: "Archived" },
@@ -2465,6 +2537,28 @@ const CENTRAL_LOCALE_PATHS = {
 
 let centralLoaded = false;
 
+// Registry of callbacks invoked whenever the active language changes. Admin and
+// kitchen components register here so they can re-render dynamic content (table
+// rows, badges, chart labels, loading messages) in the newly selected language.
+const languageRenderCallbacks = new Set();
+
+export function onLanguageChange(callback) {
+  if (typeof callback === "function") languageRenderCallbacks.add(callback);
+  return () => languageRenderCallbacks.delete(callback);
+}
+
+export function triggerLanguageRender() {
+  languageRenderCallbacks.forEach(function (cb) {
+    try { cb(getCurrentLanguage()); } catch (_) {}
+  });
+}
+
+// Backwards-compatible global registration helpers
+window.onLanguageChange = onLanguageChange;
+window.i18nOnLanguageChange = onLanguageChange;
+window.triggerLanguageRender = triggerLanguageRender;
+window.i18nTriggerLanguageRender = triggerLanguageRender;
+
 async function fetchJsonWithFallback(paths) {
   for (const p of paths) {
     try {
@@ -2539,6 +2633,7 @@ export function setLanguage(lang) {
   if (lang !== "en" && lang !== "am") return;
   writeLanguage(lang);
   applyTranslations();
+  triggerLanguageRender();
   // Persist immediately without refresh - update selectors & dispatch events
   document.querySelectorAll(".scos-lang-select, #langToggleSelect, #preferred-language").forEach((s) => { s.value = lang; });
   window.dispatchEvent(new CustomEvent("language:changed", { detail: { language: lang } }));
@@ -2742,7 +2837,15 @@ function ensureSwitcherInjected() {
     // A real in-navbar/in-header switcher now exists (e.g. rendered by a shared
     // layout component). Remove any stale floating fallback selector so we never
     // end up with TWO language dropdowns on the same page.
-    removeStaleFloatingSwitcher();
+    //
+    // IMPORTANT: only remove the floating selector when a real header/host is
+    // present. On pages with no header at all the floating selector is the ONLY
+    // one, so it must be kept — otherwise the MutationObserver would re-run this
+    // function, remove the floating selector, re-inject it, and loop forever.
+    const hasRealHost = document.querySelector(
+      ".admin-navbar, .kds-header, .nav-container, .header-actions, .nav-right, .navbar-header, .kds-navbar, .cancel-header, header, nav, .header"
+    );
+    if (hasRealHost) removeStaleFloatingSwitcher();
     return;
   }
 
@@ -2757,6 +2860,10 @@ function ensureSwitcherInjected() {
     document.querySelector(".kds-header"),
     document.querySelector("header .container"),
     document.querySelector(".header .container"),
+    document.querySelector(".header"),
+    document.querySelector(".cancel-header"),
+    document.querySelector(".kds-navbar"),
+    document.querySelector(".navbar-header"),
     document.querySelector(".user-profile-menu"),
     document.querySelector(".nav-auth"),
     document.querySelector(".nav-links"),
@@ -2767,33 +2874,51 @@ function ensureSwitcherInjected() {
   for (const container of candidates) {
     if (container.querySelector(".scos-lang-select, #langToggleSelect")) continue;
     // Prefer injecting into header actions or nav containers
-    if (container.classList.contains("nav-container") || container.classList.contains("header-actions") || container.classList.contains("nav-right") || container.classList.contains("kds-header")) {
-      const wrapper = document.createElement("span");
-      wrapper.style.display = "inline-flex";
-      wrapper.style.alignItems = "center";
-      if (container.classList.contains("kds-header")) {
-        const actions = container.querySelector("div:last-child");
-        if (actions) {
-          renderLangSwitcher(wrapper);
-          actions.prepend(wrapper);
-          return;
-        }
+    const cls = container.className || "";
+    const isHost = container.classList.contains("nav-container") || container.classList.contains("header-actions") || container.classList.contains("nav-right") || container.classList.contains("kds-header") || container.classList.contains("cancel-header") || container.classList.contains("kds-navbar") || container.classList.contains("header") || (container.tagName === "HEADER" && !cls.includes("page-")) || container.classList.contains("navbar-header");
+    if (!isHost && !(container.tagName === "NAV")) continue;
+
+    const wrapper = document.createElement("span");
+    wrapper.style.display = "inline-flex";
+    wrapper.style.alignItems = "center";
+
+    // kds-header: inject into its last inner action group, before any theme/logout.
+    if (container.classList.contains("kds-header")) {
+      const actions = container.querySelector("div:last-child", ".user-menu, .header-actions");
+      if (actions) {
+        renderLangSwitcher(wrapper);
+        actions.prepend(wrapper);
+        return;
       }
-      renderLangSwitcher(wrapper);
-      // For nav-container: insert before user menu or at end
-      const userMenu = container.querySelector(".user-profile-menu, .nav-auth, .user-nav-links");
-      if (userMenu && userMenu.parentElement) userMenu.parentElement.insertBefore(wrapper, userMenu);
-      else container.appendChild(wrapper);
+    }
+
+    renderLangSwitcher(wrapper);
+
+    // Prefer a right-aligned action area if present.
+    const rightZone = container.querySelector(".header-actions, .nav-right, .user-menu, .user-profile-menu, .nav-auth");
+    if (rightZone && rightZone !== container) {
+      rightZone.prepend(wrapper);
       return;
     }
+    // For nav-container / navbar: insert before user menu or at the end.
+    const userMenu = container.querySelector(".user-profile-menu, .nav-auth, .user-nav-links");
+    if (userMenu && userMenu.parentElement && userMenu.parentElement !== container) {
+      userMenu.parentElement.insertBefore(wrapper, userMenu);
+      return;
+    }
+    if (container.classList.contains("header-actions") || container.classList.contains("nav-right")) {
+      container.appendChild(wrapper);
+      return;
+    }
+    container.appendChild(wrapper);
+    return;
   }
 
-  // Fallback for auth pages (login/register) – fixed floating selector,
-  // but ONLY when the page has no navbar/header that could host one.
-  const hasNavbarTarget = document.querySelector(
-    ".admin-navbar, .kds-header, nav, header, .nav-container, .header-actions, .nav-right, .navbar-header"
-  );
-  if (!document.querySelector(".scos-lang-select") && !hasNavbarTarget) {
+  // Guaranteed fallback: every page must expose a language switcher. If nothing
+  // above could host one, inject a fixed floating selector regardless of the
+  // presence of any (unrecognised) header, so no page ends up without a
+  // translator.
+  if (!document.querySelector(".scos-lang-select, #langToggleSelect")) {
     const floating = document.createElement("div");
     floating.setAttribute("data-i18n-floating", "1");
     floating.style.position = "fixed";
@@ -2826,10 +2951,12 @@ function initI18n() {
   loadCentralizedTranslations().then(() => {
     applyTranslations();
     ensureSwitcherInjected();
+    triggerLanguageRender();
   });
   // Also apply immediately with embedded translations so page not blank while loading
   applyTranslations();
   ensureSwitcherInjected();
+  triggerLanguageRender();
   // Listen to any language selector on page
   document.querySelectorAll(".scos-lang-select, #langToggleSelect, #preferred-language").forEach((select) => {
     // Avoid duplicate listeners by cloning? Use flag
@@ -2849,7 +2976,10 @@ function initI18n() {
 
   // Listen storage changes from other tabs
   window.addEventListener("storage", (e) => {
-    if (STORAGE_KEYS.includes(e.key)) applyTranslations();
+    if (STORAGE_KEYS.includes(e.key)) {
+      applyTranslations();
+      triggerLanguageRender();
+    }
   });
 }
 
@@ -2860,5 +2990,5 @@ if (document.readyState === "loading") {
 }
 
 // Also re-apply on language events
-window.addEventListener("language:changed", applyTranslations);
-window.addEventListener("languageChanged", applyTranslations);
+window.addEventListener("language:changed", () => { applyTranslations(); });
+window.addEventListener("languageChanged", () => { applyTranslations(); });

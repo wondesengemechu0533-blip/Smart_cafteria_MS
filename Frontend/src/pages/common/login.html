@@ -793,6 +793,13 @@
                 } else {
                     userRole = "CUSTOMER";
                     redirectUrl = "../customer/menu.html";
+
+                    // If the user was sent here to order a specific item, send
+                    // them back to the menu so they can complete the order.
+                    const storedRedirect = localStorage.getItem("redirect_after_auth");
+                    if (storedRedirect) {
+                        redirectUrl = storedRedirect;
+                    }
                 }
             } else {
                 showError(backendError);

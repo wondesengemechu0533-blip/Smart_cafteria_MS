@@ -24,10 +24,10 @@
   ];
 
   var SIDEBAR_GROUPS = [
-    { id: 'main', label: 'MAIN', pages: ['dashboard'] },
-    { id: 'management', label: 'MANAGEMENT', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations', 'feedback'] },
-    { id: 'analytics', label: 'ANALYTICS & REPORTS', pages: ['reports', 'activity'] },
-    { id: 'system', label: 'SYSTEM', pages: ['settings'] }
+    { id: 'main', label: 'MAIN', labelKey: 'admin_main', pages: ['dashboard'] },
+    { id: 'management', label: 'MANAGEMENT', labelKey: 'admin_management', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations', 'feedback'] },
+    { id: 'analytics', label: 'ANALYTICS & REPORTS', labelKey: 'admin_analytics', pages: ['reports', 'activity'] },
+    { id: 'system', label: 'SYSTEM', labelKey: 'admin_system', pages: ['settings'] }
   ];
 
   // Current page detection
@@ -55,7 +55,9 @@
     var html = '<nav class="sidebar-nav">';
 
     SIDEBAR_GROUPS.forEach(function(group) {
+      var groupTitle = t(group.labelKey, group.label);
       html += '<div class="sidebar-group">';
+      html += '<div class="sidebar-group-title" data-i18n="' + group.labelKey + '">' + groupTitle + '</div>';
 
       group.pages.forEach(function(pageId) {
         var page = ADMIN_PAGES.find(function(p) { return p.id === pageId; });
@@ -69,8 +71,8 @@
           html += ' id="sidebarCancellationLink"';
         }
         html += '>';
-        html += '<i class="fa-solid ' + page.icon + '"></i>';
-        html += '<span>' + translatedLabel + '</span>';
+        html += '        <i class="fa-solid ' + page.icon + '"></i>';
+        html += '<span data-i18n="' + (labelKeyMap[pageId] || pageId) + '">' + translatedLabel + '</span>';
         if (pageId === 'cancellations') {
           html += '<span class="sidebar-badge" id="sidebarRefundBadge">0</span>';
         }
@@ -121,14 +123,31 @@
 
     var profile = getStoredProfile();
     var avatarLetter = profile && profile.name ? profile.name.charAt(0).toUpperCase() : 'A';
+    var avatarHtml = (profile && profile.avatar)
+      ? '<img src="' + profile.avatar + '" alt="Avatar" class="navbar-avatar-img">'
+      : avatarLetter;
     var adminName = profile && profile.name ? profile.name : 'Admin User';
 
     var curLang = 'en';
     try { curLang = localStorage.getItem('scos_language') || localStorage.getItem('cafeteria_language') || 'en'; if (curLang !== 'am') curLang = 'en'; } catch(e){}
+    var brandText = 'Smart Cafeteria';
+    var brandAdminText = 'Admin';
+    var adminRoleText = 'Administrator';
+    var logoutText = 'Logout';
+    var notifText = 'Notifications';
+    try {
+      if (window.t) {
+        brandText = window.t('admin_brand');
+        brandAdminText = window.t('admin_brand_admin');
+        adminRoleText = window.t('admin_role_administrator');
+        logoutText = window.t('admin_logout');
+        notifText = window.t('admin_notifications_shortcut_title');
+      }
+    } catch(e){}
     navbar.innerHTML = ''
       + '<div class="nav-left">'
       + '  <button id="sidebarToggle" class="btn-icon" aria-label="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>'
-      + '  <a href="dashboard.html" class="brand-logo"><i class="fa-solid fa-utensils"></i><span>Smart Cafeteria <small>Admin</small></span></a>'
+      + '  <a href="dashboard.html" class="brand-logo"><i class="fa-solid fa-utensils"></i><span>' + brandText + ' <small>' + brandAdminText + '</small></span></a>'
       + '</div>'
       + '<div class="nav-right">'
       + '  <div class="lang-switcher-widget" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-right:8px;">'
@@ -139,18 +158,18 @@
       + '    </select>'
       + '  </div>'
       + '  <div class="nav-item dropdown">'
-      + '    <button class="btn-icon notification-btn" id="notificationBtn" title="Notifications"><i class="fa-solid fa-bell"></i><span class="badge-dot" id="notifBadge"></span></button>'
+      + '    <button class="btn-icon notification-btn" id="notificationBtn" title="' + notifText + '"><i class="fa-solid fa-bell"></i><span class="badge-dot" id="notifBadge"></span></button>'
       + '  </div>'
       + '  <button type="button" class="btn-icon theme-toggle" id="themeToggle" title="Toggle Theme">'
       + '    <i class="fa-solid fa-moon"></i>'
       + '  </button>'
       + '  <div class="user-profile-menu">'
-      + '    <div class="avatar" id="adminAvatar">' + avatarLetter + '</div>'
+      + '    <div class="avatar" id="adminAvatar">' + avatarHtml + '</div>'
       + '    <div class="user-info">'
       + '      <strong id="adminNameDisplay">' + adminName + '</strong>'
-      + '      <small>Administrator</small>'
+      + '      <small data-i18n="admin_role_administrator">' + adminRoleText + '</small>'
       + '    </div>'
-      + '    <button id="logoutBtn" class="btn-logout-icon" title="Logout"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></button>'
+      + '    <button id="logoutBtn" class="btn-logout-icon" title="' + logoutText + '"><i class="fa-solid fa-right-from-bracket"></i><span data-i18n="admin_logout">' + logoutText + '</span></button>'
       + '  </div>'
       + '</div>';
 
@@ -263,7 +282,13 @@
       var nameDisplay = document.getElementById('adminNameDisplay');
       var avatar = document.getElementById('adminAvatar');
       if (nameDisplay) nameDisplay.textContent = profile.name || 'Admin User';
-      if (avatar && profile.name) avatar.textContent = profile.name.charAt(0).toUpperCase();
+      if (avatar) {
+        if (profile.avatar) {
+          avatar.innerHTML = '<img src="' + profile.avatar + '" alt="Avatar" class="navbar-avatar-img">';
+        } else if (profile.name) {
+          avatar.textContent = profile.name.charAt(0).toUpperCase();
+        }
+      }
     } else {
       var nameDisplay = document.getElementById('adminNameDisplay');
       if (nameDisplay) nameDisplay.textContent = 'Admin User';
@@ -291,7 +316,21 @@
     renderNavbar();
     renderSidebar(getCurrentPageId());
 
-    // 4. Initialize tooltips, etc.
+    // 4. Re-render the shared navbar/sidebar whenever the active language
+    //    changes so labels rendered via getText() follow the new language.
+    function reRenderOnLangChange() {
+      renderNavbar();
+      renderSidebar(getCurrentPageId());
+    }
+    var langRegister = window.onLanguageChange || window.i18nOnLanguageChange;
+    if (typeof langRegister === 'function') {
+      langRegister(reRenderOnLangChange);
+    } else {
+      window.addEventListener('language:changed', reRenderOnLangChange);
+      window.addEventListener('languageChanged', reRenderOnLangChange);
+    }
+
+    // 5. Initialize tooltips, etc.
     if (typeof initPageSpecific === 'function') {
       initPageSpecific();
     }

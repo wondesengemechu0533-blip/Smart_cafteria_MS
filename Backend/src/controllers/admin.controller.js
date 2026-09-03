@@ -25,6 +25,23 @@ exports.getDashboardStats = async (req, res) => {
     sevenDaysAgo.setHours(0, 0, 0, 0);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
+    const FLOW = ["PENDING", "PREPARING", "READY", "SERVED", "COMPLETED"];
+
+    // Mirrors admin.order.controller's effectiveStatus so dashboard counts match
+    // the admin orders table regardless of whether status is stored in the legacy
+    // lowercase `status` field or the uppercase `orderStatus` field.
+    function effectiveStatus(order) {
+      const up = String(order.orderStatus || "").toUpperCase();
+      const low = String(order.status || "").toUpperCase();
+      if (up === "CANCELLED" || low === "CANCELLED") return "CANCELLED";
+      const ui = FLOW.indexOf(up);
+      const li = FLOW.indexOf(low);
+      if (ui === -1 && li === -1) return up || low || "PENDING";
+      if (ui === -1) return low;
+      if (li === -1) return up;
+      return ui >= li ? up : low;
+    }
+
     const [
       totalUsers,
       customers,
@@ -33,20 +50,10 @@ exports.getDashboardStats = async (req, res) => {
       totalMenu,
       availableMenu,
       unavailableMenu,
-      totalOrders,
-      pendingOrders,
-      preparingOrders,
-      readyOrders,
-      servedOrders,
-      completedOrders,
-      cancelledOrders,
       successfulPayments,
       pendingPayments,
       failedPayments,
-      todayRevenue,
-      totalRevenue,
       pendingCancellations,
-      chartSeries,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: "customer" }),
@@ -55,41 +62,40 @@ exports.getDashboardStats = async (req, res) => {
       MenuItem.countDocuments(),
       MenuItem.countDocuments({ availability: true, isAvailable: true }),
       MenuItem.countDocuments({ $or: [{ availability: false }, { isAvailable: false }] }),
-      Order.countDocuments(),
-      Order.countDocuments({ status: "pending" }),
-      Order.countDocuments({ status: "preparing" }),
-      Order.countDocuments({ status: "ready" }),
-      Order.countDocuments({ status: "served" }),
-      Order.countDocuments({ status: { $in: ["completed", "Completed"] } }),
-      Order.countDocuments({ status: "cancelled" }),
       Payment.countDocuments({ status: "PAID" }),
       Payment.countDocuments({ status: "PENDING" }),
       Payment.countDocuments({ status: "FAILED" }),
-      Order.aggregate([
-        { $match: { paymentStatus: "PAID", createdAt: { $gte: today } } },
-        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
-      ]),
-      Order.aggregate([
-        { $match: { paymentStatus: "PAID" } },
-        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
-      ]),
       Order.countDocuments({ cancellationRequested: true, cancellationStatus: "pending" }),
-      Order.aggregate([
-        { $match: { createdAt: { $gte: sevenDaysAgo } } },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            orders: { $sum: 1 },
-            revenue: { $sum: { $cond: [{ $eq: ["$paymentStatus", "PAID"] }, "$totalAmount", 0] } },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]),
     ]);
 
-    const seriesMap = {};
-    chartSeries.forEach((point) => {
-      seriesMap[point._id] = { orders: point.orders, revenue: point.revenue };
+    const orders = await Order.find({})
+      .select("status orderStatus paymentStatus totalAmount createdAt")
+      .lean();
+
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter((o) => effectiveStatus(o) === "PENDING").length;
+    const preparingOrders = orders.filter((o) => effectiveStatus(o) === "PREPARING").length;
+    const readyOrders = orders.filter((o) => effectiveStatus(o) === "READY").length;
+    const servedOrders = orders.filter((o) => effectiveStatus(o) === "SERVED").length;
+    const completedOrders = orders.filter((o) => effectiveStatus(o) === "COMPLETED").length;
+    const cancelledOrders = orders.filter((o) => effectiveStatus(o) === "CANCELLED").length;
+
+    const sum = (list) => list.reduce((s, o) => s + (Number(o.totalAmount) || 0), 0);
+    const paidOrders = orders.filter((o) => o.paymentStatus === "PAID");
+    const totalRevenue = sum(paidOrders);
+    const todayRevenue = sum(
+      paidOrders.filter((o) => o.createdAt && new Date(o.createdAt).getTime() >= today.getTime())
+    );
+
+    const series = { orders: {}, revenue: {} };
+    orders.forEach((o) => {
+      const t = o.createdAt ? new Date(o.createdAt) : null;
+      if (!t) return;
+      const key = t.toISOString().slice(0, 10);
+      series.orders[key] = (series.orders[key] || 0) + 1;
+      if (o.paymentStatus === "PAID") {
+        series.revenue[key] = (series.revenue[key] || 0) + (Number(o.totalAmount) || 0);
+      }
     });
 
     const last7Days = [];
@@ -99,8 +105,8 @@ exports.getDashboardStats = async (req, res) => {
       const key = d.toISOString().slice(0, 10);
       last7Days.push({
         date: key,
-        orders: (seriesMap[key] && seriesMap[key].orders) || 0,
-        revenue: (seriesMap[key] && seriesMap[key].revenue) || 0,
+        orders: series.orders[key] || 0,
+        revenue: series.revenue[key] || 0,
       });
     }
 
@@ -119,7 +125,7 @@ exports.getDashboardStats = async (req, res) => {
           cancelled: cancelledOrders,
         },
         payments: { successful: successfulPayments, pending: pendingPayments, failed: failedPayments },
-        revenue: { today: todayRevenue[0] ? todayRevenue[0].total : 0, total: totalRevenue[0] ? totalRevenue[0].total : 0 },
+        revenue: { today: todayRevenue, total: totalRevenue },
         chart: { last7Days },
         cancellations: { pending: pendingCancellations },
       },

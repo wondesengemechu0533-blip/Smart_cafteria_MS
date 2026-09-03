@@ -38,8 +38,20 @@
       const avatar = document.getElementById('profileAvatar');
       const avatarNav = document.getElementById('adminAvatar');
       const nameNav = document.getElementById('adminNameDisplay');
-      if (avatar && profile.name) avatar.textContent = profile.name.charAt(0).toUpperCase();
-      if (avatarNav && profile.name) avatarNav.textContent = profile.name.charAt(0).toUpperCase();
+      if (avatar) {
+        if (profile.avatar) {
+          avatar.innerHTML = '<img src="' + profile.avatar + '" alt="Avatar" class="navbar-avatar-img">';
+        } else if (profile.name) {
+          avatar.textContent = profile.name.charAt(0).toUpperCase();
+        }
+      }
+      if (avatarNav) {
+        if (profile.avatar) {
+          avatarNav.innerHTML = '<img src="' + profile.avatar + '" alt="Avatar" class="navbar-avatar-img">';
+        } else if (profile.name) {
+          avatarNav.textContent = profile.name.charAt(0).toUpperCase();
+        }
+      }
       if (nameNav) nameNav.textContent = profile.name || 'Admin User';
     }
   }

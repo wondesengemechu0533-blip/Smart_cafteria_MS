@@ -156,6 +156,22 @@
       return;
     }
 
+    function formatType(order) {
+      var type = String(order.orderType || "dine-in").toLowerCase();
+      if (type === "takeaway") type = "Takeaway";
+      else if (type === "dine-in") type = "Dine-in";
+      else type = type.charAt(0).toUpperCase() + type.slice(1);
+
+      // Sanitise the stored table number: strip redundant type suffixes such as
+      // "N/A (Takeaway)" / "5 (Dine-in)" and ignore "N/A" placeholders so we
+      // never render "Table N/A".
+      var table = String(order.tableNumber || "").trim().replace(/\s*\(.*\)\s*$/i, "").trim();
+      if (table && table.toUpperCase() !== "N/A" && table.toUpperCase() !== "NA") {
+        type += " · Table " + escapeHtml(table);
+      }
+      return type;
+    }
+
     tbody.innerHTML = orders.map(function (order) {
       var status = String(order.status || "PENDING").toUpperCase();
       var showCancel = canCancel(status);
@@ -163,26 +179,29 @@
         ? '<button class="action-btn danger" data-action="cancel" data-id="' + order.id + '" title="Cancel order"><i class="fa-solid fa-ban"></i></button>'
         : "";
 
-      var customerLines = "<strong>" + escapeHtml(order.customerName) + "</strong>" +
+      var customerLines =
+        "<strong>" + escapeHtml(order.customerName) + "</strong>" +
         "<small>" + escapeHtml(order.customerPhone || "") + "</small>" +
         (order.customer && order.customer.email ? "<small>" + escapeHtml(order.customer.email) + "</small>" : "");
 
-      var paymentLine = "<span class=\"pay-method\">" + escapeHtml(order.paymentMethod || "—") + "</span> " +
-        paymentBadge(order.paymentStatus);
+      var paymentLine =
+        '<div class="pay-col">' +
+          '<span class="pay-method">' + escapeHtml(order.paymentMethod || "—") + "</span>" +
+          paymentBadge(order.paymentStatus) +
+        "</div>";
+
+      var typeLine =
+        '<div class="order-type-cell">' +
+          "<strong>" + formatType(order) + "</strong>" +
+          "<small>" + (order.itemCount || 0) + " items</small>" +
+        "</div>";
 
       return (
         "<tr>" +
-        "<td>" +
-          '<div class="user-cell">' +
-            '<div class="order-id-cell">' +
-              "<strong>" + escapeHtml(order.orderId) + "</strong>" +
-              "<small>" + (order.orderType || "dine-in") + (order.tableNumber && order.tableNumber !== "N/A" ? " · Table " + escapeHtml(order.tableNumber) : "") + "</small>" +
-            "</div>" +
-          "</div>" +
-        "</td>" +
+        '<td class="order-id-col"><strong>' + escapeHtml(order.orderId) + "</strong></td>" +
         '<td><div class="user-cell"><div class="user-avatar">' + escapeHtml((order.customerName || "?").charAt(0)) + "</div><div>" + customerLines + "</div></div></td>" +
-        '<td><div class="order-item-count">' + (order.itemCount || 0) + " items</div></td>" +
-        "<td><strong>" + money(order.totalAmount) + " ETB</strong></td>" +
+        "<td>" + typeLine + "</td>" +
+        '<td class="amount-col"><strong>' + money(order.totalAmount) + " ETB</strong></td>" +
         "<td>" + paymentLine + "</td>" +
         "<td>" + statusBadge(status) + "</td>" +
         "<td>" + window.AdminAPI.formatDateTime(order.createdAt || order.orderTime) + "</td>" +

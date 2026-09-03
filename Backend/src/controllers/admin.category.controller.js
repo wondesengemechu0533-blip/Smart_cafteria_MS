@@ -1,6 +1,7 @@
 const Category = require('../models/Category');
 const MenuItem = require('../models/MenuItem');
 const { MESSAGES, HTTP_STATUS } = require('../config/constants');
+const { logAction } = require('../utils/audit');
 
 function toId(name) {
   const base = String(name || '').trim().toLowerCase()
@@ -140,6 +141,14 @@ exports.createCategory = async (req, res) => {
       sortOrder: await Category.countDocuments(),
     });
 
+    await logAction({
+      req,
+      action: 'CATEGORY_CREATED',
+      entityType: 'Category',
+      entityId: String(category.id || category._id),
+      description: `Created category "${cleanName}"`,
+    });
+
     res.status(HTTP_STATUS.CREATED).json({ success: true, category: serialize(category) });
   } catch (error) {
     console.error('❌ Admin Create Category Error:', error);
@@ -174,6 +183,15 @@ exports.updateCategory = async (req, res) => {
     if (isActive !== undefined) category.isActive = isActive;
 
     await category.save();
+
+    await logAction({
+      req,
+      action: 'CATEGORY_UPDATED',
+      entityType: 'Category',
+      entityId: String(category.id || category._id),
+      description: `Updated category "${localName(category.name, 'en') || category.id}"`,
+    });
+
     res.status(HTTP_STATUS.OK).json({ success: true, category: serialize(category) });
   } catch (error) {
     console.error('❌ Admin Update Category Error:', error);
@@ -196,6 +214,15 @@ exports.toggleCategoryStatus = async (req, res) => {
     if (!category) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Category not found' });
     }
+
+    await logAction({
+      req,
+      action: 'CATEGORY_STATUS_CHANGED',
+      entityType: 'Category',
+      entityId: String(category.id || category._id),
+      description: `${isActive ? 'Activated' : 'Deactivated'} category "${localName(category.name, 'en') || category.id}"`,
+    });
+
     res.status(HTTP_STATUS.OK).json({ success: true, category: serialize(category) });
   } catch (error) {
     console.error('❌ Admin Toggle Category Status Error:', error);
@@ -222,6 +249,15 @@ exports.deleteCategory = async (req, res) => {
       });
     }
     await Category.findOneAndDelete({ id: req.params.id });
+
+    await logAction({
+      req,
+      action: 'CATEGORY_DELETED',
+      entityType: 'Category',
+      entityId: String(category.id || category._id),
+      description: `Deleted category "${localName(category.name, 'en') || category.id}"`,
+    });
+
     res.status(HTTP_STATUS.OK).json({ success: true, message: 'Category deleted successfully' });
   } catch (error) {
     console.error('❌ Admin Delete Category Error:', error);

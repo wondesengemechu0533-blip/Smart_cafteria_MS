@@ -5,18 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu - Ethiopian Cafeteria & Restaurant</title>
 
-    <!-- AUTHENTICATION GUARD SCRIPT -->
-    <script>
-        (function() {
-            const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-            if (isLoggedIn !== "true") {
-                alert("Please log in or create an account to view the menu.");
-                window.location.href = "../common/login.html";
-            }
-        })();
-    </script>
-
     <!-- CSS Stylesheets -->
     <link rel="stylesheet" href="../../css/menu.css">
     <link rel="stylesheet" href="../../css/style.css">
@@ -77,35 +65,7 @@
 <!-- Header Action Buttons -->
             <div class="header-actions">
 
-                <!-- Theme Toggle -->
-                <button type="button" class="theme-toggle-btn nav-link-item" data-theme-toggle aria-label="Toggle theme">
-                    <i class="fa-solid fa-moon text-gray-400"></i>
-                    <span class="d-none">Dark</span>
-                </button>
-
-                <!-- Track Order -->
-            <a href="order-tracking.html"
-               class="nav-link-track"
-               title="Track Live Order">
-
-                <i class="fa-solid fa-location-crosshairs"></i>
-                <span>Track Order</span>
-
-            </a>
-
-
-            <!-- Order History -->
-            <a href="order-history.html"
-               class="nav-link-item"
-               title="View Order History">
-
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>History</span>
-
-            </a>
-
-
-            <!-- Shopping Cart -->
+                <!-- Shopping Cart -->
             <a href="cart.html"
                class="cart-btn"
                aria-label="View Shopping Cart">

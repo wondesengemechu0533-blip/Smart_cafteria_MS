@@ -31,7 +31,6 @@
     { href: "order-history.html", icon: "fa-solid fa-clock-rotate-left", label: "Order History", current: "order-history.html" },
     { href: "cart.html", icon: "fa-solid fa-cart-shopping", label: "My Cart", current: "cart.html" },
     { href: "profile.html", icon: "fa-solid fa-user-gear", label: "Account Settings", current: "profile.html" },
-    { href: "notifications.html", icon: "fa-solid fa-bell", label: "Notifications", current: "notifications.html" },
     { href: "feedback.html", icon: "fa-solid fa-comment-dots", label: "Feedback & Reviews", current: "feedback.html" }
   ];
 
@@ -205,6 +204,14 @@
   }
 
   function init() {
+    // The customer sidebar is only shown to authenticated customers. Guests
+    // browsing the public menu should see a clean menu without the customer
+    // dashboard rail.
+    var loggedIn =
+      localStorage.getItem("isLoggedIn") === "true" ||
+      Boolean(localStorage.getItem("auth_token"));
+    if (!loggedIn) return;
+
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", function () {
         buildBackdrop();

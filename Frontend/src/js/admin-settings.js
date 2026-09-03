@@ -105,6 +105,15 @@
       if (circle && updated.avatar) {
         circle.innerHTML = '<img src="' + updated.avatar + '" alt="Avatar" class="w-full h-full rounded-2xl object-cover">';
       }
+      // Sync shared navbar avatar (admin-layout.js) immediately
+      const navAvatar = document.getElementById('adminAvatar');
+      if (navAvatar) {
+        if (updated.avatar) {
+          navAvatar.innerHTML = '<img src="' + updated.avatar + '" alt="Avatar" class="navbar-avatar-img">';
+        } else if (updated.name) {
+          navAvatar.textContent = updated.name.charAt(0).toUpperCase();
+        }
+      }
       showAlert('Profile saved successfully');
     } catch (e) { showAlert('Failed to save profile: ' + e.message, 'error'); }
     finally { setLoading(btn, false); }
@@ -193,7 +202,7 @@
 
 
   /* =============================================
-     SAVE ALL / RESET
+     SAVE ALL
      ============================================= */
   async function saveAllSettings() {
     const btn = $('saveAllSettingsBtn');
@@ -217,26 +226,6 @@
     finally { setLoading(btn, false); }
   }
 
-  async function resetSettings() {
-    if (!confirm('Reset all settings to defaults? This cannot be undone.')) return;
-    const defaults = {
-      cafeteria_opening_time: '07:00', cafeteria_closing_time: '22:00',
-      currency: 'ETB', max_daily_orders: 100, order_availability: true,
-      two_factor_enabled: false, notify_new_orders: true, notify_low_stock: true,
-      notify_daily_sales: false, notify_security_login: true
-    };
-    const btn = $('resetSettingsBtn');
-    setLoading(btn, true);
-    try {
-      for (const [k, v] of Object.entries(defaults)) await saveSetting(k, v);
-      populateSystemConfig(defaults);
-      populateNotifications(defaults);
-      $('twoFactorEnabled').checked = false;
-      showAlert('Settings reset to defaults');
-    } catch (e) { showAlert('Failed to reset: ' + e.message, 'error'); }
-    finally { setLoading(btn, false); }
-  }
-
   /* =============================================
      INIT
      ============================================= */
@@ -247,7 +236,6 @@
     $('saveSystemConfigBtn')?.addEventListener('click', saveSystemConfig);
     $('saveNotificationsBtn')?.addEventListener('click', saveNotifications);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
-    $('resetSettingsBtn')?.addEventListener('click', resetSettings);
 
     // Avatar file preview
     $('avatarFileInput')?.addEventListener('change', function () {

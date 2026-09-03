@@ -36,6 +36,11 @@
     FOOD_DELETED: "Food Deleted",
     FOOD_AVAILABILITY_CHANGED: "Availability Changed",
     ORDER_CANCELLED: "Order Cancelled",
+    ORDER_STATUS_UPDATED: "Order Status Updated",
+    CATEGORY_CREATED: "Category Created",
+    CATEGORY_UPDATED: "Category Updated",
+    CATEGORY_STATUS_CHANGED: "Category Status Changed",
+    CATEGORY_DELETED: "Category Deleted",
     SETTINGS_UPDATED: "Settings Updated",
     "settings.update": "Settings Updated",
     "auth.password.change": "Password Changed",
@@ -47,7 +52,9 @@
     if (action.indexOf("USER_") === 0) return "act-user";
     if (action.indexOf("FOOD_") === 0) return "act-food";
     if (action.indexOf("ORDER_") === 0) return "act-order";
+    if (action.indexOf("CATEGORY_") === 0) return "act-category";
     if (action.indexOf("ROLE_") === 0) return "act-user";
+    if (action.indexOf("SETTINGS_") === 0 || action === "settings.update" || action === "auth.password.change") return "act-setting";
     return "act-other";
   }
 
