@@ -300,7 +300,17 @@
 
     try {
       if (action === "approve") {
-        await window.AdminAPI.patch("/cancellations/" + encodeURIComponent(id) + "/approve", { adminNote: adminNote });
+        // Admin-controlled refund amount (full by default, or 0 for no refund,
+        // or a partial amount). Backend honors this value.
+        var refundInput = window.prompt(
+          "Refund amount to issue (ETB). Enter 0 for no refund, or leave blank for a full refund:"
+        );
+        var payload = { adminNote: adminNote };
+        if (refundInput !== null && refundInput !== "") {
+          var num = Number(refundInput);
+          if (Number.isFinite(num) && num >= 0) payload.refundAmount = num;
+        }
+        await window.AdminAPI.patch("/cancellations/" + encodeURIComponent(id) + "/approve", payload);
       } else if (action === "reject") {
         await window.AdminAPI.patch("/cancellations/" + encodeURIComponent(id) + "/reject", {
           adminNote: adminNote || "Cancellation request rejected"

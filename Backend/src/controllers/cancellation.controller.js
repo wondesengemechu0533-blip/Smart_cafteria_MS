@@ -341,7 +341,7 @@ async function resolveCancellationParam(id) {
  */
 exports.approveCancellation = async (req, res) => {
   try {
-    const { adminNote, allowServed } = req.body;
+    const { adminNote, allowServed, refundAmount } = req.body;
     const cancellation = await resolveCancellationParam(req.params.id);
     if (!cancellation) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, error: 'Cancellation not found' });
@@ -396,12 +396,28 @@ exports.approveCancellation = async (req, res) => {
       );
     } catch (_) { /* best effort */ }
 
-    // 3. Refund if payment was successful, otherwise complete immediately
+    // 3. Refund if payment was successful, otherwise complete immediately.
+    //    Refund amount is admin-controlled (full, partial, or none). If the
+    //    admin supplies a valid refundAmount (e.g. 0 for no refund, or a partial
+    //    amount), it is honored; otherwise it defaults to the full total.
     const paid = String(order.paymentStatus || '').toUpperCase() === PAYMENT_STATUS.PAID;
-    if (paid) {
-      await svc.requestRefund({ order, cancellation, amount: order.totalAmount, actorId: req.user.id });
+    let refundAmountUsed = order.totalAmount;
+    if (refundAmount !== undefined && refundAmount !== null && refundAmount !== '') {
+      const num = Number(refundAmount);
+      if (Number.isFinite(num) && num >= 0) {
+        refundAmountUsed = num;
+      }
+    }
+
+    if (paid && refundAmountUsed > 0) {
+      await svc.requestRefund({ order, cancellation, amount: refundAmountUsed, actorId: req.user.id });
       // Simulate provider acceptance so the refund enters the provider pipeline.
       await svc.markRefundProcessing({ order, cancellation, reference: cancellation.refundReference });
+    } else if (paid) {
+      // Approved but no refund (admin set amount to 0) → record that explicitly.
+      cancellation.refundStatus = REFUND_STATUS.NOT_REQUIRED;
+      cancellation.refundAmount = 0;
+      await cancellation.save();
     }
 
     await OrderStatusHistoryCreate(order, previousStatus, 'CANCELLED', req.user.id, adminNote || 'Cancellation approved');

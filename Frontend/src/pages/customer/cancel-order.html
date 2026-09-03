@@ -1206,6 +1206,125 @@
     </div>
 
 
+    <!-- =========================================================
+         CANCELLATION CONFIRMATION MODAL
+    ========================================================== -->
+    <div
+        class="cancel-modal-overlay"
+        id="cancelConfirmModal"
+        style="
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.55);
+            backdrop-filter:blur(2px);
+            z-index:10000;
+            align-items:center;
+            justify-content:center;
+            padding:16px;
+        "
+    >
+        <div
+            class="cancel-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancelModalTitle"
+            style="
+                background:#fff;
+                border-radius:12px;
+                max-width:480px;
+                width:100%;
+                padding:24px;
+                box-shadow:0 20px 50px rgba(0,0,0,0.25);
+                max-height:90vh;
+                overflow-y:auto;
+            "
+        >
+            <h3
+                id="cancelModalTitle"
+                style="margin:0 0 6px; font-size:20px;"
+            >
+                <i class="fas fa-ban" style="color:#dc2626; margin-right:8px;"></i>
+                Cancel Order
+            </h3>
+
+            <p style="margin:0 0 16px; color:#475569;">
+                Are you sure you want to cancel this order?
+            </p>
+
+            <div
+                style="
+                    background:#f8fafc;
+                    border:1px solid #e2e8f0;
+                    border-radius:8px;
+                    padding:14px;
+                    margin-bottom:16px;
+                    font-size:14px;
+                "
+            >
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span class="label" style="color:#64748b;">Order ID</span>
+                    <strong id="mOrderId">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span class="label" style="color:#64748b;">Order Status</span>
+                    <strong id="mOrderStatus">-</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="label" style="color:#64748b;">Total Amount</span>
+                    <strong id="mOrderTotal">-</strong>
+                </div>
+            </div>
+
+            <div style="margin-bottom:6px;">
+                <span class="label" style="color:#334155; font-weight:600;">
+                    Cancellation Reason
+                </span>
+            </div>
+            <div id="mOrderReason" style="font-size:14px; color:#1e293b; margin-bottom:14px;">
+                -
+            </div>
+
+            <div
+                id="mPrepWarning"
+                style="
+                    display:none;
+                    font-size:13px;
+                    color:#b45309;
+                    background:#fffbeb;
+                    border:1px solid #fcd34d;
+                    border-radius:6px;
+                    padding:10px 12px;
+                    margin-bottom:16px;
+                "
+            >
+                <i class="fas fa-exclamation-triangle"></i>
+                Important: This order may have already been prepared. Cancellation
+                / refund may require cafeteria approval.
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button
+                    type="button"
+                    id="modalKeepOrderBtn"
+                    class="btn btn-secondary"
+                    style="cursor:pointer;"
+                >
+                    Keep Order
+                </button>
+                <button
+                    type="button"
+                    id="modalConfirmBtn"
+                    class="btn-cancel-order"
+                    style="cursor:pointer;"
+                >
+                    Request Cancellation
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- =============================================================
          SCRIPT
     ============================================================= -->
@@ -2349,19 +2468,79 @@
 
 
                     // =================================================
-                    // Submit
+                    // Submit → show confirmation modal first, then submit
                     // =================================================
+
+                    const confirmModal =
+                        document.getElementById(
+                            'cancelConfirmModal'
+                        );
+
+                    const mOrderId =
+                        document.getElementById(
+                            'mOrderId'
+                        );
+
+                    const mOrderStatus =
+                        document.getElementById(
+                            'mOrderStatus'
+                        );
+
+                    const mOrderTotal =
+                        document.getElementById(
+                            'mOrderTotal'
+                        );
+
+                    const mOrderReason =
+                        document.getElementById(
+                            'mOrderReason'
+                        );
+
+                    const mPrepWarning =
+                        document.getElementById(
+                            'mPrepWarning'
+                        );
+
+                    const modalConfirmBtn =
+                        document.getElementById(
+                            'modalConfirmBtn'
+                        );
+
+                    const modalKeepBtn =
+                        document.getElementById(
+                            'modalKeepOrderBtn'
+                        );
+
+                    let pendingCancel = {
+                        reason: '',
+                        details: ''
+                    };
+
+                    const closeModal = function () {
+                        confirmModal.style.display = 'none';
+                        confirmModal.style.alignItems = 'center';
+                        confirmModal.style.justifyContent = 'center';
+                        modalConfirmBtn.disabled = false;
+                        modalConfirmBtn.classList.remove('loading');
+                    };
+
+                    const statusIsPreparing = function (s) {
+                        const st = String(s || '').toLowerCase();
+                        return (
+                            st === 'preparing' ||
+                            st === 'prepared' ||
+                            st === 'ready'
+                        );
+                    };
 
                     form.addEventListener(
                         'submit',
-                        async function (e) {
+                        function (e) {
 
                             e.preventDefault();
 
-
                             const reason =
                                 reasonSelect.value;
-
 
                             // Validate reason
 
@@ -2378,30 +2557,87 @@
 
                             }
 
-
                             const details =
                                 detailsEl.value.trim();
 
+                            // Populate the confirmation modal
 
-                            // Loading state
+                            mOrderId.textContent =
+                                order.orderId || orderId || '-';
 
-                            cancelBtn.classList.add(
+                            mOrderStatus.textContent =
+                                orderStatusValue.charAt(0) +
+                                orderStatusValue.slice(1).toLowerCase() ||
+                                String(
+                                    order.status || order.orderStatus || 'unknown'
+                                );
+
+                            mOrderTotal.textContent =
+                                (order.totalAmount
+                                    ? `${order.totalAmount} ETB`
+                                    : '-');
+
+                            mOrderReason.textContent =
+                                reason +
+                                (details
+                                    ? ` — ${details}`
+                                    : '');
+
+                            mPrepWarning.style.display =
+                                statusIsPreparing(
+                                    order.status ||
+                                    order.orderStatus ||
+                                    orderStatusValue
+                                )
+                                    ? 'block'
+                                    : 'none';
+
+                            // Store for the confirm action
+
+                            pendingCancel.reason = reason;
+                            pendingCancel.details = details;
+
+                            // Show modal
+
+                            confirmModal.style.display = 'flex';
+                            confirmModal.style.alignItems = 'center';
+                            confirmModal.style.justifyContent = 'center';
+
+                        }
+                    );
+
+
+                    // "Keep Order" → just close the modal
+
+                    modalKeepBtn.addEventListener(
+                        'click',
+                        closeModal
+                    );
+
+
+                    // "Request Cancellation" → actually submit
+
+                    modalConfirmBtn.addEventListener(
+                        'click',
+                        async function () {
+
+                            if (modalConfirmBtn.disabled) return;
+
+                            modalConfirmBtn.classList.add(
                                 'loading'
                             );
 
-                            cancelBtn.disabled =
+                            modalConfirmBtn.disabled =
                                 true;
-
 
                             try {
 
                                 const result =
                                     await requestCancellation(
                                         orderId,
-                                        reason,
-                                        details
+                                        pendingCancel.reason,
+                                        pendingCancel.details
                                     );
-
 
                                 // =============================
                                 // Success
@@ -2409,17 +2645,38 @@
 
                                 if (result.success) {
 
-                                    showAlert(
-                                        'Cancellation request submitted successfully!',
-                                        'success'
-                                    );
+                                    // Show success inside the modal
 
+                                    const modalBox =
+                                        modalConfirmBtn.closest(
+                                            '.cancel-modal'
+                                        );
+
+                                    modalBox.innerHTML =
+                                        `
+                                        <div style="text-align:center; padding:10px 0;">
+                                            <div style="font-size:44px; color:#16a34a; margin-bottom:12px;">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <h3 style="margin:0 0 8px; font-size:20px;">
+                                                Cancellation request submitted
+                                            </h3>
+                                            <p style="margin:0 0 4px; color:#475569;">
+                                                Your request is being reviewed by the
+                                                cafeteria. You will be notified when a
+                                                decision is made.
+                                            </p>
+                                            <p style="margin:16px 0 0; font-size:13px; color:#64748b;">
+                                                Order status is now
+                                                <strong>Cancellation Requested → Pending Approval</strong>.
+                                            </p>
+                                        </div>
+                                        `;
 
                                     setTimeout(() => {
                                         window.location.href =
                                             `order-tracking.html?id=${orderId}`;
-
-                                    }, 1500);
+                                    }, 2200);
 
                                 }
 
@@ -2435,12 +2692,11 @@
                                         'error'
                                     );
 
-
-                                    cancelBtn.classList.remove(
+                                    modalConfirmBtn.classList.remove(
                                         'loading'
                                     );
 
-                                    cancelBtn.disabled =
+                                    modalConfirmBtn.disabled =
                                         false;
 
                                 }
@@ -2454,18 +2710,16 @@
                                     error
                                 );
 
-
                                 showAlert(
                                     'An unexpected error occurred. Please try again.',
                                     'error'
                                 );
 
-
-                                cancelBtn.classList.remove(
+                                modalConfirmBtn.classList.remove(
                                     'loading'
                                 );
 
-                                cancelBtn.disabled =
+                                modalConfirmBtn.disabled =
                                     false;
 
                             }
