@@ -93,7 +93,7 @@ function escapeHtml(text) {
 
 async function loadSettings() {
     try {
-        const { data } = await api.get('/kitchen/settings');
+        const data = await api.get('/kitchen/settings');
         if (data.success && data.settings) {
             settings = { ...settings, ...data.settings };
         }
@@ -121,7 +121,7 @@ window.saveSettings = async function () {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
     try {
         const payload = collectForm();
-        const { data } = await api.put('/kitchen/settings', payload);
+        const data = await api.put('/kitchen/settings', payload);
         if (data.success) {
             settings = { ...settings, ...payload };
             const badge = document.getElementById('stationBadge');

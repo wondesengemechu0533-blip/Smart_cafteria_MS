@@ -191,7 +191,7 @@ title: 'Order Accepted!',
 message: `Your order #${orderId} has been accepted and is being prepared by the kitchen. Estimated time: ${estimatedMinutes} minutes`,
 type: 'status_update',
 orderId: orderId,
-link: `/customer/order-tracking.html?id=${orderId}`,
+link: `/src/pages/customer/order-tracking.html?orderId=${orderId}`,
 isRead: false
 });
 
@@ -273,7 +273,7 @@ title: 'Order Ready!',
 message: `Your order #${orderId} is ready for pickup.`,
 type: 'ready',
 orderId: orderId,
-link: `/customer/order-tracking.html?id=${orderId}`,
+link: `/src/pages/customer/order-tracking.html?orderId=${orderId}`,
 isRead: false
 });
 
@@ -353,7 +353,7 @@ const notification = await Notification.create({
     message: `Your order #${orderId} has been served. Please pick it up.`,
     type: 'status_update',
     orderId: orderId,
-    link: `/customer/order-tracking.html?id=${orderId}`,
+    link: `/src/pages/customer/order-tracking.html?orderId=${orderId}`,
     isRead: false
 });
 
@@ -915,7 +915,7 @@ tableNumber: order.tableNumber,
 status: order.status,
 priority: order.priority,
 items: order.items.map(item => ({
-id: item.itemId,
+id: item._id,
 name: item.name,
 quantity: item.quantity,
 price: item.price,

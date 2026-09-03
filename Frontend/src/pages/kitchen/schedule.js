@@ -152,7 +152,7 @@ function renderAll() {
 
 async function fetchShifts() {
     try {
-        const { data } = await api.get('/kitchen-staff/shifts');
+        const data = await api.get('/kitchen-staff/shifts');
         if (data.success) {
             allShifts = data.shifts || [];
             renderAll();
@@ -164,7 +164,7 @@ async function fetchShifts() {
 
 async function fetchCurrentShift() {
     try {
-        const { data } = await api.get('/kitchen-staff/shifts/current');
+        const data = await api.get('/kitchen-staff/shifts/current');
         if (data.success) {
             currentShift = data.shift || null;
             renderCurrentShift();

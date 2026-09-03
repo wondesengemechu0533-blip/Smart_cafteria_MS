@@ -84,7 +84,7 @@ function escapeHtml(text) {
 
 async function fetchNotifications() {
     try {
-        const { data } = await api.get('/notifications');
+        const data = await api.get('/notifications');
         if (data.success) {
             allNotifications = data.notifications || [];
             renderNotifications();
@@ -97,7 +97,7 @@ async function fetchNotifications() {
 
 async function updateBadge() {
     try {
-        const { data } = await api.get('/notifications/unread');
+        const data = await api.get('/notifications/unread');
         if (data.success) {
             const count = data.count || 0;
             if (count > 0) {

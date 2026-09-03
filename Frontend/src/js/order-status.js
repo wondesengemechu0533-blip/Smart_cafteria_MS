@@ -36,42 +36,49 @@ export function getOrderById(orderId) {
 }
 
 /**
- * Attached to window object for live cancellation from status receipt page
+ * Attached to window object for live cancellation from status receipt page.
+ * Submits a real backend cancellation request (re-used for safety if wired up).
  */
-window.cancelOrderFromStatusPage = function(orderId) {
+window.cancelOrderFromStatusPage = async function(orderId) {
     if (!confirm(`Are you sure you want to cancel order #${orderId}?`)) {
         return;
     }
 
-    let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
-    let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
+    try {
+        const { requestCancellation } = await import("./order-cancellation.js");
+        const result = await requestCancellation(orderId, "CUSTOMER_CHANGED_MIND", "Cancelled by customer from tracker");
 
-    // 1. Update latest order if ID matches
-    if (latestOrder) {
-        const latestId = latestOrder.orderId || latestOrder.id;
-        if (!latestId || latestId === orderId) {
-            latestOrder.status = "Cancelled";
-            localStorage.setItem("latestOrder", JSON.stringify(latestOrder));
+        if (!result || result.success !== true) {
+            alert((result && result.error) || "Cancellation request could not be submitted.");
+            return;
         }
-    }
 
-    // 2. Update history array
-    let orderFound = false;
-    historyData = historyData.map(order => {
-        const id = order.orderId || order.id;
-        if (id === orderId) {
-            order.status = "Cancelled";
-            orderFound = true;
+        let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+        let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
+
+        // 1. Update latest order if ID matches
+        if (latestOrder) {
+            const latestId = latestOrder.orderId || latestOrder.id;
+            if (!latestId || String(latestId) === String(orderId)) {
+                latestOrder.status = "Cancelled";
+                localStorage.setItem("latestOrder", JSON.stringify(latestOrder));
+            }
         }
-        return order;
-    });
 
-    if (orderFound || latestOrder) {
+        // 2. Update history array
+        historyData = historyData.map(order => {
+            const id = order.orderId || order.id;
+            if (String(id) === String(orderId)) {
+                order.status = "Cancelled";
+            }
+            return order;
+        });
+
         localStorage.setItem("orderHistory", JSON.stringify(historyData));
-        alert(`Order #${orderId} has been successfully cancelled.`);
+        alert("Cancellation request submitted successfully. It will be reviewed by an administrator.");
         location.reload();
-    } else {
-        alert("Unable to find order to cancel.");
+    } catch (error) {
+        alert(error.message || "Failed to submit the cancellation request.");
     }
 };
 
@@ -178,7 +185,7 @@ function updateCancelButton(s) {
     } else if (s !== "completed" && s !== "ready" && s !== "served") {
         // Active, non-completed order → allow cancellation request
         const url = new URL(window.location.href);
-        const id = url.searchParams.get("orderId");
+        const id = url.searchParams.get("orderId") || url.searchParams.get("id");
         cancelWrapper.innerHTML = `
             <a href="cancel-order.html?id=${encodeURIComponent(id || "")}"
                 class="btn btn-outline-danger"
@@ -417,7 +424,7 @@ function startStatusPolling(orderId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const requestedId = urlParams.get("orderId");
+    const requestedId = urlParams.get("orderId") || urlParams.get("id") || urlParams.get("ticket");
 
     function bootstrap() {
         let orderData = null;

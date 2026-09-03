@@ -1343,15 +1343,31 @@
                     if (confirm('Are you sure?')) {
 
                         localStorage.removeItem(
-                            'scos_user'
+                            'auth_token'
                         );
 
                         localStorage.removeItem(
-                            'scos_token'
+                            'current_user'
                         );
 
                         localStorage.removeItem(
-                            'scos_cart'
+                            'role'
+                        );
+
+                        localStorage.removeItem(
+                            'userRole'
+                        );
+
+                        localStorage.removeItem(
+                            'userName'
+                        );
+
+                        localStorage.removeItem(
+                            'name'
+                        );
+
+                        localStorage.removeItem(
+                            'latestOrder'
                         );
 
                         window.location.href =

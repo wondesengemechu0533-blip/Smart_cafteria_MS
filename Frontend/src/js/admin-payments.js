@@ -111,20 +111,15 @@
    * ============================================================ */
   async function loadStats() {
     try {
-      var dateRange = getDateRange();
-      var params = {};
-      if (dateRange.from) params.dateFrom = dateRange.from;
-      if (dateRange.to) params.dateTo = dateRange.to;
-
-      var data = await window.AdminAPI.get("/admin/payments/reports/summary", params);
+      var data = await window.AdminAPI.get("/admin/payments/stats");
       var stats = data.stats || {};
 
       document.getElementById("metricTotalPayments").textContent = stats.totalPayments || 0;
-      document.getElementById("metricSuccessfulPayments").textContent = stats.paidPayments || 0;
+      document.getElementById("metricSuccessfulPayments").textContent = stats.successfulPayments || 0;
       document.getElementById("metricFailedPayments").textContent = stats.failedPayments || 0;
       document.getElementById("metricPendingPayments").textContent = stats.pendingPayments || 0;
-      document.getElementById("metricRefundedPayments").textContent = stats.refundedPayments || 0;
-      document.getElementById("metricNetRevenue").textContent = "ETB " + money(stats.netRevenue || 0);
+      document.getElementById("metricRefundedPayments").textContent = stats.cancelledPayments || 0;
+      document.getElementById("metricNetRevenue").textContent = "ETB " + money(stats.totalRevenue || 0);
     } catch (e) {
       console.error("Error loading stats:", e);
     }

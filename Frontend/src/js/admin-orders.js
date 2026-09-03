@@ -510,7 +510,7 @@
       });
     });
 
-    document.querySelectorAll(".amodal-overlay").forEach(function (overlay) {
+    document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
       overlay.addEventListener("click", function (e) {
         if (e.target === overlay) overlay.classList.remove("open");
       });

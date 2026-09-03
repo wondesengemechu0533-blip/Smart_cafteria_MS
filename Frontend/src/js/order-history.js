@@ -1,45 +1,52 @@
+import { requestCancellation } from "./order-cancellation.js";
+
 /**
- * Attached to window so that HTML onclick="cancelOrder('ID')" works without scope issues
+ * Attached to window so that HTML onclick="cancelOrder('ID')" works without scope issues.
+ * Submits a real cancellation request to the backend; only updates localStorage on success.
  */
-window.cancelOrder = function(orderId) {
+window.cancelOrder = async function(orderId) {
     if (!confirm(`Are you sure you want to cancel order #${orderId}?`)) {
         return;
     }
 
-    let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
-    let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
-    let isUpdated = false;
+    try {
+        const result = await requestCancellation(orderId, "CUSTOMER_CHANGED_MIND", "Cancelled by customer from order history");
 
-    // 1. Update status in orderHistory list
-    historyData = historyData.map(order => {
-        const id = order.orderId || order.id;
-        if (id === orderId) {
-            if (order.status === "Completed") {
-                alert("Cannot cancel an order that has already been completed.");
-                return order;
+        if (!result || result.success !== true) {
+            alert((result && result.error) || "Cancellation request could not be submitted.");
+            return;
+        }
+
+        let historyData = JSON.parse(localStorage.getItem("orderHistory")) || [];
+        let latestOrder = JSON.parse(localStorage.getItem("latestOrder"));
+        let isUpdated = false;
+
+        historyData = historyData.map(order => {
+            const id = order.orderId || order.id;
+            if (String(id) === String(orderId)) {
+                order.status = "Cancelled";
+                isUpdated = true;
             }
-            order.status = "Cancelled";
-            isUpdated = true;
-        }
-        return order;
-    });
+            return order;
+        });
 
-    // 2. Update status in latestOrder if IDs match
-    if (latestOrder) {
-        const latestId = latestOrder.orderId || latestOrder.id;
-        if (latestId === orderId) {
-            latestOrder.status = "Cancelled";
-            localStorage.setItem("latestOrder", JSON.stringify(latestOrder));
-            isUpdated = true;
+        if (latestOrder) {
+            const latestId = latestOrder.orderId || latestOrder.id;
+            if (String(latestId) === String(orderId)) {
+                latestOrder.status = "Cancelled";
+                localStorage.setItem("latestOrder", JSON.stringify(latestOrder));
+                isUpdated = true;
+            }
         }
-    }
 
-    if (isUpdated) {
-        localStorage.setItem("orderHistory", JSON.stringify(historyData));
-        alert(`Order #${orderId} was successfully cancelled.`);
+        if (isUpdated) {
+            localStorage.setItem("orderHistory", JSON.stringify(historyData));
+        }
+
+        alert("Cancellation request submitted successfully. It will be reviewed by an administrator.");
         location.reload();
-    } else {
-        alert("Order could not be found or cancelled.");
+    } catch (error) {
+        alert(error.message || "Failed to submit the cancellation request.");
     }
 };
 

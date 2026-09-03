@@ -86,11 +86,11 @@ function renderOrderItems() {
                 ${item.notes ? `<div class="item-notes">Note: ${item.notes}</div>` : ''}
             </div>
             <span class="item-quantity">×${item.quantity}</span>
-            <select class="item-status-select" value="${item.itemStatus}" onchange="updateItemStatus('${index}', this.value)">
-                <option value="pending">Pending</option>
-                <option value="preparing">Preparing</option>
-                <option value="ready">Ready</option>
-                <option value="served">Served</option>
+            <select class="item-status-select" onchange="updateItemStatus('${index}', this.value)">
+                <option value="pending" ${item.itemStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="preparing" ${item.itemStatus === 'preparing' ? 'selected' : ''}>Preparing</option>
+                <option value="ready" ${item.itemStatus === 'ready' ? 'selected' : ''}>Ready</option>
+                <option value="served" ${item.itemStatus === 'served' ? 'selected' : ''}>Served</option>
             </select>
         `;
         itemsList.appendChild(itemCard);

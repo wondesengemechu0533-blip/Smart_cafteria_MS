@@ -399,7 +399,7 @@ emitSocketEvent(`user:${order.userId}`, 'notification:new', {
     message: notification.message,
     type: notification.type,
     orderId: notification.orderId,
-    link: notification.link || `/customer/order-tracking.html?id=${order.orderId}`,
+    link: notification.link || `/src/pages/customer/order-tracking.html?orderId=${order.orderId}`,
     isRead: notification.isRead,
     createdAt: notification.createdAt
 });

@@ -1386,25 +1386,77 @@
 
         if (orderId) {
 
+            // Look locally first so the form still renders even when the
+            // backend order lookup is unavailable (e.g. order just placed,
+            // clock/ownership mismatch, or network hiccup). The cancellation
+            // request endpoint resolves the authoritative order server-side.
             try {
+                const historyData =
+                    JSON.parse(
+                        localStorage.getItem('orderHistory')
+                    ) || [];
 
-                const data =
-                    await api.get(
-                        `/orders/${encodeURIComponent(orderId)}`
+                const latestOrder =
+                    JSON.parse(
+                        localStorage.getItem('latestOrder')
                     );
 
                 order =
-                    data?.order || null;
+                    historyData.find(
+                        o => String(o.orderId || o.id || '')
+                            .replace(/^#/, '')
+                            .toUpperCase()
+                            ===
+                            String(orderId).replace(/^#/, '').toUpperCase()
+                    ) ||
+                    (() => {
+                        const latestId =
+                            String(
+                                latestOrder?.orderId ||
+                                latestOrder?.id ||
+                                ''
+                            ).replace(/^#/, '');
 
-            } catch (error) {
-
-                console.error(
-                    'Failed to load order:',
-                    error
-                );
-
+                        return (latestId.toUpperCase() ===
+                            String(orderId).replace(/^#/, '').toUpperCase())
+                            ? latestOrder
+                            : null;
+                    })();
+            } catch (_) {
                 order = null;
+            }
 
+            if (order) {
+                order.orderId = orderId;
+            } else {
+                try {
+                    const data =
+                        await api.get(
+                            `/orders/${encodeURIComponent(orderId)}`
+                        );
+
+                    if (data?.order) {
+                        order = data.order;
+                    }
+                } catch (error) {
+                    console.error(
+                        'Failed to load order:',
+                        error
+                    );
+                }
+            }
+
+            // Last resort: build a minimal order so the cancellation form is
+            // reachable. The server re-resolves the real order on submit.
+            if (!order) {
+                order = {
+                    orderId: orderId,
+                    id: orderId,
+                    status: 'pending',
+                    orderStatus: 'pending',
+                    items: [],
+                    orderTime: Date.now()
+                };
             }
 
         }
@@ -1692,8 +1744,13 @@
                     // Items Preview
                     // =================================================
 
+                    const orderItems =
+                        Array.isArray(order.items)
+                            ? order.items
+                            : [];
+
                     const itemsPreview =
-                        order.items
+                        orderItems
                             .slice(0, 3)
                             .map(
                                 item =>
@@ -1762,8 +1819,8 @@
                                         ${itemsPreview}
 
                                         ${
-                                            order.items.length > 3
-                                                ? ` +${order.items.length - 3} more`
+                                            orderItems.length > 3
+                                                ? ` +${orderItems.length - 3} more`
                                                 : ''
                                         }
 
