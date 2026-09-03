@@ -1238,6 +1238,100 @@
 
 
         // =========================================================
+        // Loading Watchdog
+        // =========================================================
+        // Guarantees the "Loading Order Details" spinner is never left on
+        // screen forever. If the rest of the module hangs or throws before it
+        // replaces the loading state (e.g. a stalled network request), this
+        // watchdog replaces it with a Retry / Back-to-Orders card so the
+        // customer is never stuck.
+        (() => {
+            const loadingId = 'cancelLoadingState';
+            const WATCHDOG_MS = 8000;
+
+            window.setTimeout(() => {
+                try {
+                    const container =
+                        document.getElementById('cancelContent');
+                    const loading =
+                        document.getElementById(loadingId);
+
+                    // If the loading card is still mounted, the page never got
+                    // to render the real content → show a recoverable error.
+                    if (container && loading && container.contains(loading)) {
+                        container.innerHTML = `
+                            <div
+                                class="cancel-card"
+                                style="
+                                    text-align:center;
+                                    padding:40px 24px;
+                                "
+                            >
+                                <i
+                                    class="fas fa-cloud-arrow-down"
+                                    style="
+                                        font-size:48px;
+                                        color:#dc2626;
+                                        display:block;
+                                        margin-bottom:14px;
+                                    "
+                                ></i>
+                                <h3>Unable to Load Order</h3>
+                                <p
+                                    style="
+                                        color:#64748b;
+                                        margin:0 auto;
+                                        max-width:520px;
+                                    "
+                                >
+                                    Your order details are taking too long to load.
+                                    Please try again.
+                                </p>
+                                <div
+                                    style="
+                                        display:flex;
+                                        gap:10px;
+                                        justify-content:center;
+                                        flex-wrap:wrap;
+                                        margin-top:20px;
+                                    "
+                                >
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary"
+                                        id="watchdogRetryBtn"
+                                        style="cursor:pointer;"
+                                    >
+                                        <i class="fas fa-rotate"></i>
+                                        Retry
+                                    </button>
+                                    <a
+                                        href="order-history.html"
+                                        class="btn btn-secondary"
+                                    >
+                                        <i class="fas fa-list"></i>
+                                        Back to Orders
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+
+                        const retryBtn =
+                            document.getElementById('watchdogRetryBtn');
+                        if (retryBtn) {
+                            retryBtn.addEventListener('click', () => {
+                                window.location.reload();
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Watchdog error:', e);
+                }
+            }, WATCHDOG_MS);
+        })();
+
+
+        // =========================================================
         // Render Header
         // =========================================================
 
@@ -1412,8 +1506,9 @@
 
         // Dedicated timeout so the page never hangs on the loading state even
         // if the underlying fetch/API client stalls (belt-and-suspenders on top
-        // of ApiClient's own 15s default timeout).
-        const FETCH_TIMEOUT_MS = 10000;
+        // of ApiClient's own 15s default timeout). Kept below the watchdog so
+        // the normal try/catch path renders the proper error first.
+        const FETCH_TIMEOUT_MS = 7000;
 
         function withTimeout(
             promise,
