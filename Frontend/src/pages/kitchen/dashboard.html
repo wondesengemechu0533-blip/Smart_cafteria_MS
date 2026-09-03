@@ -243,6 +243,35 @@
             background-color: #10b981;
             color: #ffffff;
         }
+
+        /* ===== Dark mode (kept consistent with the rest of the kitchen) ===== */
+        [data-theme="dark"] body,
+        [data-theme="dark"] .kds-layout,
+        [data-theme="dark"] .kds-main {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .stat-card {
+            background: #1e293b;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        [data-theme="dark"] .stat-card.pending { border-left-color: #f59e0b; }
+        [data-theme="dark"] .stat-card.preparing { border-left-color: #3b82f6; }
+        [data-theme="dark"] .stat-card.ready { border-left-color: #10b981; }
+        [data-theme="dark"] .stat-label,
+        [data-theme="dark"] .refresh-indicator { color: #94a3b8; }
+        [data-theme="dark"] .stat-number { color: #f8fafc; }
+        [data-theme="dark"] .section-title-bar { color: #e2e8f0; }
+        [data-theme="dark"] .dropdown-menu-custom {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        [data-theme="dark"] .dropdown-menu-custom a,
+        [data-theme="dark"] .dropdown-menu-custom button { color: #e2e8f0; }
+        [data-theme="dark"] .dropdown-menu-custom a:hover,
+        [data-theme="dark"] .dropdown-menu-custom button:hover { background: #0f172a; }
+        [data-theme="dark"] .dropdown-divider { background-color: #334155; }
+        [data-theme="dark"] #kitchenTicketsGrid { color: #e2e8f0; }
     </style>
     <script src="../../js/theme.js"></script>
 </head>

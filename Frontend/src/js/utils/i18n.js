@@ -2735,7 +2735,7 @@ function ensureSwitcherInjected() {
       const wrapper = document.createElement("span");
       renderLangSwitcher(wrapper);
       const kdsHeader = document.querySelector(".kds-header");
-      const actions = kdsHeader.querySelector("div:last-child");
+      const actions = kdsHeader.querySelector(".user-menu");
       if (actions) actions.prepend(wrapper);
       else kdsHeader.appendChild(wrapper);
     }

@@ -115,6 +115,53 @@
         .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
+
+        /* ===== Dark mode (kept consistent with the rest of the kitchen) ===== */
+        [data-theme="dark"] body,
+        [data-theme="dark"] .kds-layout,
+        [data-theme="dark"] .kds-main {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .page-title,
+        [data-theme="dark"] .section-heading {
+            color: #f8fafc;
+        }
+        [data-theme="dark"] .stat-card,
+        [data-theme="dark"] .dashboard-card {
+            background: #1e293b;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        [data-theme="dark"] .stat-card.pending { border-left-color: #3b82f6; }
+        [data-theme="dark"] .stat-card.preparing { border-left-color: #10b981; }
+        [data-theme="dark"] .stat-card.ready { border-left-color: #6b7280; }
+        [data-theme="dark"] .stat-label { color: #94a3b8; }
+        [data-theme="dark"] .stat-number { color: #f8fafc; }
+        [data-theme="dark"] .data-table th {
+            color: #94a3b8;
+            border-bottom-color: #334155;
+            background: #0f172a;
+        }
+        [data-theme="dark"] .data-table td {
+            border-bottom-color: #293548;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .data-table tr:hover td { background: #1e293b; }
+        [data-theme="dark"] .status-badge.scheduled { background: #0c1e3f; color: #93c5fd; }
+        [data-theme="dark"] .status-badge.active,
+        [data-theme="dark"] .status-badge.clocked-in { background: #052e1f; color: #6ee7b7; }
+        [data-theme="dark"] .status-badge.completed { background: #1e293b; color: #cbd5e1; }
+        [data-theme="dark"] .status-badge.cancelled { background: #3b0f0f; color: #fecaca; }
+        [data-theme="dark"] .empty-state { color: #94a3b8; }
+        [data-theme="dark"] .dropdown-menu-custom {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        [data-theme="dark"] .dropdown-menu-custom a,
+        [data-theme="dark"] .dropdown-menu-custom button { color: #e2e8f0; }
+        [data-theme="dark"] .dropdown-menu-custom a:hover,
+        [data-theme="dark"] .dropdown-menu-custom button:hover { background: #0f172a; }
+        [data-theme="dark"] .dropdown-divider { background-color: #334155; }
     </style>
     <script src="../../js/theme.js"></script>
 </head>

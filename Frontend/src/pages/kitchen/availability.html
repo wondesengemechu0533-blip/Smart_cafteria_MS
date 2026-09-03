@@ -371,6 +371,63 @@
                 flex-direction: column;
             }
         }
+
+        /* ===== Dark mode (kept consistent with the rest of the kitchen) ===== */
+        [data-theme="dark"] body {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .header,
+        [data-theme="dark"] .filters,
+        [data-theme="dark"] .item-card {
+            background: #1e293b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        [data-theme="dark"] .header h1,
+        [data-theme="dark"] .item-name,
+        [data-theme="dark"] .detail-value,
+        [data-theme="dark"] .form-group label,
+        [data-theme="dark"] .modal-header,
+        [data-theme="dark"] .filter-group label {
+            color: #f8fafc;
+        }
+        [data-theme="dark"] .item-details,
+        [data-theme="dark"] .loading {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .detail-label {
+            color: #64748b;
+        }
+        [data-theme="dark"] .filter-group select,
+        [data-theme="dark"] .filter-group input,
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group textarea {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .badge-available {
+            background: #052e1f;
+            color: #6ee7b7;
+        }
+        [data-theme="dark"] .badge-unavailable {
+            background: #3b0f0f;
+            color: #fecaca;
+        }
+        [data-theme="dark"] .unavailable-reason {
+            background: #422006;
+            color: #fcd34d;
+        }
+        [data-theme="dark"] .modal-content {
+            background: #1e293b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        [data-theme="dark"] .btn-cancel {
+            background: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .loading { color: #94a3b8; }
     </style>
     <script src="../../js/theme.js"></script>
 </head>

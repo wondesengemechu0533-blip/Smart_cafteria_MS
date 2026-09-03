@@ -116,6 +116,49 @@
         .loading-spinner { text-align: center; padding: 40px; color: #9ca3af; }
         .loading-spinner i { font-size: 2rem; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* ===== Dark mode (kept consistent with the rest of the kitchen) ===== */
+        [data-theme="dark"] body,
+        [data-theme="dark"] .kds-layout,
+        [data-theme="dark"] .kds-main {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .page-title { color: #f8fafc; }
+        [data-theme="dark"] .settings-card {
+            background: #1e293b;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        [data-theme="dark"] .settings-card h3 {
+            color: #f8fafc;
+            border-bottom-color: #334155;
+        }
+        [data-theme="dark"] .setting-row { border-bottom-color: #293548; }
+        [data-theme="dark"] .setting-label { color: #e2e8f0; }
+        [data-theme="dark"] .setting-desc { color: #94a3b8; }
+        [data-theme="dark"] .setting-input,
+        [data-theme="dark"] .setting-select {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        [data-theme="dark"] .setting-input:focus,
+        [data-theme="dark"] .setting-select:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+        }
+        [data-theme="dark"] .toggle-slider { background-color: #334155; }
+        [data-theme="dark"] .toggle-slider::before { background: #e2e8f0; }
+        [data-theme="dark"] .loading-spinner { color: #94a3b8; }
+        [data-theme="dark"] .dropdown-menu-custom {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        [data-theme="dark"] .dropdown-menu-custom a,
+        [data-theme="dark"] .dropdown-menu-custom button { color: #e2e8f0; }
+        [data-theme="dark"] .dropdown-menu-custom a:hover,
+        [data-theme="dark"] .dropdown-menu-custom button:hover { background: #0f172a; }
+        [data-theme="dark"] .dropdown-divider { background-color: #334155; }
     </style>
     <script src="../../js/theme.js"></script>
 </head>

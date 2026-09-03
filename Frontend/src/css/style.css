@@ -1904,3 +1904,344 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===================== Customer Sidebar ===================== */
+/* Fixed rail on the left so it never disturbs centered/narrow layouts. */
+.customer-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    background: #ffffff;
+    border-right: 1px solid var(--border-color, #e2e8f0);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06);
+    z-index: 1400;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px 12px;
+    gap: 10px;
+    transition: transform 0.3s ease, width 0.3s ease;
+    overflow-y: auto;
+}
+
+/* Shift the whole page body right so the fixed rail never covers the header. */
+body.has-customer-sidebar {
+    padding-left: 260px;
+    min-height: 100vh;
+}
+
+body.has-customer-sidebar.main-rail-collapsed {
+    padding-left: 76px;
+}
+
+.customer-sidebar .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 14px;
+    border-bottom: 1px solid var(--border-color, #f1f5f9);
+    margin-bottom: 6px;
+}
+
+.customer-sidebar .sidebar-logo i {
+    font-size: 1.4rem;
+    color: var(--primary-color, #ff6b00);
+}
+
+.customer-sidebar .sidebar-logo span {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-main, #1e293b);
+    white-space: nowrap;
+}
+
+.customer-sidebar .sidebar-card {
+    background: #f8fafc;
+    border: 1px solid var(--border-color, #eef2f7);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-sidebar .sidebar-card img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color, #ff6b00);
+}
+
+.customer-sidebar .sidebar-card .sc-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main, #1e293b);
+    line-height: 1.2;
+}
+
+.customer-sidebar .sidebar-card .sc-mail {
+    font-size: 0.72rem;
+    color: var(--text-muted, #64748b);
+}
+
+.customer-sidebar-title {
+    padding: 6px 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted, #94a3b8);
+}
+
+.customer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.customer-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: var(--text-main, #1e293b);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.customer-nav-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-muted, #64748b);
+    transition: color 0.2s;
+}
+
+.customer-nav-item:hover {
+    background: #f1f5f9;
+    color: var(--primary-color, #ff6b00);
+}
+
+.customer-nav-item:hover i {
+    color: var(--primary-color, #ff6b00);
+}
+
+.customer-nav-item.active {
+    background: var(--primary-color, #ff6b00);
+    color: #ffffff;
+}
+
+.customer-nav-item.active i {
+    color: #ffffff;
+}
+
+.customer-nav-item.logout {
+    color: #ef4444;
+}
+
+.customer-nav-item.logout i {
+    color: #ef4444;
+}
+
+/* Collapsed (icon rail) state on desktop */
+.customer-sidebar.collapsed {
+    width: 76px;
+    padding: 20px 12px;
+}
+
+.customer-sidebar.collapsed .sidebar-logo span,
+.customer-sidebar.collapsed .sidebar-card .sc-name,
+.customer-sidebar.collapsed .sidebar-card .sc-mail,
+.customer-sidebar.collapsed .customer-sidebar-title,
+.customer-sidebar.collapsed .customer-nav-item span,
+.customer-sidebar.collapsed .sidebar-logo i + span {
+    display: none;
+}
+
+.customer-sidebar.collapsed .customer-nav-item {
+    justify-content: center;
+    padding: 11px;
+}
+
+.customer-sidebar.collapsed .sidebar-card {
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.customer-sidebar.collapsed .sidebar-logo {
+    justify-content: center;
+    border-bottom: none;
+    padding: 0;
+}
+
+/* Backdrop for mobile */
+.customer-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    z-index: 1390;
+}
+
+/* Hamburger toggle button placed in the customer header */
+.customer-sidebar-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: #ffffff;
+    color: var(--text-main, #1e293b);
+    font-size: 1.05rem;
+    cursor: pointer;
+}
+
+/* Collapse/expand rail button at the bottom of the sidebar (desktop) */
+.customer-sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border-color, #f1f5f9);
+    padding-top: 10px;
+}
+
+.customer-sidebar-footer .rail-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted, #64748b);
+}
+
+.customer-sidebar-footer .rail-toggle:hover {
+    background: #f1f5f9;
+    color: var(--text-main, #1e293b);
+}
+
+.customer-sidebar-footer .rail-toggle i {
+    width: 20px;
+    text-align: center;
+}
+
+.customer-sidebar.collapsed .customer-sidebar-footer .rail-toggle span {
+    display: none;
+}
+
+.customer-sidebar.collapsed .customer-sidebar-footer .rail-toggle {
+    justify-content: center;
+}
+
+/* Dark mode */
+[data-theme="dark"] .customer-sidebar {
+    background: #0f172a;
+    border-right-color: #1e293b;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .customer-sidebar .sidebar-logo {
+    border-bottom-color: #1e293b;
+}
+
+[data-theme="dark"] .customer-sidebar .sidebar-logo span {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .customer-sidebar .sidebar-card {
+    background: #1e293b;
+    border-color: #1e293b;
+}
+
+[data-theme="dark"] .customer-sidebar .sidebar-card .sc-name {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .customer-sidebar .sidebar-card .sc-mail {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .customer-sidebar-title {
+    color: #64748b;
+}
+
+[data-theme="dark"] .customer-nav-item {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .customer-nav-item i {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .customer-nav-item:hover {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .customer-sidebar.collapsed .customer-nav-item {
+    background: transparent;
+}
+
+[data-theme="dark"] .customer-sidebar-footer {
+    border-top-color: #1e293b;
+}
+
+[data-theme="dark"] .customer-sidebar-footer .rail-toggle {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .customer-sidebar-footer .rail-toggle:hover {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .customer-sidebar-toggle {
+    background: #0f172a;
+    border-color: #1e293b;
+    color: #e2e8f0;
+}
+
+/* Desktop (>= 992px): rail always visible, real shutdown hidden */
+@media (min-width: 993px) {
+    .customer-sidebar-toggle {
+        display: none;
+    }
+}
+
+/* Tablet / Mobile (< 993px): off-canvas slide-in, toggle button shown */
+@media (max-width: 992px) {
+    .customer-sidebar {
+        transform: translateX(-100%);
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .customer-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .customer-sidebar-backdrop.open {
+        display: block;
+    }
+
+    .customer-sidebar-toggle {
+        display: inline-flex;
+    }
+
+    /* No rail shift on mobile; the drawer overlays the content */
+    body.has-customer-sidebar,
+    body.has-customer-sidebar.main-rail-collapsed {
+        padding-left: 0;
+    }
+}

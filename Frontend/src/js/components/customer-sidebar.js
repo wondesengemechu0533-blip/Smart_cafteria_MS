@@ -1,0 +1,226 @@
+/**
+ * customer-sidebar.js
+ * Injects a unified, responsive navigation sidebar into every customer page.
+ *
+ * - Pages that already render their own profile sidebar (.profile-sidebar)
+ *   are left untouched.
+ * - The sidebar is a fixed left rail on desktop (collapsible to an icon rail)
+ *   and an off-canvas drawer on mobile/tablet (slide-in + backdrop).
+ * - The current page is highlighted by matching the filename.
+ * - A hamburger toggle is injected into the customer header to open/close it.
+ *
+ * Non-destructive: it only appends elements and adds one body class, so the
+ * existing centered/narrow layouts (history, status, cart, checkout) are
+ * preserved via the fixed-position rail (margins shift the content over).
+ */
+(function () {
+  "use strict";
+
+  if (window.__customerSidebarLoaded) return;
+  window.__customerSidebarLoaded = true;
+
+  // Skip if a real profile sidebar already exists on this page.
+  if (document.querySelector(".profile-sidebar")) return;
+
+  var page = document.body.getAttribute("data-page") ||
+    (location.pathname.split("/").pop() || "menu.html");
+
+  var navItems = [
+    { href: "menu.html", icon: "fa-solid fa-utensils", label: "Menu", current: "menu.html" },
+    { href: "order-tracking.html", icon: "fa-solid fa-location-crosshairs", label: "Track Order", current: "order-tracking.html" },
+    { href: "order-history.html", icon: "fa-solid fa-clock-rotate-left", label: "Order History", current: "order-history.html" },
+    { href: "cart.html", icon: "fa-solid fa-cart-shopping", label: "My Cart", current: "cart.html" },
+    { href: "profile.html", icon: "fa-solid fa-user-gear", label: "Account Settings", current: "profile.html" },
+    { href: "notifications.html", icon: "fa-solid fa-bell", label: "Notifications", current: "notifications.html" },
+    { href: "feedback.html", icon: "fa-solid fa-comment-dots", label: "Feedback & Reviews", current: "feedback.html" }
+  ];
+
+  var currentFile = page.toLowerCase();
+
+  function buildNav() {
+    var html = "";
+    navItems.forEach(function (item) {
+      var isActive = currentFile === item.current;
+      html +=
+        '<a href="' + item.href + '" class="customer-nav-item' + (isActive ? " active" : "") + '">' +
+        '<i class="' + item.icon + '"></i>' +
+        '<span>' + item.label + "</span>" +
+        "</a>";
+    });
+    html +=
+      '<a href="../common/login.html" class="customer-nav-item logout" onclick="localStorage.clear();">' +
+      '<i class="fa-solid fa-right-from-bracket"></i>' +
+      "<span>Logout</span>" +
+      "</a>";
+    return html;
+  }
+
+  function buildSidebar() {
+    var aside = document.createElement("aside");
+    aside.className = "customer-sidebar";
+    aside.setAttribute("id", "customerSidebar");
+    aside.setAttribute("aria-label", "Customer navigation");
+
+    aside.innerHTML =
+      '<div class="sidebar-logo">' +
+      '<i class="fa-solid fa-utensils"></i>' +
+      "<span>Smart Cafeteria</span>" +
+      "</div>" +
+      '<div class="sidebar-card">' +
+      '<img alt="Customer avatar" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'42\' height=\'42\'%3E%3Ccircle cx=\'21\' cy=\'21\' r=\'21\' fill=\'%23cbd5e1\'/%3E%3Ctext x=\'50%25\' y=\'55%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23475569\' font-size=\'16\'%3E%3F%3C/text%3E%3C/svg%3E">' +
+      '<div>' +
+      '<div class="sc-name" id="sidebarCustomerName">Guest</div>' +
+      '<div class="sc-mail" id="sidebarCustomerMail">customer</div>' +
+      "</div>" +
+      "</div>" +
+      '<div class="customer-sidebar-title">Navigate</div>' +
+      '<nav class="customer-nav">' + buildNav() + "</nav>" +
+      '<div class="customer-sidebar-footer">' +
+      '<button type="button" class="rail-toggle" id="customerRailToggle" aria-label="Collapse sidebar">' +
+      '<i class="fa-solid fa-angles-left"></i><span>Collapse</span>' +
+      "</button>" +
+      "</div>";
+
+    document.body.appendChild(aside);
+    document.body.classList.add("has-customer-sidebar");
+  }
+
+  function buildBackdrop() {
+    var backdrop = document.createElement("div");
+    backdrop.className = "customer-sidebar-backdrop";
+    backdrop.id = "customerSidebarBackdrop";
+    document.body.appendChild(backdrop);
+  }
+
+  function injectToggle() {
+    // Place the hamburger at the start of the left header group.
+    var hosts = [
+      document.querySelector(".navbar-header .nav-left-group"),
+      document.querySelector(".navbar .nav-left-group"),
+      document.querySelector(".btn-back-home"),
+      document.querySelector(".btn-back"),
+      document.querySelector(".navbar-header .nav-container"),
+      document.querySelector(".navbar .nav-container")
+    ];
+
+    var host = null;
+    for (var i = 0; i < hosts.length; i++) {
+      if (hosts[i]) {
+        host = hosts[i];
+        break;
+      }
+    }
+    if (!host) return;
+
+    var btn = document.createElement("button");
+    btn.className = "customer-sidebar-toggle";
+    btn.id = "customerSidebarToggle";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Open navigation");
+    btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+
+    if (host.classList.contains("btn-back-home") ||
+        host.classList.contains("btn-back")) {
+      host.parentNode.insertBefore(btn, host);
+    } else {
+      host.insertBefore(btn, host.firstChild);
+    }
+  }
+
+  // Hydrate the profile card from any stored customer data.
+  function hydrateProfile() {
+    var nameEl = document.getElementById("sidebarCustomerName");
+    var mailEl = document.getElementById("sidebarCustomerMail");
+    if (!nameEl) return;
+
+    var saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem("scos_customer_profile") || "null");
+    } catch (e) {
+      saved = null;
+    }
+
+    if (saved) {
+      if (saved.name && nameEl) nameEl.textContent = saved.name;
+      if (saved.email && mailEl) mailEl.textContent = saved.email;
+    }
+  }
+
+  function bindEvents() {
+    var sidebar = document.getElementById("customerSidebar");
+    var backdrop = document.getElementById("customerSidebarBackdrop");
+    var toggle = document.getElementById("customerSidebarToggle");
+    var railToggle = document.getElementById("customerRailToggle");
+
+    var isMobile = function () {
+      return window.innerWidth <= 992;
+    };
+
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        if (isMobile()) {
+          sidebar.classList.toggle("open");
+          if (backdrop) backdrop.classList.toggle("open", sidebar.classList.contains("open"));
+        } else {
+          sidebar.classList.toggle("collapsed");
+          document.body.classList.toggle("main-rail-collapsed", sidebar.classList.contains("collapsed"));
+          if (railToggle) {
+            railToggle.innerHTML = sidebar.classList.contains("collapsed")
+              ? '<i class="fa-solid fa-angles-right"></i>'
+              : '<i class="fa-solid fa-angles-left"></i><span>Collapse</span>';
+          }
+        }
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        sidebar.classList.remove("open");
+        backdrop.classList.remove("open");
+      });
+    }
+
+    if (railToggle) {
+      railToggle.addEventListener("click", function () {
+        sidebar.classList.toggle("collapsed");
+        document.body.classList.toggle("main-rail-collapsed", sidebar.classList.contains("collapsed"));
+        railToggle.innerHTML = sidebar.classList.contains("collapsed")
+          ? '<i class="fa-solid fa-angles-right"></i>'
+          : '<i class="fa-solid fa-angles-left"></i><span>Collapse</span>';
+      });
+    }
+
+    // Close the drawer when resizing up to desktop.
+    window.addEventListener("resize", function () {
+      if (!isMobile() && sidebar) {
+        sidebar.classList.remove("open");
+        if (backdrop) backdrop.classList.remove("open");
+      }
+    });
+
+    // Keep the toggle glyph consistent on desktop.
+    if (railToggle) {
+      railToggle.innerHTML = '<i class="fa-solid fa-angles-left"></i><span>Collapse</span>';
+    }
+  }
+
+  function init() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () {
+        buildBackdrop();
+        buildSidebar();
+        injectToggle();
+        hydrateProfile();
+        bindEvents();
+      });
+    } else {
+      buildBackdrop();
+      buildSidebar();
+      injectToggle();
+      hydrateProfile();
+      bindEvents();
+    }
+  }
+
+  init();
+})();
