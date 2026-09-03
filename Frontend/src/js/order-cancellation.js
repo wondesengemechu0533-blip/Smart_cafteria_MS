@@ -8,7 +8,7 @@
  *   - delegated [data-cancel-order] click handling
  */
 
-import api from "../services/order-cancellation.service.js";
+import api from "../js/api.js";
 
 const CANCELLATION_REASONS_EN = [
     { value: "CUSTOMER_CHANGED_MIND", label: "I changed my mind" },
