@@ -168,19 +168,11 @@ function initProfilePage() {
                     if (updatedProfile.avatar) backendBody.avatar = updatedProfile.avatar;
 
                     let res;
-                    try {
-                        res = await fetch("http://localhost:5000/api/v1/auth/profile", {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-                            body: JSON.stringify(backendBody)
-                        });
-                    } catch (err) {
-                        res = await fetch("http://127.0.0.1:5000/api/v1/auth/profile", {
-                            method: "PUT",
-                            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-                            body: JSON.stringify(backendBody)
-                        });
-                    }
+                    res = await fetch(window.__API_URL + "/auth/profile", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                        body: JSON.stringify(backendBody)
+                    });
 
                     if (res && res.ok) {
                         try {
@@ -279,7 +271,7 @@ function initProfilePage() {
 
             try {
                 const token = localStorage.getItem("auth_token");
-                const res = await fetch("http://localhost:5000/api/v1/auth/change-password", {
+                const res = await fetch(window.__API_URL + "/auth/change-password", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
                     body: JSON.stringify({ currentPassword: cur, newPassword: nw, confirmPassword: cf })

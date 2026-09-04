@@ -112,6 +112,25 @@ exports.deleteNotification = async (req, res) => {
 };
 
 /**
+ * @desc    Delete ALL of the user's notifications (clear all)
+ * @route   DELETE /api/notifications
+ * @access  Private
+ */
+exports.clearAllNotifications = async (req, res) => {
+  try {
+    const result = await Notification.deleteMany({ userId: req.user.id });
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'All notifications cleared',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('❌ Clear All Notifications Error:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ success: false, error: MESSAGES.SERVER_ERROR });
+  }
+};
+
+/**
  * @desc    Create notification (internal helper)
  */
 exports.createNotification = async (userId, title, message, type = 'system', orderId = null, link = null) => {

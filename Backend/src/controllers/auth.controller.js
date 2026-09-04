@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { logAction } = require('../utils/audit');
+const { storeProfileImage, deleteUploadedImage } = require('../utils/imageUpload');
 
 
 
@@ -425,7 +426,28 @@ error: 'Please enter a valid email address'
 }
 user.email = email.toLowerCase();
 }
-if (avatar) user.avatar = avatar;
+if (avatar) {
+// Persist the uploaded photo as a real file so it can be served at a
+// stable /uploads/profile/... URL (fixes 404 from dead placeholder paths).
+const previousAvatar = user.avatar;
+if (typeof avatar === 'string' && avatar.startsWith('data:')) {
+    try {
+        user.avatar = storeProfileImage(avatar);
+    } catch (imgErr) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            success: false,
+            error: imgErr.message || 'Invalid profile image'
+        });
+    }
+} else {
+    // Already a http(s) or /uploads path - store as-is.
+    user.avatar = avatar;
+}
+// Remove the old stored avatar file (best effort) when it's a served file.
+if (previousAvatar && previousAvatar !== user.avatar) {
+    deleteUploadedImage(previousAvatar);
+}
+}
 
 // ✅ Save preferences (profile.js stores these in localStorage)
 

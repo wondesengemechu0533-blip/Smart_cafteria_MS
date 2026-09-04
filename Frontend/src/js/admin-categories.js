@@ -301,7 +301,7 @@
     document.getElementById("availabilityTimeRow").style.display = avail.enabled ? "grid" : "none";
 
     if (category.imageUrl) {
-      var src = category.imageUrl.indexOf("http") === 0 ? category.imageUrl : "http://localhost:5000" + category.imageUrl;
+      var src = category.imageUrl.indexOf("http") === 0 ? category.imageUrl : window.__API_BASE + category.imageUrl;
       var loading = document.getElementById("imageLoading");
       var error = document.getElementById("imageError");
       var preview = document.getElementById("categoryImagePreview");

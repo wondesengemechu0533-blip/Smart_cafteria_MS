@@ -98,11 +98,62 @@ function storeDataUrl(dataUrl) {
     throw new Error('The file content does not match the declared image type');
   }
 
-  const dir = ensureUploadDir();
+      const dir = ensureUploadDir();
+      const filename = safeFileName(ext);
+      fs.writeFileSync(path.join(dir, filename), buffer);
+
+      return `/uploads/menu/${filename}`;
+  }
+
+/**
+ * Store a base64 data URL as a profile photo file and return its public path.
+ * Same validation rules as menu images but written under uploads/profile/.
+ * Throws Error with a friendly message on invalid input.
+ */
+function storeProfileImage(dataUrl) {
+  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
+  if (!match) {
+    throw new Error('Invalid image data. Expected a data:image/...;base64,... value');
+  }
+
+  const mime = match[1].toLowerCase();
+  const ext = ALLOWED_TYPES[mime];
+  if (!ext) {
+    throw new Error('Invalid image type. Allowed types: JPG, JPEG, PNG, WEBP');
+  }
+
+  const base64 = match[2];
+  let buffer;
+  try {
+    buffer = Buffer.from(base64, 'base64');
+  } catch (e) {
+    throw new Error('Invalid image data');
+  }
+
+  if (buffer.length === 0) {
+    throw new Error('Empty image file');
+  }
+  if (buffer.length > MAX_FILE_SIZE) {
+    throw new Error('Image too large. Maximum size is 2 MB');
+  }
+
+  const detected = detectType(buffer);
+  if (!detected) {
+    throw new Error('The uploaded file is not a valid image or could not be verified');
+  }
+  if (ext !== { jpg: 'jpg', png: 'png', webp: 'webp' }[detected]) {
+    throw new Error('The file content does not match the declared image type');
+  }
+
+  const dir = path.join(__dirname, '..', '..', 'uploads', 'profile');
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
   const filename = safeFileName(ext);
   fs.writeFileSync(path.join(dir, filename), buffer);
 
-  return `/uploads/menu/${filename}`;
+  return `/uploads/profile/${filename}`;
 }
 
 /**
@@ -145,6 +196,7 @@ module.exports = {
   processImageValue,
   deleteUploadedImage,
   storeDataUrl,
+  storeProfileImage,
   MAX_FILE_SIZE,
   ALLOWED_TYPES,
   UPLOAD_DIR

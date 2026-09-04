@@ -798,7 +798,14 @@
                     // them back to the menu so they can complete the order.
                     const storedRedirect = localStorage.getItem("redirect_after_auth");
                     if (storedRedirect) {
-                        redirectUrl = storedRedirect;
+                        // A bare filename (e.g. "cart.html") resolves relative to
+                        // this page's folder (common/), which is wrong. Rewrite it
+                        // to the customer directory so it never 404s.
+                        if (!storedRedirect.startsWith("/") && !/^[a-z]+:\/\//i.test(storedRedirect)) {
+                            redirectUrl = "../customer/" + storedRedirect.replace(/^\.\.?\/+/, "");
+                        } else {
+                            redirectUrl = storedRedirect;
+                        }
                     }
                 }
             } else {

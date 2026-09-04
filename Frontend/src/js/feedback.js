@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const token = localStorage.getItem("auth_token");
             if (token) {
-                const s = io("http://localhost:5000", { auth: { token }, transports: ["websocket", "polling"] });
+                const s = io(window.__API_BASE, { auth: { token }, transports: ["websocket", "polling"] });
                 s.on("notification:new", (n) => {
                     if (n && n.title && n.title.toLowerCase().includes("feedback")) {
                         renderPastFeedback();

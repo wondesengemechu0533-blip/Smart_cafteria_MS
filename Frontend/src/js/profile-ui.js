@@ -48,11 +48,38 @@ function initialsAvatar(name, size) {
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
+/**
+ * Resolve an avatar value to a displayable <img> src.
+ * Backend-served files are stored as relative /uploads/... paths; those must
+ * be turned into absolute URLs pointing at the API host, otherwise the browser
+ * resolves them against the frontend origin and returns 404.
+ */
+function resolveAvatarSrc(avatar) {
+    if (!avatar) return "";
+    const value = String(avatar);
+    // data: and http(s): URLs are used as-is.
+    if (value.startsWith("data:") || /^https?:\/\//i.test(value)) {
+        return value;
+    }
+    // Relative /uploads/... paths -> absolute against the backend host.
+    if (value.startsWith("/uploads/")) {
+        let origin = window.__API_BASE;
+        if (typeof location !== "undefined" && location.origin) {
+            // The backend always runs on port 5000 while the frontend uses a
+            // dev-server port (e.g. 5500/5501). Re-map the port accordingly,
+            // keeping http/https from the current page.
+            origin = location.origin.replace(/:\d+$/, "") + ":5000";
+        }
+        return origin + value;
+    }
+    return value;
+}
+
 function setAvatar(img, profile) {
     if (!img) return;
     const hasImage = profile && profile.avatar;
     if (hasImage) {
-        img.src = profile.avatar;
+        img.src = resolveAvatarSrc(profile.avatar);
     } else {
         img.src = initialsAvatar(profile ? profile.name : "", 72);
     }
@@ -94,9 +121,30 @@ export function populateUserUI() {
     if (avatarPreview) {
         setAvatar(avatarPreview, profile);
     }
+
+    // Customer sidebar profile card (customer-sidebar.js)
+    const scName = document.getElementById("sidebarCustomerName");
+    if (scName) {
+        scName.textContent = (profile && profile.name) || "Guest";
+    }
+    const scMail = document.getElementById("sidebarCustomerMail");
+    if (scMail) {
+        scMail.textContent = (profile && profile.email) || "customer";
+    }
+    const scImg = document.querySelector(".customer-sidebar .sidebar-card .avatar-img");
+    if (scImg) {
+        setAvatar(scImg, profile);
+    }
 }
 
 export { getCurrentProfile };
+
+// Expose helpers on window so non-module scripts / injected components
+// (e.g. customer-sidebar.js) can also use them.
+try {
+    window.populateUserUI = populateUserUI;
+    window.getCurrentProfile = getCurrentProfile;
+} catch (e) { /* ignore */ }
 
 // Auto-run as soon as the document is interactive.
 if (typeof document !== "undefined") {

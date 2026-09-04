@@ -67,16 +67,29 @@ app.use(cors({
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 300,
     message: { success: false, error: 'Too many requests, please try again later' },
     standardHeaders: true,
     legacyHeaders: false
 });
 
-const authLimiter = rateLimit({
+// Brute-force guard for the login endpoint only. Keeping this on /auth/login
+// alone means a handful of failed logins never blocks the rest of the account
+// API (profile reads/saves, register, change-password, etc.).
+const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
     message: { success: false, error: 'Too many login attempts, please try again later' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Reasonable guard for the remaining auth routes so an active customer/admin is
+// never locked out while browsing or saving their profile.
+const authApiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    message: { success: false, error: 'Too many requests, please try again later' },
     standardHeaders: true,
     legacyHeaders: false
 });
@@ -87,11 +100,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, '../Frontend/public/assets')));
 
+// In production, serve the frontend static files from the Backend root so
+// one Render service hosts everything.  Requests that don't match an API
+// route or a static file are sent to index.html (SPA-style fallback).
+if (process.env.NODE_ENV === 'production') {
+    const frontendPath = path.join(__dirname, '..', 'Frontend');
+    app.use(express.static(frontendPath));
+
+    // Redirect root to the login page
+    app.get('/', (req, res) => {
+        res.redirect('/Frontend/src/pages/common/login.html');
+    });
+
+    // Catch-all: serve the login page for any unmatched route so deep links
+    // from the frontend work without a 404 from Express.
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(frontendPath, 'src', 'pages', 'common', 'login.html'));
+    });
+}
+
 app.get('/health', (req, res) => res.json({ success: true, service: 'smart-cafeteria-backend' }));
 
 app.use('/api/v1', apiLimiter);
 
-app.use('/api/v1/auth', authLimiter, authRoutes);
+// Login gets its own tight limiter; everything else under /auth is guarded by a
+// more permissive limiter so legitimate profile/account calls aren't blocked.
+app.post('/api/v1/auth/login', loginLimiter);
+app.use('/api/v1/auth', authApiLimiter, authRoutes);
 
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/orders', orderRoutes);

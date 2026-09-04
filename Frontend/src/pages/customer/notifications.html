@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/css/menu.css">
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
-    <script src="../../js/theme.js"></script>
+    <script src="../../js/config.js"></script>`n    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -65,23 +65,8 @@
 
     <main class="container profile-layout">
 
-        <!-- Sidebar Navigation -->
-        <aside class="profile-sidebar">
-            <nav class="profile-nav">
-                <a href="profile.html" class="profile-nav-item">
-                    <i class="fa-solid fa-user-gear"></i> Account Settings
-                </a>
-                <a href="order-history.html" class="profile-nav-item">
-                    <i class="fa-solid fa-receipt"></i> Order History
-                </a>
-                <a href="notifications.html" class="profile-nav-item active">
-                    <i class="fa-solid fa-bell"></i> Notifications
-                </a>
-                <a href="feedback.html" class="profile-nav-item">
-                    <i class="fa-solid fa-comment-dots"></i> Feedback & Reviews
-                </a>
-            </nav>
-        </aside>
+        <!-- The unified customer dashboard rail (customer-sidebar.js) is the
+             sidebar here; this page renders only the content column. -->
 
         <!-- Main Content Area -->
         <section class="profile-content">
@@ -109,10 +94,11 @@
     </main>
 
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
-    <script src="/src/js/notification.js" defer></script>
-    <script type="module" src="../../js/profile.js"></script>
-    <script type="module" src="../../js/utils/i18n.js"></script>
-    <script type="module" src="../../js/customer-realtime.js"></script>
-    <script type="module" src="../../js/components/unified-header.js"></script>
+    <script src="../../js/config.js"></script>`n    <script src="/src/js/notification.js" defer></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/profile.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/utils/i18n.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/customer-sidebar.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/customer-realtime.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

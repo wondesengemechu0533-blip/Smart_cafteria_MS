@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderEmpty("Please log in to view notifications.");
                 return [];
             }
-            const response = await fetch("http://localhost:5000/api/v1/notifications", {
+            const response = await fetch(window.__API_URL + "/notifications", {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await response.json();
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function markAsRead(id) {
         try {
             const token = localStorage.getItem("auth_token");
-            await fetch(`http://localhost:5000/api/v1/notifications/${id}/read`, {
+            await fetch(window.__API_URL + `/notifications/${id}/read`, {
                 method: "PATCH",
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function deleteNotification(id) {
         try {
             const token = localStorage.getItem("auth_token");
-            await fetch(`http://localhost:5000/api/v1/notifications/${id}`, {
+            await fetch(window.__API_URL + `/notifications/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         markAllReadBtn.addEventListener("click", async () => {
             try {
                 const token = localStorage.getItem("auth_token");
-                await fetch("http://localhost:5000/api/v1/notifications/read-all", {
+                await fetch(window.__API_URL + "/notifications/read-all", {
                     method: "PATCH",
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -144,11 +144,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Clear All - not supported by backend, so mark all as read instead
+    // Clear All - actually delete all notifications
     if (clearAllBtn) {
-        clearAllBtn.addEventListener("click", () => {
+        clearAllBtn.addEventListener("click", async () => {
             if (confirm("Are you sure you want to clear all notifications?")) {
-                markAllReadBtn?.click();
+                try {
+                    const token = localStorage.getItem("auth_token");
+                    await fetch(window.__API_URL + "/notifications", {
+                        method: "DELETE",
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    renderNotifications();
+                    // Keep the header/bell unread badge in sync.
+                    window.dispatchEvent(new CustomEvent("notification:refresh"));
+                    if (typeof window.refreshNotificationBadge === "function") {
+                        window.refreshNotificationBadge();
+                    }
+                } catch (err) {
+                    console.error("Failed to clear all notifications:", err);
+                }
             }
         });
     }
@@ -158,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const token = localStorage.getItem("auth_token");
         if (!token || typeof io === "undefined") return;
 
-        const socket = io("http://localhost:5000", {
+        const socket = io(window.__API_BASE, {
             auth: { token },
             transports: ["websocket", "polling"]
         });

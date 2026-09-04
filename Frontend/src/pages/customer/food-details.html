@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -18,7 +18,7 @@
     <style>
 
         /* =========================================================
-           SMART CAFETERIA â€” PREMIUM FOOD DETAILS
+           SMART CAFETERIA — PREMIUM FOOD DETAILS
            ========================================================= */
 
         .details-page,
@@ -1137,7 +1137,7 @@
         }
 
     </style>
-    <script src="../../js/theme.js"></script>
+    <script src="../../js/config.js"></script>`n    <script src="../../js/theme.js"></script>
 </head>
 
 <body>
@@ -1252,17 +1252,17 @@
             if (document.getElementById('login-required-modal')) return;
 
             const isAm = getLang() === 'am';
-            const title = isAm ? 'እባክዎ ይመዝገቡ ወይም ይግቡ' : 'Please register or log in to order';
-            const message = isAm ? 'እቃ ለማዘዝ መግባት ያስፈልግዎታል።' : 'You need to log in to add items to your cart and place orders.';
-            const loginText = isAm ? 'ግባ' : 'Login';
-            const registerText = isAm ? 'ተመዝገብ' : 'Register';
+            const title = isAm ? '???? ????? ??? ???' : 'Please register or log in to order';
+            const message = isAm ? '?? ???? ???? ?????????' : 'You need to log in to add items to your cart and place orders.';
+            const loginText = isAm ? '??' : 'Login';
+            const registerText = isAm ? '?????' : 'Register';
 
             const modal = document.createElement('div');
             modal.id = 'login-required-modal';
             modal.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;";
             modal.innerHTML = `
                 <div style="background:#ffffff;color:#0f172a;border-radius:16px;max-width:420px;width:100%;padding:32px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:'Poppins',sans-serif;">
-                    <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+                    <div style="font-size:3rem;margin-bottom:12px;">??</div>
                     <h3 style="margin:0 0 10px;font-size:1.35rem;font-weight:700;color:#0f172a;">${title}</h3>
                     <p style="margin:0 0 24px;font-size:0.95rem;color:#475569;line-height:1.5;">${message}</p>
                     <div style="display:flex;flex-direction:column;gap:10px;">
@@ -1596,7 +1596,7 @@
                                 src="${resolveImage(item.image)}"
                                 alt="${name}"
                             >`
-                            : item.icon || 'ðŸ½ï¸'
+                            : item.icon || '🍽️'
                     }
 
                     <span
@@ -1646,7 +1646,7 @@
                             </div>
 
                             <div class="value price">
-                                ${item.price} á‰¥áˆ­
+                                ${item.price} ብር
                             </div>
 
                         </div>
@@ -1689,8 +1689,8 @@
                             >
                                 ${
                                     item.availability
-                                        ? 'âœ… Available'
-                                        : 'âŒ Unavailable'
+                                        ? '✅ Available'
+                                        : '❌ Unavailable'
                                 }
                             </div>
 
@@ -1707,7 +1707,7 @@
                                 id="qtyMinus"
                                 type="button"
                             >
-                                âˆ’
+                                −
                             </button>
 
                             <span
@@ -1849,7 +1849,7 @@
                                 quantity: quantity
                             };
                             localStorage.setItem('pending_order_item', JSON.stringify(pending));
-                            localStorage.setItem('redirect_after_auth', 'menu.html');
+                            localStorage.setItem('redirect_after_auth', window.location.pathname + window.location.search);
                         } catch (e) {}
                         window.location.href = '../common/register.html';
                         return;
@@ -1867,7 +1867,7 @@
                         '#16a34a';
 
                     showToast(
-                        `Added ${quantity}x ${name} to cart! ðŸ›’`,
+                        `Added ${quantity}x ${name} to cart! 🛒`,
                         'success'
                     );
 
@@ -1923,7 +1923,7 @@
                                     >
                                         ${
                                             rel.icon
-                                            || 'ðŸ½ï¸'
+                                            || '🍽️'
                                         }
                                     </span>
 
@@ -1939,7 +1939,7 @@
                                     <div
                                         class="r-price"
                                     >
-                                        ${rel.price} á‰¥áˆ­
+                                        ${rel.price} ብር
                                     </div>
 
                                 </div>
@@ -1975,13 +1975,13 @@
 
 
         console.log(
-            `ðŸ½ï¸ Food details page loaded for item ID: ${itemId}`
+            `🍽️ Food details page loaded for item ID: ${itemId}`
         );
 
     </script>
-<script type="module" src="../../js/utils/i18n.js"></script>
+<script src="../../js/config.js"></script>`n    <script type="module" src="../../js/utils/i18n.js"></script>
 <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
-    <script type="module" src="../../js/customer-realtime.js"></script>
-    <script type="module" src="../../js/components/unified-header.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/customer-realtime.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

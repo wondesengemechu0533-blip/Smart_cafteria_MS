@@ -5,14 +5,7 @@
  * Central API client.
  */
 
-const API_BASE_HOSTS = ["http://localhost:5000", "http://127.0.0.1:5000"];
-const API_BASE_URL = (() => {
-    try {
-        const host = typeof window !== "undefined" ? window.location.hostname : "";
-        if (host === "127.0.0.1") return "http://127.0.0.1:5000/api/v1";
-    } catch {}
-    return "http://localhost:5000/api/v1";
-})();
+import { API_BASE_URL } from './config.js';
 
 class ApiClient {
     constructor(baseURL = API_BASE_URL) {
@@ -129,8 +122,9 @@ class ApiClient {
             // Network failure (backend down) - provide actionable message
             if (error instanceof TypeError && error.message === "Failed to fetch") {
                 // Fallback: try alternate host once before failing
-                const altHost = this.baseURL.includes("localhost") ? "http://127.0.0.1:5000/api/v1" : "http://localhost:5000/api/v1";
+                const altHost = this.baseURL.includes("localhost") ? "http://127.0.0.1:5000/api/v1" : null;
                 if (url.startsWith(this.baseURL) && altHost !== this.baseURL && !options._retriedAltHost) {
+                    if (!altHost) throw new Error("Could not connect to backend server.");
                     try {
                         const altUrl = url.replace(this.baseURL, altHost);
                         const altOptions = { ...options, _retriedAltHost: true };

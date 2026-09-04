@@ -331,7 +331,7 @@
         }
         return;
       }
-      const socket = io("http://localhost:5000", { auth: { token }, transports: ["websocket", "polling"] });
+      const socket = io(window.__API_BASE, { auth: { token }, transports: ["websocket", "polling"] });
       socket.on("connect", () => {
         socket.emit("join:admin");
       });

@@ -342,6 +342,13 @@ button, input, select, textarea {
 
 .nav-left, .nav-right { display: flex; align-items: center; gap: var(--space-4); }
 
+.admin-navbar .user-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
+}
+
 .nav-left { gap: var(--space-4); }
 
 .brand-logo {

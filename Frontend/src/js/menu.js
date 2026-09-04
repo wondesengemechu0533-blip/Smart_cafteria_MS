@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     quantity: 1
                 };
                 localStorage.setItem("pending_order_item", JSON.stringify(pending));
-                localStorage.setItem("redirect_after_auth", "menu.html");
+                localStorage.setItem("redirect_after_auth", window.location.pathname + window.location.search);
             } catch (e) {}
             window.location.href = "../common/register.html";
             return;

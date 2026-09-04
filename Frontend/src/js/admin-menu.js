@@ -78,7 +78,7 @@
 
   function itemImage(item) {
     var src = item.image
-      ? (item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image)
+      ? (item.image.indexOf("http") === 0 ? item.image : window.__API_BASE + item.image)
       : "";
     if (!src) return '<div class="food-image-thumb no-image"><i class="fa-solid fa-utensils"></i></div>';
     return '<img class="food-image-thumb" src="' + window.esc(src) + '" alt="' + window.esc(item.name.en) + '" loading="lazy">';
@@ -305,7 +305,7 @@
     var loading = document.getElementById("imageLoading");
     var error = document.getElementById("imageError");
     if (item.image) {
-      var imgSrc = item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image;
+      var imgSrc = item.image.indexOf("http") === 0 ? item.image : window.__API_BASE + item.image;
       if (loading) loading.style.display = "flex";
       if (error) error.style.display = "none";
       preview.onerror = function () {
@@ -501,7 +501,7 @@
     closeAllModals();
 
     var thumb = item.image
-      ? (item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image)
+      ? (item.image.indexOf("http") === 0 ? item.image : window.__API_BASE + item.image)
       : "";
     var imageEl = document.getElementById("viewItemImage");
     if (thumb) {
@@ -581,7 +581,7 @@
     document.getElementById("stockItemName").textContent = item.name.en;
     document.getElementById("stockItemCat").textContent = categoryLabel(item.category);
     var thumb = item.image
-      ? (item.image.indexOf("http") === 0 ? item.image : "http://localhost:5000" + item.image)
+      ? (item.image.indexOf("http") === 0 ? item.image : window.__API_BASE + item.image)
       : "";
     var thumbEl = document.getElementById("stockItemThumb");
     if (thumb) { thumbEl.src = thumb; thumbEl.style.display = "block"; }

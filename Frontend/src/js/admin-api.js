@@ -16,7 +16,7 @@
 (function () {
   "use strict";
 
-  var API_BASE = "http://localhost:5000/api/v1";
+  var API_BASE = window.__API_URL;
 
   function getToken() {
     return localStorage.getItem("auth_token") || "";

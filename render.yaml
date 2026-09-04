@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: smart-cafeteria
+    runtime: node
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        value: https://smart-cafeteria.onrender.com
+      - key: FRONTEND_URL
+        value: https://smart-cafeteria.onrender.com
+      - key: CHAPA_SECRET_KEY
+        sync: false
+      - key: CHAPA_PUBLIC_KEY
+        sync: false
+      - key: CHAPA_ENCRYPTION_KEY
+        sync: false
+      - key: CHAPA_CALLBACK_URL
+        value: https://smart-cafeteria.onrender.com/api/v1/payments/chapa/callback
+      - key: CHAPA_RETURN_URL
+        value: https://smart-cafeteria.onrender.com/Frontend/src/pages/customer/order-tracking.html

@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Backend upload paths (e.g., "/uploads/menu/...") - serve from backend
         if (value.startsWith("/uploads/")) {
-            return "http://localhost:5000" + value;
+            return window.__API_BASE + value;
         }
 
         // Local folder images: map "/assets/..." to "/public/assets/..."
@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             quantity: 1
                         };
                         localStorage.setItem("pending_order_item", JSON.stringify(pending));
-                        localStorage.setItem("redirect_after_auth", "menu.html");
+                        localStorage.setItem("redirect_after_auth", window.location.pathname + window.location.search);
                     } catch (e) {}
 
                     event.preventDefault();

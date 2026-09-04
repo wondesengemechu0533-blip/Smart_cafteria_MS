@@ -3,12 +3,7 @@
  * Socket.io Client for Real-time Kitchen Dashboard
  */
 
-const SOCKET_URL = (() => {
-    try {
-        if (typeof window !== "undefined" && window.location.hostname === "127.0.0.1") return "http://127.0.0.1:5000";
-    } catch {}
-    return "http://localhost:5000";
-})();
+import { SOCKET_URL } from './config.js';
 
 class SocketClient {
     constructor() {

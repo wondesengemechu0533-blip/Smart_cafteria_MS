@@ -1118,6 +1118,7 @@ a {
 
 .user-nav-links {
     display: flex;
+    align-items: center;
     gap: 12px;
 }
 
@@ -1182,16 +1183,25 @@ a {
    ========================================================================== */
 
 .profile-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 30px;
+    display: block;
+    max-width: 860px;
     margin: 40px auto;
 }
 
+/* The unified fixed customer rail serves as the profile sidebar, so the
+   .profile-sidebar box is no longer rendered on customer pages. Retained
+   only if a page still includes a static left column. */
 .profile-sidebar {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    /* Keep the profile sidebar pinned while the page scrolls so the
+       navigation / profile card always stays visible (sticky side rail). */
+    position: sticky;
+    top: 82px; /* clears the sticky navbar-header (~64-76px) */
+    align-self: start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
 }
 
 .profile-card {
@@ -1201,6 +1211,46 @@ a {
     padding: 24px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Inline profile summary card placed at the top of the Account Settings
+   content column (the unified rail is the sidebar, so this is a compact card). */
+.profile-card-inline {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+    background: #f8fafc;
+    box-shadow: none;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.profile-card-inline .avatar-wrapper {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.profile-card-inline h3 {
+    margin: 0 0 2px;
+    font-size: 1.05rem;
+    color: var(--text-main, #1e293b);
+}
+
+.profile-card-inline p {
+    margin: 0 0 4px;
+    font-size: 0.85rem;
+    color: var(--text-muted, #64748b);
+}
+
+.profile-card-inline .member-badge {
+    margin: 0;
+}
+
+.profile-card-inline .avatar-edit-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.78rem;
 }
 
 .avatar-wrapper {
@@ -1335,7 +1385,7 @@ a {
 
 @media (max-width: 768px) {
     .profile-layout {
-        grid-template-columns: 1fr;
+        padding: 0 16px;
     }
     .form-grid {
         grid-template-columns: 1fr;
@@ -2051,6 +2101,25 @@ body.has-customer-sidebar.main-rail-collapsed {
     inset: 0;
     background: rgba(15, 23, 42, 0.5);
     z-index: 1390;
+}
+
+/* Left-side header group that hosts the hamburger toggle + back button.
+   Defined here (in addition to menu.css) so pages that only load style.css
+   (order tracking, order history, cart) get the same flex layout. */
+.nav-left-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Header inner container — flex row on every page. */
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 16px;
 }
 
 /* Hamburger toggle button placed in the customer header */

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/css/menu.css">
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
-    <script src="../../js/theme.js"></script>
+    <script src="../../js/config.js"></script>`n    <script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -49,9 +49,12 @@
 
     <main class="container profile-layout">
 
-        <!-- Left Column: User Summary Card & Navigation Links -->
-        <aside class="profile-sidebar">
-            <div class="profile-card">
+        <!-- Profile content is a single column; the unified customer dashboard
+             rail (injected by customer-sidebar.js) serves as the sidebar. -->
+        <section class="profile-content">
+
+            <!-- Profile Summary / Avatar Upload Card -->
+            <div class="profile-card profile-card-inline">
                 <div class="avatar-wrapper">
                     <img id="avatar-preview" src="https://via.placeholder.com/100" alt="Customer Avatar" class="profile-avatar">
                     <label for="avatar-upload" class="avatar-edit-btn" title="Change Avatar">
@@ -64,25 +67,6 @@
                 <span class="member-badge"><i class="fa-solid fa-medal"></i> Cafeteria Member</span>
             </div>
 
-            <!-- Quick Navigation Menu -->
-            <nav class="profile-nav">
-                <a href="profile.html" class="profile-nav-item active">
-                    <i class="fa-solid fa-user-gear"></i> Account Settings
-                </a>
-                <a href="order-history.html" class="profile-nav-item">
-                    <i class="fa-solid fa-receipt"></i> Order History
-                </a>
-                <a href="notifications.html" class="profile-nav-item">
-                    <i class="fa-solid fa-bell"></i> Notifications
-                </a>
-                <a href="feedback.html" class="profile-nav-item">
-                    <i class="fa-solid fa-comment-dots"></i> Feedback & Reviews
-                </a>
-            </nav>
-        </aside>
-
-        <!-- Right Column: Editable Account Details Form -->
-        <section class="profile-content">
             <div class="content-header">
                 <h2><i class="fa-solid fa-sliders"></i> Account Details</h2>
                 <p>Manage your contact details and default dining preferences for faster checkout.</p>
@@ -197,10 +181,11 @@
 
     </main>
 
-    <script type="module" src="../../js/utils/i18n.js"></script>
-    <script type="module" src="../../js/profile.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/utils/i18n.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/profile.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/customer-sidebar.js"></script>
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
-    <script type="module" src="../../js/customer-realtime.js"></script>
-    <script type="module" src="../../js/components/unified-header.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/customer-realtime.js"></script>
+    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/unified-header.js"></script>
 </body>
 </html>

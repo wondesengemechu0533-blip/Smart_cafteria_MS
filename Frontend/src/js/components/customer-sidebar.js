@@ -2,8 +2,6 @@
  * customer-sidebar.js
  * Injects a unified, responsive navigation sidebar into every customer page.
  *
- * - Pages that already render their own profile sidebar (.profile-sidebar)
- *   are left untouched.
  * - The sidebar is a fixed left rail on desktop (collapsible to an icon rail)
  *   and an off-canvas drawer on mobile/tablet (slide-in + backdrop).
  * - The current page is highlighted by matching the filename.
@@ -18,9 +16,6 @@
 
   if (window.__customerSidebarLoaded) return;
   window.__customerSidebarLoaded = true;
-
-  // Skip if a real profile sidebar already exists on this page.
-  if (document.querySelector(".profile-sidebar")) return;
 
   var page = document.body.getAttribute("data-page") ||
     (location.pathname.split("/").pop() || "menu.html");
@@ -46,11 +41,6 @@
         '<span>' + item.label + "</span>" +
         "</a>";
     });
-    html +=
-      '<a href="../common/login.html" class="customer-nav-item logout" onclick="localStorage.clear();">' +
-      '<i class="fa-solid fa-right-from-bracket"></i>' +
-      "<span>Logout</span>" +
-      "</a>";
     return html;
   }
 
@@ -66,13 +56,12 @@
       "<span>Smart Cafeteria</span>" +
       "</div>" +
       '<div class="sidebar-card">' +
-      '<img alt="Customer avatar" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'42\' height=\'42\'%3E%3Ccircle cx=\'21\' cy=\'21\' r=\'21\' fill=\'%23cbd5e1\'/%3E%3Ctext x=\'50%25\' y=\'55%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23475569\' font-size=\'16\'%3E%3F%3C/text%3E%3C/svg%3E">' +
+      '<img alt="Customer avatar" class="avatar-img" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'42\' height=\'42\'%3E%3Ccircle cx=\'21\' cy=\'21\' r=\'21\' fill=\'%23cbd5e1\'/%3E%3Ctext x=\'50%25\' y=\'55%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23475569\' font-size=\'16\'%3E%3F%3C/text%3E%3C/svg%3E">' +
       '<div>' +
       '<div class="sc-name" id="sidebarCustomerName">Guest</div>' +
       '<div class="sc-mail" id="sidebarCustomerMail">customer</div>' +
       "</div>" +
       "</div>" +
-      '<div class="customer-sidebar-title">Navigate</div>' +
       '<nav class="customer-nav">' + buildNav() + "</nav>" +
       '<div class="customer-sidebar-footer">' +
       '<button type="button" class="rail-toggle" id="customerRailToggle" aria-label="Collapse sidebar">' +
@@ -126,22 +115,79 @@
     }
   }
 
+  // Turn a backend-relative /uploads/... path into an absolute URL the browser
+  // can load (backend serves uploads from port 5000, frontend from a dev port).
+  function resolveAvatarSrc(avatar) {
+    if (!avatar) return "";
+    var value = String(avatar);
+    if (value.indexOf("data:") === 0 || /^https?:\/\//i.test(value)) {
+      return value;
+    }
+    if (value.indexOf("/uploads/") === 0) {
+      var origin = window.__API_BASE;
+      if (typeof location !== "undefined" && location.origin) {
+        origin = location.origin.replace(/:\d+$/, "") + ":5000";
+      }
+      return origin + value;
+    }
+    return value;
+  }
+
   // Hydrate the profile card from any stored customer data.
   function hydrateProfile() {
     var nameEl = document.getElementById("sidebarCustomerName");
     var mailEl = document.getElementById("sidebarCustomerMail");
+    var imgEl = document.querySelector(".customer-sidebar .sidebar-card .avatar-img");
     if (!nameEl) return;
 
-    var saved = null;
+    // Read from the same localStorage keys the rest of the app uses.
+    var profile = null;
     try {
-      saved = JSON.parse(localStorage.getItem("scos_customer_profile") || "null");
-    } catch (e) {
-      saved = null;
+      profile = JSON.parse(localStorage.getItem("current_user") || "null");
+    } catch (e) { profile = null; }
+    if (!profile || !(profile.name || profile.avatar)) {
+      try {
+        profile = JSON.parse(localStorage.getItem("userProfile") || "null");
+      } catch (e) { profile = null; }
     }
 
-    if (saved) {
-      if (saved.name && nameEl) nameEl.textContent = saved.name;
-      if (saved.email && mailEl) mailEl.textContent = saved.email;
+    if (profile) {
+      if (profile.name && nameEl) nameEl.textContent = profile.name;
+      if (profile.email && mailEl) mailEl.textContent = profile.email;
+
+      // Set the avatar image
+      if (imgEl) {
+        if (profile.avatar) {
+          imgEl.src = resolveAvatarSrc(profile.avatar);
+        } else if (profile.name) {
+          // Generate initials avatar inline
+          var initial = profile.name.trim().charAt(0).toUpperCase() || "U";
+          imgEl.src = "data:image/svg+xml;utf8," + encodeURIComponent(
+            "<svg xmlns='http://www.w3.org/2000/svg' width='42' height='42'>" +
+            "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
+            "<stop offset='0' stop-color='%233b82f6'/>" +
+            "<stop offset='1' stop-color='%232563eb'/>" +
+            "</linearGradient></defs>" +
+            "<circle cx='21' cy='21' r='21' fill='url(%23g)'/>" +
+            "<text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' fill='#ffffff' font-size='19' font-family='Arial,sans-serif' font-weight='600'>" + initial + "</text>" +
+            "</svg>"
+          );
+        }
+        imgEl.onerror = function () {
+          this.onerror = null;
+          var fallbackInitial = (profile.name || "U").trim().charAt(0).toUpperCase() || "U";
+          this.src = "data:image/svg+xml;utf8," + encodeURIComponent(
+            "<svg xmlns='http://www.w3.org/2000/svg' width='42' height='42'>" +
+            "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
+            "<stop offset='0' stop-color='%233b82f6'/>" +
+            "<stop offset='1' stop-color='%232563eb'/>" +
+            "</linearGradient></defs>" +
+            "<circle cx='21' cy='21' r='21' fill='url(%23g)'/>" +
+            "<text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' fill='#ffffff' font-size='19' font-family='Arial,sans-serif' font-weight='600'>" + fallbackInitial + "</text>" +
+            "</svg>"
+          );
+        };
+      }
     }
   }
 
@@ -219,6 +265,10 @@
         injectToggle();
         hydrateProfile();
         bindEvents();
+        // Sync all avatar/name elements now that the sidebar DOM exists.
+        if (typeof window.populateUserUI === "function") {
+          try { window.populateUserUI(); } catch (e) {}
+        }
       });
     } else {
       buildBackdrop();
@@ -226,6 +276,9 @@
       injectToggle();
       hydrateProfile();
       bindEvents();
+      if (typeof window.populateUserUI === "function") {
+        try { window.populateUserUI(); } catch (e) {}
+      }
     }
   }
 

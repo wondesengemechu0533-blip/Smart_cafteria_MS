@@ -452,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const isLoggedIn = localStorage.getItem("isLoggedIn") === "true" || Boolean(localStorage.getItem("auth_token"));
                 if (!isLoggedIn) {
-                    localStorage.setItem("redirect_after_auth", "cart.html");
+                    localStorage.setItem("redirect_after_auth", window.location.pathname + window.location.search);
                     window.location.href = "../common/register.html";
                     return;
                 }
