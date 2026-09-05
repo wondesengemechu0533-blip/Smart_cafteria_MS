@@ -2,10 +2,14 @@
  * Smart Cafeteria Ordering System
  * File: frontend/src/js/order-cancellation.js
  *
- * Customer-facing cancellation request helpers.
+ * Customer-facing cancellation helpers.
  *   - requestCancellation(orderId, reason, details)
  *   - getCancellationReasons(lang)
  *   - delegated [data-cancel-order] click handling
+ *
+ * Policy: a customer may only cancel while the order is still PENDING /
+ * RECEIVED (before the kitchen starts preparing). A pending cancellation is
+ * applied immediately and a full refund is processed automatically.
  */
 
 import api from "../js/api.js";
@@ -42,11 +46,13 @@ export function getCancellationReasons(lang = "en") {
 }
 
 /**
- * Submit a cancellation request for an order.
+ * Submit a cancellation request for an order. For a pending order this is a
+ * self-service action: the order is cancelled immediately and, if paid, a
+ * full refund is processed automatically.
  * @param {string} orderId  - human-friendly order id (e.g. ET-xxxx)
  * @param {string} reason   - one of the CANCELLATION_REASONS values
  * @param {string} [details] - optional explanation
- * @returns {Promise<object>} { success, message, cancellation }
+ * @returns {Promise<object>} { success, message, refunded, cancellation }
  */
 export async function requestCancellation(orderId, reason, details = "") {
     if (!orderId) throw new Error("Order ID is required.");
@@ -82,7 +88,7 @@ function initializeCancellation() {
 
             await requestCancellation(orderId, "CUSTOMER_CHANGED_MIND", "Cancelled by customer");
 
-            alert("Cancellation request submitted successfully.");
+            alert("Order cancelled successfully. Any payment has been fully refunded.");
             window.location.reload();
         } catch (error) {
             alert(error.message || "Failed to submit cancellation request");

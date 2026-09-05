@@ -3,7 +3,7 @@
  * Socket.io Client for Real-time Kitchen Dashboard
  */
 
-import { SOCKET_URL } from './config.js';
+const SOCKET_URL = window.SOCKET_URL || window.__API_BASE;
 
 class SocketClient {
     constructor() {
@@ -25,6 +25,10 @@ class SocketClient {
             // Join kitchen room for kitchen staff
             if (this.isKitchenStaff()) {
                 this.socket.emit('join:kitchen');
+            }
+            // Join delivery room for delivery staff
+            if (this.isDeliveryStaff()) {
+                this.socket.emit('join:delivery');
             }
             // Re-apply any order-room joins that were requested before connect.
             this.pendingJoins.forEach((roomId) => {
@@ -53,6 +57,14 @@ class SocketClient {
 
         this.socket.on('order:created', (order) => {
             this.emit('order:created', order);
+        });
+
+        this.socket.on('delivery:new', (order) => {
+            this.emit('delivery:new', order);
+        });
+
+        this.socket.on('delivery:assigned', (order) => {
+            this.emit('delivery:assigned', order);
         });
 
         this.socket.on('notification:new', (notification) => {
@@ -94,7 +106,21 @@ class SocketClient {
                 /* ignore */
             }
         }
-        return ['kitchen', 'KITCHEN_STAFF', 'STAFF', 'admin', 'ADMIN'].includes(role);
+        const normalized = String(role).toLowerCase();
+        return ['kitchen', 'kitchen_staff', 'kitchen staff', 'staff', 'foodmaker', 'admin'].includes(normalized);
+    }
+
+    isDeliveryStaff() {
+        let role = localStorage.getItem('role') || localStorage.getItem('userRole') || '';
+        if (!role) {
+            try {
+                role = JSON.parse(localStorage.getItem('current_user'))?.role || '';
+            } catch (e) {
+                /* ignore */
+            }
+        }
+        const normalized = String(role).toLowerCase();
+        return ['delivery', 'delivery_staff', 'delivery staff', 'driver', 'rider'].includes(normalized);
     }
 
     on(event, callback) {

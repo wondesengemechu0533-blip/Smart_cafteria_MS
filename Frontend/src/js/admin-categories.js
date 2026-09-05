@@ -136,13 +136,18 @@
         var trimmed = value.trim();
         if (!catIsValidUrl(trimmed)) {
           if (feedback) { feedback.textContent = "Please enter a valid URL (http:// or https://)"; feedback.className = "url-feedback invalid"; }
-          if (urlInput) urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid");
+          if (urlInput) { urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid"); }
           pendingImage = null;
+          document.getElementById("categoryImagePreviewRow").style.display = "none";
+          document.getElementById("categoryImagePreview").removeAttribute("src");
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "none";
+          document.getElementById("categoryImageFile").value = "";
           return;
         }
         if (urlInput) { urlInput.classList.remove("url-invalid"); urlInput.classList.add("url-valid"); }
         if (feedback) { feedback.textContent = "Loading preview..."; feedback.className = "url-feedback valid"; }
-         pendingImage = { type: "url", value: trimmed };
+        pendingImage = { type: "url", value: trimmed };
         document.getElementById("categoryImageFile").value = "";
         if (loading) loading.style.display = "flex";
         if (error) error.style.display = "none";
@@ -153,10 +158,11 @@
           preview.style.display = "none";
           if (feedback) { feedback.textContent = "Preview unavailable here, but the URL will still be saved."; feedback.className = "url-feedback valid"; }
         };
-         preview.onload = function () {
+        preview.onload = function () {
           if (loading) loading.style.display = "none";
           if (error) error.style.display = "none";
           preview.style.display = "block";
+          if (feedback) { feedback.textContent = "Image preview loaded"; feedback.className = "url-feedback valid"; }
         };
         preview.src = trimmed;
         document.getElementById("categoryImagePreviewRow").style.display = "flex";
@@ -173,12 +179,6 @@
   document.addEventListener("click", function(e) {
     var closeBtn = e.target.closest("[data-close-modal]");
     if (closeBtn) closeModal(closeBtn.getAttribute("data-close-modal"));
-    var overlay = e.target.closest(".modal-overlay");
-    if (overlay && e.target === overlay) closeAllModals();
-  });
-
-  document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") closeAllModals();
   });
 
   async function loadCategories() {

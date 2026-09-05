@@ -28,7 +28,8 @@ orderType = 'dine-in',
 tableNumber = 'N/A',
 paymentMethod,
 totalAmount,
-notes
+notes,
+deliveryInfo
 } = req.body;
 const normalizedPaymentMethod = String(paymentMethod || '').toUpperCase();
 
@@ -129,7 +130,9 @@ const name = menuItem ? (menuItem.name?.en || menuItem.name) : (item.name || 'Fo
 
     // ✅ Calculate totals
 const serviceFee = 20;
-const total = subtotal + serviceFee;
+const isDelivery = String(orderType).toLowerCase() === 'delivery';
+const deliveryFee = isDelivery ? Number((await getSettingsMap()).delivery_fee) || 0 : 0;
+const total = subtotal + serviceFee + deliveryFee;
 
 // ✅ Create order
 const order = await Order.create({
@@ -138,6 +141,15 @@ customerName: customerName.trim(),
 customerPhone: customerPhone,
 orderType: orderType,
 tableNumber: tableNumber,
+deliveryInfo: isDelivery
+  ? {
+      subCity: deliveryInfo?.subCity || '',
+      location: deliveryInfo?.location || '',
+      note: deliveryInfo?.note || '',
+      phone: deliveryInfo?.phone || customerPhone || ''
+    }
+  : undefined,
+deliveryFee: deliveryFee,
 items: validatedItems,
 subtotal: subtotal,
 
@@ -171,6 +183,9 @@ const { emitSocketEvent } = require('../utils/socket');
 const orderSummary = order.getSummary();
 emitSocketEvent('kitchen', 'order:new', orderSummary);
 emitSocketEvent(`order:${order.orderId}`, 'order:created', orderSummary);
+if (isDelivery) {
+  emitSocketEvent('delivery', 'delivery:new', orderSummary);
+}
 
 res.status(HTTP_STATUS.CREATED).json({
 success: true,
@@ -252,7 +267,11 @@ error: MESSAGES.SERVER_ERROR
 */
 exports.getMyOrders = async (req, res) => {
 try {
-const orders = await Order.find({ userId: req.user.id })
+// ✅ Only show orders created today (past orders are hidden from the customer dashboard)
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
+
+const orders = await Order.find({ userId: req.user.id, createdAt: { $gte: todayStart } })
 .sort({ createdAt: -1 });
 
 
@@ -292,8 +311,10 @@ error: 'Order not found'
 });
 }
 
-// ✅ Check if user owns order or is admin
-if (order.userId.toString() !== req.user.id && req.user.role !== 'admin') {
+// ✅ Check if user owns order or is admin / kitchen staff
+const viewerRole = String(req.user.role || '').toLowerCase();
+const isStaff = ['admin', 'staff', 'kitchen', 'kitchen_staff', 'foodmaker'].includes(viewerRole);
+if (order.userId.toString() !== req.user.id.toString() && !isStaff) {
 return res.status(HTTP_STATUS.FORBIDDEN).json({
 success: false,
 
@@ -341,7 +362,7 @@ const { status } = req.body;
 
 // ✅ Validate status
 
-const validStatuses = ['pending', 'preparing', 'ready', 'served', 'cancelled'];
+const validStatuses = ['pending', 'preparing', 'ready', 'served', 'out_for_delivery', 'delivered', 'cancelled'];
 if (!validStatuses.includes(status)) {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
@@ -369,6 +390,13 @@ order.readyTime = new Date();
 if (status === 'served') {
 order.completedTime = new Date();
 }
+if (status === 'out_for_delivery') {
+order.deliveryStartedAt = new Date();
+}
+if (status === 'delivered') {
+order.deliveredAt = new Date();
+order.completedTime = new Date();
+}
 
 
 await order.save();
@@ -378,15 +406,29 @@ const { emitSocketEvent } = require('../utils/socket');
 const orderSummary = order.getSummary();
 emitSocketEvent('kitchen', 'order:status', orderSummary);
 emitSocketEvent(`order:${order.orderId}`, 'order:status', orderSummary);
+if (order.orderType === 'delivery') {
+  emitSocketEvent('delivery', 'order:status', orderSummary);
+}
 
 // ✅ Create notification for customer
-if (status === 'ready' || status === 'preparing') {
+const readyMsg = order.orderType === 'delivery' ? 'ready for delivery' : 'ready for pickup';
+const statusTitle = {
+  ready: order.orderType === 'delivery' ? 'Order Ready for Delivery!' : 'Order Ready!',
+  out_for_delivery: 'Order Out for Delivery!',
+  delivered: 'Order Delivered!',
+  preparing: 'Order Preparing'
+};
+const statusMessage = {
+  ready: `Your order #${order.orderId} is ${readyMsg}!`,
+  out_for_delivery: `Your order #${order.orderId} is out for delivery. Our delivery person is on the way!`,
+  delivered: `Your order #${order.orderId} has been delivered. Enjoy your meal!`,
+  preparing: `Your order #${order.orderId} is being prepared`
+};
+if (statusMessage[status]) {
 const notification = await Notification.create({
 userId: order.userId,
-title: status === 'ready' ? 'Order Ready!' : 'Order Preparing',
-message: status === 'ready'
-? `Your order #${order.orderId} is ready for pickup!`
-: `Your order #${order.orderId} is being prepared`,
+title: statusTitle[status],
+message: statusMessage[status],
 type: status === 'ready' ? 'ready' : 'status_update',
 orderId: order.orderId,
 isRead: false

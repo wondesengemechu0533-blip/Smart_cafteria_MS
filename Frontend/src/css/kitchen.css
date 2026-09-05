@@ -256,6 +256,7 @@
 .badge-pending { background: #fef3c7; color: #92400e; }
 .badge-preparing { background: #dbeafe; color: #1e40af; }
 .badge-ready { background: #d1fae5; color: #065f46; }
+.badge-picked-up { background: #ede9fe; color: #5b21b6; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; }
 .badge-served { background: #f3f4f6; color: #374151; }
 
@@ -330,6 +331,52 @@
 }
 .btn-advance:hover {
     background-color: #059669;
+}
+
+/* ===== DELIVERY ORDER TICKET STYLES ===== */
+.ticket-delivery {
+    border-left-color: #f97316;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.18);
+}
+
+.ticket-type {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: rgba(249, 115, 22, 0.08);
+    width: fit-content;
+}
+
+.ticket-address {
+    font-weight: 400;
+    color: var(--gray-500);
+    font-size: 0.8rem;
+}
+
+.btn-delivery {
+    background-color: #f97316;
+    color: #ffffff;
+}
+.btn-delivery:hover {
+    background-color: #ea580c;
+}
+
+.btn-delivery-sent {
+    background-color: #94a3b8;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.badge-type {
+    background: rgba(249, 115, 22, 0.15);
+    color: #c2410c;
+    white-space: nowrap;
 }
 
 /* ===== 6. KITCHEN RESPONSIVE ===== */
@@ -606,4 +653,23 @@ display: flex;
 .dropdown-menu-custom a:last-child,
 .dropdown-menu-custom button:last-child {
   border-radius: 0 0 6px 6px;
+}
+.btn-loading {
+  opacity: 0.6;
+  cursor: wait;
+  pointer-events: none;
+}
+.btn-loading::after {
+  content: '…';
+  animation: kds-loading-dots 1s steps(4, end) infinite;
+  display: inline-block;
+  width: 1.2em;
+  text-align: left;
+}
+@keyframes kds-loading-dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
 }

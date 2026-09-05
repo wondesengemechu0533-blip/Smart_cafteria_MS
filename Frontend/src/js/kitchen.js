@@ -10,7 +10,7 @@ import { getAllOrders, updateOrderStatus, markOrderReady, getKitchenStats } from
 import { addNotification } from './notifications.js';
 import { getCurrentUser } from './auth.js';
 import { showToast } from './main.js';
-import { ORDER_STATUS } from './config.js';
+const ORDER_STATUS = window.ORDER_STATUS || {};
 
 // ===== 1. KITCHEN STATE =====
 let kitchenListeners = [];

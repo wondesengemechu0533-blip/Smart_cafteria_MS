@@ -60,6 +60,19 @@ function isActive(status) {
 }
 
 /**
+ * Only orders created today are shown to the customer (past/demo orders are hidden).
+ * Records without a usable date are kept rather than dropped.
+ */
+function isTodaysOrder(record) {
+    const d = new Date(record.createdAt || record.orderTime || record.orderDate);
+    if (isNaN(d.getTime())) return true;
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate();
+}
+
+/**
  * Normalize a server order into the localStorage record shape the
  * customer pages expect (orderHistory / latestOrder).
  */
@@ -96,7 +109,7 @@ async function syncMyOrders() {
         return;
     }
 
-    if (!Array.isArray(serverOrders) || serverOrders.length === 0) return;
+    if (!Array.isArray(serverOrders)) return;
 
     const records = serverOrders
         .map((o) => toLocalRecord(o))
@@ -107,14 +120,23 @@ async function syncMyOrders() {
             return String(tb).localeCompare(String(ta));
         });
 
-    if (records.length === 0) return;
+    if (records.length === 0) {
+        // Still purge stale stored orders from past days.
+        localStorage.setItem("orderHistory", JSON.stringify([]));
+        const localLatest = JSON.parse(localStorage.getItem("latestOrder"));
+        if (localLatest && !isTodaysOrder(localLatest)) {
+            localStorage.removeItem("latestOrder");
+        }
+        return;
+    }
 
-    // Merge server records into the existing orderHistory (authoritative wins).
+    // Merge today's server records into the existing orderHistory (authoritative wins).
     const existing = JSON.parse(localStorage.getItem("orderHistory")) || [];
     const idOf = (r) => (r.orderId || r.id || "").replace(/^#/, "").trim();
     const byId = new Map();
     records.forEach((r) => byId.set(idOf(r), r));
-    existing.forEach((r) => {
+    // Do not carry forward any stored order that was not created today.
+    existing.filter(isTodaysOrder).forEach((r) => {
         const k = idOf(r);
         if (!byId.has(k)) byId.set(k, r);
     });
@@ -125,11 +147,19 @@ async function syncMyOrders() {
     const activeOrders = records.filter((r) => isActive(r.status));
     const latest = activeOrders.length > 0 ? activeOrders[0] : records[0];
 
-    // Only overwrite latestOrder if we have a real one from the server.
-    // active-order.js shows the banner only when latestOrder.status is not
-    // "Completed", so an active order will reliably show the Track button again
-    // after the customer logs back in.
-    localStorage.setItem("latestOrder", JSON.stringify(latest));
+    if (latest) {
+        // Only overwrite latestOrder if we have a real one from the server.
+        // active-order.js shows the banner only when latestOrder.status is not
+        // "Completed", so an active order will reliably show the Track button again
+        // after the customer logs back in.
+        localStorage.setItem("latestOrder", JSON.stringify(latest));
+    } else {
+        // No orders today: clear any stale stored banner order from a past day.
+        const localLatest = JSON.parse(localStorage.getItem("latestOrder"));
+        if (localLatest && !isTodaysOrder(localLatest)) {
+            localStorage.removeItem("latestOrder");
+        }
+    }
 
     // Notify pages (e.g. order-tracking) that fresh order data is available,
     // so they can re-render even if they initially found no local order.

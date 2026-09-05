@@ -7,6 +7,8 @@ const {
     acceptOrder,
     markOrderReady,
     markOrderServed,
+    markOrderPickedUp,
+    sendOrderToDelivery,
     rejectOrder,
     getKitchenStats,
     getMenuAvailability,
@@ -21,10 +23,10 @@ const {
 } = require('../controllers/kitchen.controller');
 
 // ============================================================
-// ALL ROUTES REQUIRE KITCHEN ROLE
+// ALL ROUTES REQUIRE KITCHEN ROLE (or admin, who can view it too)
 // ============================================================
 router.use(protect);
-router.use(authorize('kitchen'));
+router.use(authorize('kitchen', 'admin', 'kitchen_staff', 'staff', 'foodmaker'));
 
 /**
  * @route   GET /api/kitchen/dashboard
@@ -89,6 +91,24 @@ router.patch('/orders/:orderId/ready', markOrderReady);
  * Frontend: kitchen/dashboard.html → Mark served
  */
 router.patch('/orders/:orderId/serve', markOrderServed);
+
+/**
+ * @route   POST /api/kitchen/orders/:orderId/send-to-delivery
+ * @desc    Send a ready delivery order to delivery staff
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/dashboard.html → Send to Delivery button
+ */
+router.post('/orders/:orderId/send-to-delivery', sendOrderToDelivery);
+
+/**
+ * @route   PATCH /api/kitchen/orders/:orderId/picked-up
+ * @desc    Mark order as picked up by driver (handoff from kitchen)
+ * @access  Private/Kitchen
+ * 
+ * Frontend: kitchen/dashboard.html → Hand to Driver button
+ */
+router.patch('/orders/:orderId/picked-up', markOrderPickedUp);
 
 /**
  * @route   PATCH /api/kitchen/orders/:orderId/reject

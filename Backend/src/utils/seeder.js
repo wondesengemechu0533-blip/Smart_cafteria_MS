@@ -312,6 +312,15 @@ const users = [
     role: 'customer',
     balance: 1000,
     status: 'ACTIVE'
+  },
+  {
+    name: 'Delivery Staff',
+    email: 'delivery@cafeteria.com',
+    phone: '0933445566',
+    password: 'password123',
+    role: 'delivery',
+    balance: 0,
+    status: 'ACTIVE'
   }
 ];
 

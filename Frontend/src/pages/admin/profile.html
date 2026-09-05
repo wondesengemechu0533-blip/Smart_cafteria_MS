@@ -51,15 +51,24 @@
                             <form id="passwordForm">
                                 <div class="form-group">
                                     <label for="currentPassword" class="form-label">Current Password</label>
-                                    <input type="password" id="currentPassword" class="form-control" required>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="currentPassword" class="form-control" required>
+                                        <i class="fa-solid fa-eye toggle-password-icon" data-target="currentPassword" title="Show password"></i>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="newPassword" class="form-label">New Password</label>
-                                    <input type="password" id="newPassword" class="form-control" required>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="newPassword" class="form-control" required>
+                                        <i class="fa-solid fa-eye toggle-password-icon" data-target="newPassword" title="Show password"></i>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                                    <input type="password" id="confirmPassword" class="form-control" required>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="confirmPassword" class="form-control" required>
+                                        <i class="fa-solid fa-eye toggle-password-icon" data-target="confirmPassword" title="Show password"></i>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -73,9 +82,10 @@
     </div>
 
     <!-- JavaScript Files -->
-    <script src="../../js/config.js"></script>`n    <script src="../../js/admin-api.js"></script>
+    <script src="../../js/config.js"></script>
+<script src="../../js/admin-api.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>
-    <script src="../../js/config.js"></script>`n    <script src="../../js/admin-layout.js"></script>
+    <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/admin-profile.js"></script>
 

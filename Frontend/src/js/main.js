@@ -15,7 +15,7 @@
  */
 
 import { MENU_ITEMS } from "./mock-menu-data.js";
-import { MENU_CATEGORIES } from "./config.js";
+const MENU_CATEGORIES = window.MENU_CATEGORIES || [];
 
 export function showToast(message, type = "success") {
     if (window.AdminToast && typeof window.AdminToast.show === "function") {

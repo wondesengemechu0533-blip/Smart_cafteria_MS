@@ -1,0 +1,188 @@
+/* ==========================================================================
+   SMART CAFETERIA - DELIVERY STAFF STYLES
+   Shared UI for all delivery staff pages (dashboard, deliveries, history,
+   notifications, profile).
+   ========================================================================== */
+
+/* -------- Delivery accent (orange) overrides for the admin-style shell ---- */
+.delivery-sidebar .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  font-weight: 700;
+  color: var(--color-neutral-strong, #1f2937);
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+.delivery-sidebar .sidebar-brand i { font-size: 1.3rem; color: #f97316; }
+.delivery-sidebar .sidebar-brand span { font-size: 1rem; }
+
+.delivery-sidebar .sidebar-link:hover { color: #f97316; }
+.delivery-sidebar .sidebar-link:hover i { color: #f97316; }
+.delivery-sidebar .sidebar-link.active {
+  background: rgba(249, 115, 22, 0.12);
+  color: #ea580c;
+}
+.delivery-sidebar .sidebar-link.active i { color: #ea580c; }
+
+.admin-navbar .user-profile-menu small { color: #f97316; font-weight: 600; }
+
+/* -------- Page header (top of each page inside admin-main) --------------- */
+.delivery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.delivery-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.delivery-header h1 i { color: #f97316; }
+
+/* -------- Stat cards ----------------------------------------------------- */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.stat-card .num { font-size: 2rem; font-weight: 800; color: #f97316; }
+.stat-card .lbl { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+
+/* -------- Delivery order cards ------------------------------------------- */
+.delivery-list { display: flex; flex-direction: column; gap: 14px; }
+.delivery-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.delivery-card.active { border-left: 4px solid #f97316; }
+.delivery-card.picked { border-left: 4px solid #7c3aed; }
+.delivery-card.out { border-left: 4px solid #2563eb; }
+.delivery-card .d-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.delivery-card .d-card-head h4 { margin: 0; font-size: 1.05rem; }
+.delivery-card .d-card-body { margin-top: 12px; font-size: 0.92rem; color: #334155; }
+.delivery-card .d-card-body .addr {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 8px;
+}
+.delivery-card .d-card-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.status-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.status-ready { background: #fef3c7; color: #b45309; }
+.status-picked { background: #ede9fe; color: #6d28d9; }
+.status-out { background: #dbeafe; color: #1d4ed8; }
+.status-delivered { background: #dcfce7; color: #15803d; }
+
+.btn-action {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.btn-go { background: #d97706; color: #fff; }
+.btn-go:hover { background: #b45309; }
+.btn-pickup { background: #7c3aed; color: #fff; }
+.btn-pickup:hover { background: #6d28d9; }
+.btn-done { background: #16a34a; color: #fff; }
+.btn-done:hover { background: #15803d; }
+.btn-disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+
+/* -------- Empty state / section titles ------------------------------------ */
+.empty-state { text-align: center; color: #94a3b8; padding: 40px 20px; }
+.empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 10px; }
+.section-title { display: flex; align-items: center; gap: 8px; margin: 24px 0 14px; }
+.section-title h3 { margin: 0; }
+
+/* -------- Items chips ------------------------------------------------------ */
+.items-mini { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.item-chip {
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+/* -------- History table ----------------------------------------------------- */
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th, .history-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+.history-table th {
+  background: #f8fafc;
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* -------- Error banner -------------------------------------------------------- */
+.error-banner {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin: 16px 0;
+}
+
+/* -------- Filter tabs (deliveries page) --------------------------------------- */
+.delivery-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.delivery-tabs .tab-btn {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.delivery-tabs .tab-btn:hover { border-color: #f97316; color: #ea580c; }
+.delivery-tabs .tab-btn.active {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}

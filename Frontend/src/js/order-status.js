@@ -75,7 +75,7 @@ window.cancelOrderFromStatusPage = async function(orderId) {
         });
 
         localStorage.setItem("orderHistory", JSON.stringify(historyData));
-        alert("Cancellation request submitted successfully. It will be reviewed by an administrator.");
+        alert("Order cancelled successfully. If you paid, a full refund has been processed.");
         location.reload();
     } catch (error) {
         alert(error.message || "Failed to submit the cancellation request.");
@@ -132,7 +132,10 @@ function setStatusText(status) {
     const map = {
         pending: ["Order Received", "We have sent your order directly to the kitchen counter."],
         preparing: ["Preparing", "The kitchen is preparing your order. Please wait."],
-        ready: ["Ready for Pickup", "Your order is ready for pickup!"],
+        ready: ["Ready", "Your order is " + (currentOrderType === "delivery" ? "ready for delivery!" : "ready for pickup!")],
+        picked_up: ["Picked Up", "Your order has been picked up by our delivery rider."],
+        out_for_delivery: ["Out for Delivery", "Your order is out for delivery. Our delivery person is on the way!"],
+        delivered: ["Delivered", "Your order has been delivered. Enjoy your meal!"],
         served: ["Served", "Your order has been served."],
         completed: ["Completed", "Your order has been completed."],
         cancelled: ["Order Cancelled", "This order was cancelled and will not be prepared."]
@@ -148,6 +151,9 @@ function setStatusText(status) {
             pending: 'fa-circle-check',
             preparing: 'fa-fire-burner',
             ready: 'fa-bell-concierge',
+            picked_up: 'fa-handshake',
+            out_for_delivery: 'fa-truck-fast',
+            delivered: 'fa-circle-check',
             served: 'fa-circle-check',
             completed: 'fa-circle-check',
             cancelled: 'fa-circle-xmark'
@@ -156,6 +162,9 @@ function setStatusText(status) {
             pending: '#16a34a',
             preparing: '#16a34a',
             ready: '#16a34a',
+            picked_up: '#7c3aed',
+            out_for_delivery: '#ff6b00',
+            delivered: '#16a34a',
             served: '#16a34a',
             completed: '#16a34a',
             cancelled: '#dc3545'
@@ -184,15 +193,15 @@ function updateCancelButton(s) {
         `;
     } else if (s === "pending" || s === "received") {
         // Cancellation is only allowed BEFORE preparation begins (status
-        // pending/received). A full refund applies because the order has not
-        // been cooked yet.
+        // pending/received). Cancelling immediately grants a full refund
+        // because the order has not been cooked yet.
         const url = new URL(window.location.href);
         const id = url.searchParams.get("orderId") || url.searchParams.get("id");
         cancelWrapper.innerHTML = `
             <a href="cancel-order.html?id=${encodeURIComponent(id || "")}"
                 class="btn btn-outline-danger"
                 style="width: 100%; display: inline-block; text-align: center; color: #dc3545; border: 1px solid #dc3545; padding: 10px; border-radius: 6px; background: transparent; cursor: pointer; font-weight: 600; text-decoration: none; box-sizing: border-box;">
-                <i class="fa-solid fa-ban"></i> Cancel Order
+                <i class="fa-solid fa-ban"></i> Cancel Order (Full Refund)
             </a>
         `;
     } else {
@@ -211,49 +220,117 @@ function statusLabel(s) {
 }
 
 /**
+ * The order type currently being tracked (used by status text / timeline).
+ * Updated by renderOrder() and by live socket/poll updates.
+ */
+let currentOrderType = "dine-in";
+
+/**
+ * Build the timeline steps. Pickup orders get 3 steps; delivery orders get 5.
+ * Returns an array of { stepId, lineId, key, strong, small, icon }.
+ */
+function getTimelineConfig() {
+    const pickup = [
+        { key: "pending", strong: "Order Received", small: "Kitchen notified", icon: "fa-clipboard-check" },
+        { key: "preparing", strong: "Preparing", small: "Chef is cooking", icon: "fa-fire-burner" },
+        { key: "ready", strong: "Ready", small: "Ready for pickup", icon: "fa-bell-concierge" }
+    ];
+    const delivery = [
+        { key: "pending", strong: "Order Received", small: "Kitchen notified", icon: "fa-clipboard-check" },
+        { key: "preparing", strong: "Preparing", small: "Chef is cooking", icon: "fa-fire-burner" },
+        { key: "ready", strong: "Ready", small: "Handing to rider", icon: "fa-bell-concierge" },
+        { key: "picked_up", strong: "Picked Up", small: "Driver has the order", icon: "fa-handshake" },
+        { key: "out_for_delivery", strong: "Out for Delivery", small: "Rider on the way", icon: "fa-truck-fast" },
+        { key: "delivered", strong: "Delivered", small: "At your doorstep", icon: "fa-house-circle-check" },
+        { key: "completed", strong: "Completed", small: "Enjoy your meal", icon: "fa-circle-check" }
+    ];
+    return currentOrderType === "delivery" ? delivery : pickup;
+}
+
+let timelineBuiltForType = null;
+
+/**
+ * (Re)build the timeline DOM when the type changes.
+ */
+function buildTimelineDOM(force) {
+    const container = document.getElementById("status-timeline");
+    if (!container) return;
+    if (!force && timelineBuiltForType === currentOrderType) return;
+    timelineBuiltForType = currentOrderType;
+
+    const config = getTimelineConfig();
+    let html = "";
+    config.forEach((step, index) => {
+        if (index > 0) {
+            html += `<div class="timeline-line" id="line-${index}"></div>`;
+        }
+        html += `
+            <div class="timeline-step" id="step-${index + 1}">
+                <div class="step-icon"><i class="fa-solid ${step.icon}"></i></div>
+                <div class="step-label">
+                    <strong>${step.strong}</strong>
+                    <small>${step.small}</small>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+/**
  * Mark the correct timeline steps/lines active based on the order status.
  */
 function renderTimeline(status) {
     const s = normalizeStatus(status);
-    const step1 = document.getElementById("step-1");
-    const step2 = document.getElementById("step-2");
-    const step3 = document.getElementById("step-3");
-    const line1 = document.getElementById("line-1");
-    const line2 = document.getElementById("line-2");
+    buildTimelineDOM(false);
+    const config = getTimelineConfig();
+    const stepKeys = config.map(c => c.key);
+    const total = config.length;
 
-    if (!step1 || !step2 || !step3) return;
+    const steps = [];
+    const lines = [];
+    for (let i = 1; i <= total; i++) steps.push(document.getElementById(`step-${i}`));
+    for (let i = 1; i < total; i++) lines.push(document.getElementById(`line-${i}`));
 
-    // Reset every step & line to its neutral/empty state first.
-    const reset = () => [step1, step2, step3, line1, line2].forEach(el => {
+    const reset = () => [...steps, ...lines].forEach(el => {
         if (el) {
             el.classList.remove("active");
             el.style.opacity = "1";
         }
     });
 
-    // Highlight ONLY the single step that matches the current status. Every
-    // other step stays empty. The incoming connecting line matches that step.
     if (s === "cancelled") {
         reset();
-        step1.classList.add("active");
+        if (steps[0]) steps[0].classList.add("active");
+        return;
+    }
+    if (s === "served") {
+        const effective = currentOrderType === "delivery" ? "ready" : "ready";
+        stepsSomeActive(stepKeys, effective, steps, lines, reset);
+        return;
+    }
+    if (s === "completed") {
+        const effective = currentOrderType === "delivery" ? "completed" : "ready";
+        stepsSomeActive(stepKeys, effective, steps, lines, reset);
         return;
     }
 
-    let activeStep = null;
-    let activeLine = null;
-    if (s === "pending") {
-        activeStep = step1;
-    } else if (s === "preparing" || s === "in progress") {
-        activeStep = step2;
-        activeLine = line1;
-    } else if (s === "ready" || s === "served" || s === "completed") {
-        activeStep = step3;
-        activeLine = line2;
-    }
+    stepsSomeActive(stepKeys, s, steps, lines, reset);
+}
 
+function stepsSomeActive(stepKeys, s, steps, lines, reset) {
     reset();
-    if (activeStep) activeStep.classList.add("active");
-    if (activeLine) activeLine.classList.add("active");
+    const activeIndex = stepKeys.indexOf(s);
+    if (activeIndex === -1) {
+        // Unknown status: keep first step neutral.
+        return;
+    }
+    for (let i = 0; i <= activeIndex; i++) {
+        if (steps[i]) steps[i].classList.add("active");
+    }
+    for (let i = 0; i < activeIndex; i++) {
+        if (lines[i]) lines[i].classList.add("active");
+    }
 }
 
 function escapeHtml(str) {
@@ -264,13 +341,32 @@ function escapeHtml(str) {
 
 function populateReceipt(orderData) {
     const currentId = orderData.orderId || orderData.id || "ET-0000";
+    currentOrderType = orderData.orderType || currentOrderType;
     if (document.getElementById("display-order-id")) document.getElementById("display-order-id").textContent = `#${currentId}`;
     if (document.getElementById("receipt-name")) document.getElementById("receipt-name").textContent = orderData.customerName || orderData.name || "Customer";
     if (document.getElementById("receipt-phone")) document.getElementById("receipt-phone").textContent = orderData.customerPhone || orderData.phone || "-";
-    if (document.getElementById("receipt-dining-type")) document.getElementById("receipt-dining-type").textContent = orderData.orderType === "dine-in" ? "Dine-In" : "Takeaway";
-    if (document.getElementById("receipt-table")) document.getElementById("receipt-table").textContent = orderData.tableNumber || orderData.table || "-";
+    if (document.getElementById("receipt-dining-type")) document.getElementById("receipt-dining-type").textContent =
+        orderData.orderType === "delivery" ? "Delivery" :
+        orderData.orderType === "dine-in" ? "Dine-In" : "Takeaway";
+    if (document.getElementById("receipt-table")) document.getElementById("receipt-table").textContent = orderData.orderType === "delivery" ? "-" : (orderData.tableNumber || orderData.table || "-");
     if (document.getElementById("receipt-payment")) document.getElementById("receipt-payment").textContent = orderData.paymentMethod || "Telebirr";
     if (document.getElementById("receipt-time")) document.getElementById("receipt-time").textContent = orderData.orderDate || new Date().toLocaleString();
+
+    // Delivery address block
+    const deliveryInfo = orderData.deliveryInfo || null;
+    const addressRow = document.getElementById("delivery-address-row");
+    if (addressRow) {
+        const isDel = currentOrderType === "delivery";
+        addressRow.style.display = isDel ? "block" : "none";
+        if (isDel && (deliveryInfo || orderData.customerPhone)) {
+            const address = deliveryInfo
+                ? `${deliveryInfo.subCity || ""}, ${deliveryInfo.location || ""}`.replace(/^,\s*/, "").trim()
+                : (orderData.customerAddress || "");
+            document.getElementById("receipt-delivery-address").textContent = address || "Please call customer for address";
+            const note = document.getElementById("receipt-delivery-note");
+            if (note) note.textContent = deliveryInfo && deliveryInfo.note ? `Note: ${deliveryInfo.note}` : "";
+        }
+    }
 
     // Items
     const itemsListContainer = document.getElementById("receipt-items-list");
@@ -296,10 +392,16 @@ function populateReceipt(orderData) {
     // Totals
     const subtotalVal = parseFloat(orderData.subtotal) || parseFloat(orderData.totalAmount) || 0;
     const serviceFeeVal = parseFloat(orderData.serviceFee) || 20;
-    const totalVal = parseFloat(orderData.totalAmount) || (subtotalVal + serviceFeeVal);
+    const deliveryFeeVal = parseFloat(orderData.deliveryFee) || 0;
+    const totalVal = parseFloat(orderData.totalAmount) || (subtotalVal + serviceFeeVal + deliveryFeeVal);
 
     if (document.getElementById("receipt-subtotal")) document.getElementById("receipt-subtotal").textContent = subtotalVal.toFixed(0);
     if (document.getElementById("receipt-service-fee")) document.getElementById("receipt-service-fee").textContent = serviceFeeVal.toFixed(0);
+    const deliveryFeeRow = document.getElementById("receipt-delivery-fee-row");
+    if (deliveryFeeRow) {
+        deliveryFeeRow.style.display = currentOrderType === "delivery" ? "flex" : "none";
+        if (document.getElementById("receipt-delivery-fee")) document.getElementById("receipt-delivery-fee").textContent = deliveryFeeVal.toFixed(0);
+    }
     if (document.getElementById("receipt-total")) document.getElementById("receipt-total").textContent = totalVal.toFixed(0);
 }
 
@@ -359,11 +461,44 @@ async function fetchLiveStatus(orderId) {
     return res?.data?.order || res?.order || null;
 }
 
+/**
+ * Merge live delivery info / fees into the receipt without a full re-render.
+ */
+function renderReceiptFromLive(order) {
+    if (order?.orderType) {
+        const diningLabel = document.getElementById("receipt-dining-type");
+        if (diningLabel) {
+            diningLabel.textContent = order.orderType === "delivery" ? "Delivery" :
+                order.orderType === "dine-in" ? "Dine-In" : "Takeaway";
+        }
+    }
+    const deliveryInfo = order?.deliveryInfo;
+    const addressRow = document.getElementById("delivery-address-row");
+    if (addressRow && deliveryInfo) {
+        addressRow.style.display = "block";
+        const address = `${deliveryInfo.subCity || ""}, ${deliveryInfo.location || ""}`.replace(/^,\s*/, "").trim();
+        if (document.getElementById("receipt-delivery-address")) {
+            document.getElementById("receipt-delivery-address").textContent = address || "Please call customer for address";
+        }
+        const note = document.getElementById("receipt-delivery-note");
+        if (note) note.textContent = deliveryInfo.note ? `Note: ${deliveryInfo.note}` : "";
+    }
+    if (order?.deliveryFee !== undefined) {
+        const row = document.getElementById("receipt-delivery-fee-row");
+        if (row && currentOrderType === "delivery") {
+            row.style.display = "flex";
+            if (document.getElementById("receipt-delivery-fee")) {
+                document.getElementById("receipt-delivery-fee").textContent = Number(order.deliveryFee || 0).toFixed(0);
+            }
+        }
+    }
+}
+
 function setupRealtime(orderId) {
     const token = localStorage.getItem("auth_token");
     if (!token || !orderId) return;
 
-    socketClient.on("order:status", (order) => {
+socketClient.on("order:status", (order) => {
         const liveId = (order?.orderId || order?.id || "").replace(/^#/, "");
         const currentId = String(orderId).replace(/^#/, "");
         if (liveId && currentId && liveId !== currentId) return; // not our order
@@ -371,11 +506,15 @@ function setupRealtime(orderId) {
         const newStatus = order?.status;
         if (!newStatus) return;
 
+        if (order?.orderType) {
+            currentOrderType = order.orderType;
+            buildTimelineDOM(true);
+        }
+
         renderTimeline(newStatus);
         setStatusText(newStatus);
+        renderReceiptFromLive(order);
         persistStatus(currentId, newStatus);
-        // NOTE: a toast/popup is handled by customer-realtime.js via the
-        // "notification:new" socket event, so we do NOT duplicate it here.
     });
 
     // Fallback: poll the backend periodically so the timeline advances even if
@@ -414,10 +553,15 @@ function startStatusPolling(orderId) {
             const s = normalizeStatus(live.status);
             // Only update the timeline + heading; avoid re-rendering the whole
             // receipt on every poll to not disrupt the page.
+            if (live.orderType) {
+                currentOrderType = live.orderType;
+                buildTimelineDOM(true);
+            }
+            renderReceiptFromLive(live);
             renderTimeline(s);
             setStatusText(s);
             persistStatus(orderId, live.status);
-            if (s === "ready" || s === "served" || s === "completed" || s === "cancelled") {
+            if (s === "ready" || s === "served" || s === "completed" || s === "delivered" || s === "cancelled") {
                 try { clearInterval(statusPollTimer); statusPollTimer = null; } catch (e) {}
             }
         } catch (err) {

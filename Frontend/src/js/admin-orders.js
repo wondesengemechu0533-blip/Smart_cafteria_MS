@@ -15,7 +15,26 @@
 (function () {
   "use strict";
 
-  var FLOW = ["PENDING", "PREPARING", "READY", "SERVED", "COMPLETED"];
+  var PICKUP_FLOW = ["PENDING", "PREPARING", "READY", "SERVED", "COMPLETED"];
+  var DELIVERY_FLOW = ["PENDING", "PREPARING", "READY", "PICKED_UP", "OUT_FOR_DELIVERY", "DELIVERED"];
+
+  function getFlow(order) {
+    return String((order && order.orderType) || "").toLowerCase() === "delivery"
+      ? DELIVERY_FLOW
+      : PICKUP_FLOW;
+  }
+
+  var STATUS_LABELS = {
+    PENDING: "Pending",
+    PREPARING: "Preparing",
+    READY: "Ready",
+    PICKED_UP: "Picked Up",
+    SERVED: "Served",
+    OUT_FOR_DELIVERY: "Out for Delivery",
+    DELIVERED: "Delivered",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled"
+  };
 
   var state = {
     page: 1,
@@ -46,12 +65,15 @@
       case "PENDING": cls += " pend"; break;
       case "PREPARING": cls += " prep"; break;
       case "READY": cls += " rd"; break;
+      case "PICKED_UP": cls += " pu"; break;
       case "SERVED": cls += " svd"; break;
+      case "OUT_FOR_DELIVERY": cls += " od"; break;
+      case "DELIVERED": cls += " del"; break;
       case "COMPLETED": cls += " cmp"; break;
       case "CANCELLED": cls += " cxl"; break;
       default: cls += " pend"; break;
     }
-    var label = s.charAt(0) + s.slice(1).toLowerCase();
+    var label = STATUS_LABELS[s] || (s.charAt(0) + s.slice(1).toLowerCase());
     return '<span class="' + cls + '">' + label + "</span>";
   }
 
@@ -66,14 +88,16 @@
     return '<span class="' + cls + '">' + String(paymentStatus || "PENDING") + "</span>";
   }
 
-  function getNextStatus(current) {
-    var idx = FLOW.indexOf(String(current || "").toUpperCase());
-    if (idx >= 0 && idx < FLOW.length - 1) return FLOW[idx + 1];
+  function getNextStatus(current, order) {
+    var flow = getFlow(order);
+    var idx = flow.indexOf(String(current || "").toUpperCase());
+    if (idx >= 0 && idx < flow.length - 1) return flow[idx + 1];
     return null;
   }
 
-  function canCancel(current) {
-    var idx = FLOW.indexOf(String(current || "").toUpperCase());
+  function canCancel(current, order) {
+    var flow = getFlow(order);
+    var idx = flow.indexOf(String(current || "").toUpperCase());
     return idx === 0 || idx === 1; // PENDING or PREPARING
   }
 
@@ -102,7 +126,7 @@
       document.getElementById("metricPreparingOrders").textContent = stats.preparingOrders || 0;
       document.getElementById("metricReadyOrders").textContent = stats.readyOrders || 0;
       document.getElementById("metricCompletedOrders").textContent =
-        (stats.completedOrders || 0) + (stats.servedOrders || 0);
+        (stats.completedOrders || 0) + (stats.servedOrders || 0) + (stats.deliveredOrders || 0);
       document.getElementById("metricCancelledOrders").textContent = stats.cancelledOrders || 0;
     } catch (e) {
       // stats are supplementary
@@ -160,6 +184,11 @@
       var type = String(order.orderType || "dine-in").toLowerCase();
       if (type === "takeaway") type = "Takeaway";
       else if (type === "dine-in") type = "Dine-in";
+      else if (type === "delivery") {
+        var info = order.deliveryInfo || {};
+        var addr = [info.subCity, info.location].filter(Boolean).join(", ");
+        return addr ? "Delivery · " + escapeHtml(addr) : "Delivery";
+      }
       else type = type.charAt(0).toUpperCase() + type.slice(1);
 
       // Sanitise the stored table number: strip redundant type suffixes such as
@@ -174,7 +203,7 @@
 
     tbody.innerHTML = orders.map(function (order) {
       var status = String(order.status || "PENDING").toUpperCase();
-      var showCancel = canCancel(status);
+      var showCancel = canCancel(status, order);
       var cancelBtn = showCancel
         ? '<button class="action-btn danger" data-action="cancel" data-id="' + order.id + '" title="Cancel order"><i class="fa-solid fa-ban"></i></button>'
         : "";
@@ -247,19 +276,20 @@
     }).join("");
   }
 
-  function renderStatusSelect(status) {
+  function renderStatusSelect(status, order) {
     var select = document.getElementById("updateOrderStatusSelect");
     var hint = document.getElementById("statusFlowHint");
     var cancelBtn = document.getElementById("cancelOrderBtn");
 
     if (!select) return;
     var s = String(status || "PENDING").toUpperCase();
-    var next = getNextStatus(s);
+    var next = getNextStatus(s, order);
+    var flow = getFlow(order);
 
-    cancelBtn.style.display = canCancel(s) ? "inline-flex" : "none";
+    cancelBtn.style.display = canCancel(s, order) ? "inline-flex" : "none";
 
     if (!next) {
-      select.innerHTML = '<option value="">' + (s === "CANCELLED" ? "Order cancelled — no further updates" : "Order " + s.toLowerCase() + " — flow complete") + "</option>";
+      select.innerHTML = '<option value="">' + (s === "CANCELLED" ? "Order cancelled — no further updates" : "Order " + (STATUS_LABELS[s] || s.toLowerCase()) + " — flow complete") + "</option>";
       select.disabled = true;
       if (hint) hint.textContent = "";
       return;
@@ -268,8 +298,10 @@
     select.disabled = false;
     select.innerHTML =
       '<option value="">Select next status...</option>' +
-      '<option value="' + next + '">' + next.charAt(0) + next.slice(1).toLowerCase() + "</option>";
-    if (hint) hint.textContent = "PENDING → PREPARING → READY → SERVED → COMPLETED. Current: " + s + ".";
+      '<option value="' + next + '">' + (STATUS_LABELS[next] || next) + "</option>";
+    if (hint) {
+      hint.textContent = flow.join(" → ") + ". Current: " + s + ".";
+    }
   }
 
   async function viewOrderDetails(id, cached) {
@@ -286,14 +318,26 @@
     if (!order) return;
 
     var status = String(order.status || "PENDING").toUpperCase();
+    var orderType = String(order.orderType || "dine-in").toLowerCase();
 
     document.getElementById("modalOrderId").textContent = order.orderId || "#0000";
     document.getElementById("modalCustomerName").textContent = order.customerName || "—";
     document.getElementById("modalCustomerPhone").textContent = order.customerPhone || "—";
     document.getElementById("modalCustomerEmail").textContent = (order.customer && order.customer.email) || "—";
     document.getElementById("modalOrderDate").textContent = window.AdminAPI.formatDateTime(order.createdAt || order.orderTime);
-    document.getElementById("modalOrderType").textContent = order.orderType || "dine-in";
-    document.getElementById("modalTableNumber").textContent = order.tableNumber || "N/A";
+    document.getElementById("modalOrderType").textContent =
+      orderType === "delivery" ? "Delivery" : (orderType === "takeaway" ? "Takeaway" : "Dine-in");
+    if (orderType === "delivery") {
+      var info = order.deliveryInfo || {};
+      var addr = [info.subCity, info.location].filter(Boolean).join(", ");
+      var addrLines = [];
+      if (addr) addrLines.push(addr);
+      if (info.phone) addrLines.push("Phone: " + info.phone);
+      if (info.note) addrLines.push("Note: " + info.note);
+      document.getElementById("modalTableNumber").textContent = addrLines.length ? addrLines.join(" · ") : "—";
+    } else {
+      document.getElementById("modalTableNumber").textContent = order.tableNumber || "N/A";
+    }
     document.getElementById("modalPaymentMethod").textContent = order.paymentMethod || "—";
     document.getElementById("modalPaymentStatus").innerHTML = paymentBadge(order.paymentStatus);
     document.getElementById("modalTransactionId").textContent =
@@ -327,7 +371,7 @@
     }).catch(function() { document.getElementById("modalStatusHistory").textContent = "Status history unavailable."; });
 
     window.__activeOrder = order;
-    renderStatusSelect(status);
+    renderStatusSelect(status, order);
     openModal("orderDetailsModal");
   }
 
@@ -526,12 +570,6 @@
     document.querySelectorAll("[data-close-modal]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         closeModal(btn.getAttribute("data-close-modal"));
-      });
-    });
-
-    document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
-      overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) overlay.classList.remove("open");
       });
     });
 

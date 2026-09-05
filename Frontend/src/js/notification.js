@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             renderNotifications();
+            window.dispatchEvent(new CustomEvent("notification:refresh"));
         } catch (err) {
             console.error("Failed to mark as read:", err);
         }
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             renderNotifications();
+            window.dispatchEvent(new CustomEvent("notification:refresh"));
         } catch (err) {
             console.error("Failed to delete notification:", err);
         }

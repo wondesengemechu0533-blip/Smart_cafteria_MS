@@ -41,12 +41,44 @@ const OrderSchema = new mongoose.Schema(
     },
     orderType: {
       type: String,
-      enum: ["dine-in", "takeaway"],
+      enum: ["dine-in", "takeaway", "delivery"],
       default: "dine-in",
     },
     tableNumber: {
       type: String,
       default: "N/A",
+    },
+    deliveryInfo: {
+      subCity: { type: String, trim: true, default: "" },
+      location: { type: String, trim: true, default: "" },
+      note: { type: String, trim: true, default: "" },
+      phone: { type: String, trim: true, default: "" },
+    },
+    deliveryFee: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    deliveryStaffAssigned: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    deliveryAssignedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryNotifiedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveryStartedAt: {
+      type: Date,
+      default: null,
+    },
+    deliveredAt: {
+      type: Date,
+      default: null,
     },
     items: [
       {
@@ -114,7 +146,10 @@ const OrderSchema = new mongoose.Schema(
         "pending",
         "preparing",
         "ready",
+        "picked_up",
         "served",
+        "out_for_delivery",
+        "delivered",
         "cancelled",
         "Received",
         "Completed",
@@ -133,7 +168,7 @@ const OrderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ["PENDING", "PREPARING", "READY", "SERVED", "COMPLETED", "CANCELLED"],
+      enum: ["PENDING", "PREPARING", "READY", "PICKED_UP", "SERVED", "OUT_FOR_DELIVERY", "DELIVERED", "COMPLETED", "CANCELLED"],
       default: "PENDING",
     },
     transactionId: {
@@ -166,6 +201,15 @@ const OrderSchema = new mongoose.Schema(
     },
     readyTime: {
       type: Date,
+      default: null,
+    },
+    pickedUpTime: {
+      type: Date,
+      default: null,
+    },
+    pickedUpBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       default: null,
     },
     completedTime: {
@@ -255,6 +299,9 @@ OrderSchema.methods.getSummary = function () {
     customerPhone: this.customerPhone,
     orderType: this.orderType,
     tableNumber: this.tableNumber,
+    deliveryInfo: this.deliveryInfo || null,
+    deliveryFee: this.deliveryFee || 0,
+    deliveryStaffAssigned: this.deliveryStaffAssigned || null,
     items: this.items,
     subtotal: this.subtotal,
     serviceFee: this.serviceFee,

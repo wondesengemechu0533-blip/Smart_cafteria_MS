@@ -26,6 +26,11 @@ const DEFAULT_SETTINGS = [
   { key: 'cancellation_window_minutes', value: 15, type: 'number', group: 'orders', label: 'Cancellation Window (minutes)' },
   { key: 'default_preparation_time', value: 15, type: 'number', group: 'orders', label: 'Default Preparation Time (minutes)' },
 
+  // delivery
+  { key: 'delivery_enabled', value: true, type: 'boolean', group: 'delivery', label: 'Enable Delivery Orders' },
+  { key: 'delivery_fee', value: 30, type: 'number', group: 'delivery', label: 'Delivery Fee (ETB)' },
+  { key: 'delivery_max_distance_km', value: 10, type: 'number', group: 'delivery', label: 'Max Delivery Distance (km)' },
+
   // payments
   { key: 'payment_chapa_enabled', value: true, type: 'boolean', group: 'payments', label: 'Chapa Payments' },
   { key: 'payment_provider', value: 'chapa', type: 'string', group: 'payments', label: 'Default Payment Provider' },
@@ -125,6 +130,8 @@ async function getPublicSettings() {
     currency: map.currency,
     orderAvailability: map.order_availability,
     maintenanceMode: map.maintenance_mode,
+    deliveryEnabled: map.delivery_enabled,
+    deliveryFee: Number(map.delivery_fee) || 0,
   };
 }
 

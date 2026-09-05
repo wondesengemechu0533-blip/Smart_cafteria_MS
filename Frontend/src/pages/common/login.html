@@ -790,6 +790,9 @@
                 } else if (normalizedRole === "kitchen" || normalizedRole === "foodmaker" || normalizedRole === "staff" || normalizedRole === "kitchen_staff") {
                     userRole = "KITCHEN_STAFF";
                     redirectUrl = "../kitchen/dashboard.html";
+                } else if (normalizedRole === "delivery" || normalizedRole === "delivery_staff" || normalizedRole === "delivery staff" || normalizedRole === "driver" || normalizedRole === "rider") {
+                    userRole = "DELIVERY_STAFF";
+                    redirectUrl = "../delivery/dashboard.html";
                 } else {
                     userRole = "CUSTOMER";
                     redirectUrl = "../customer/menu.html";
@@ -853,6 +856,9 @@
 
             if (userRole === "KITCHEN_STAFF") {
                 localStorage.setItem("kitchenLoggedIn", "true");
+            }
+            if (userRole === "DELIVERY_STAFF") {
+                localStorage.setItem("deliveryLoggedIn", "true");
             }
             if (userRole === "ADMIN") {
                 localStorage.setItem("adminLoggedIn", "true");

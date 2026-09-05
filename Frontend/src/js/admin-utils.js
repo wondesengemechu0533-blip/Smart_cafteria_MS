@@ -15,12 +15,6 @@
   document.addEventListener('click', function(e) {
     var closeBtn = e.target.closest('[data-close-modal]');
     if (closeBtn) closeModal(closeBtn.getAttribute('data-close-modal'));
-    var overlay = e.target.closest('.modal-overlay');
-    if (overlay && e.target === overlay) closeAllModals();
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeAllModals();
   });
 
   // --- Form Helpers ---

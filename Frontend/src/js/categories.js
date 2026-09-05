@@ -10,7 +10,7 @@
  * ================================================================
  */
 
-import { MENU_CATEGORIES } from "./config.js";
+const MENU_CATEGORIES = window.MENU_CATEGORIES || [];
 import { getAllMenuItems } from "./menu.js";
 
 // ================================================================

@@ -11,14 +11,22 @@ const StockTransaction = require('../models/StockTransaction');
 const Cancellation = require('../models/Cancellation');
 const svc = require('../services/cancellation.service');
 
-const FLOW = ['PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'];
+const PICKUP_FLOW = ['PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED'];
+const DELIVERY_FLOW = ['PENDING', 'PREPARING', 'READY', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+
+// Pick the allowed status flow based on the order's fulfillment type.
+const getFlow = (order) =>
+  String(order.orderType || '').toLowerCase() === 'delivery' ? DELIVERY_FLOW : PICKUP_FLOW;
 
 // Map uppercase flow status -> value allowed in Order.status enum
 const STATUS_TO_LOWERCASE = {
   PENDING: ORDER_STATUS.PENDING,
   PREPARING: ORDER_STATUS.PREPARING,
   READY: ORDER_STATUS.READY,
+  PICKED_UP: ORDER_STATUS.PICKED_UP,
   SERVED: ORDER_STATUS.SERVED,
+  OUT_FOR_DELIVERY: ORDER_STATUS.OUT_FOR_DELIVERY,
+  DELIVERED: ORDER_STATUS.DELIVERED,
   COMPLETED: 'Completed',
   CANCELLED: ORDER_STATUS.CANCELLED
 };
@@ -37,6 +45,7 @@ function normalizeStatus(value) {
 function effectiveStatus(order) {
   const up = normalizeStatus(order.orderStatus);
   const low = normalizeStatus(order.status);
+  const FLOW = getFlow(order);
 
   const indexOf = (s) => FLOW.indexOf(s);
   const upIndex = indexOf(up);
@@ -52,6 +61,7 @@ function effectiveStatus(order) {
 
 function serializeOrder(order) {
   const status = effectiveStatus(order);
+  const staff = order.deliveryStaffAssigned;
   return {
     id: order._id,
     orderId: order.orderId,
@@ -75,6 +85,7 @@ function serializeOrder(order) {
     })),
     subtotal: order.subtotal,
     serviceFee: order.serviceFee,
+    deliveryFee: order.deliveryFee || 0,
     totalAmount: order.totalAmount,
     paymentMethod: order.paymentMethod,
     paymentStatus: order.paymentStatus,
@@ -83,6 +94,11 @@ function serializeOrder(order) {
     orderTime: order.orderTime,
     readyTime: order.readyTime,
     completedTime: order.completedTime,
+    deliveryInfo: order.deliveryInfo || null,
+    deliveryStaffAssigned: staff ? { id: String(staff._id), name: staff.name, phone: staff.phone, role: staff.role } : null,
+    deliveryAssignedAt: order.deliveryAssignedAt || null,
+    deliveryStartedAt: order.deliveryStartedAt || null,
+    deliveredAt: order.deliveredAt || null,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
     cancellationRequested: order.cancellationRequested,
@@ -276,11 +292,12 @@ exports.getOrderById = async (req, res) => {
 
 /**
  * Enforce business rules for status transitions.
- * Flow: PENDING -> PREPARING -> READY -> SERVED -> COMPLETED
+ * PICKUP_FLOW: PENDING -> PREPARING -> READY -> SERVED -> COMPLETED
+ * DELIVERY_FLOW: PENDING -> PREPARING -> READY -> OUT_FOR_DELIVERY -> DELIVERED
  * Cancellation is handled separately and only allowed from PENDING/PREPARING.
  * Returns the normalized uppercase status or throws an Error with statusCode.
  */
-function assertTransitionAllowed(currentStatus, newStatus) {
+function assertTransitionAllowed(currentStatus, newStatus, FLOW) {
   const cur = normalizeStatus(currentStatus);
   const next = normalizeStatus(newStatus);
 
@@ -290,7 +307,7 @@ function assertTransitionAllowed(currentStatus, newStatus) {
     throw error;
   }
 
-  if (cur === 'CANCELLED' || cur === 'COMPLETED') {
+  if (cur === 'CANCELLED' || cur === 'COMPLETED' || cur === 'DELIVERED') {
     const error = new Error(`Cannot modify an order that is already ${cur}`);
     error.statusCode = HTTP_STATUS.BAD_REQUEST;
     throw error;
@@ -341,9 +358,10 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const current = effectiveStatus(order);
+    const FLOW = getFlow(order);
     let next;
     try {
-      next = assertTransitionAllowed(current, status);
+      next = assertTransitionAllowed(current, status, FLOW);
     } catch (e) {
       return res.status(e.statusCode || HTTP_STATUS.BAD_REQUEST).json({ success: false, error: e.message });
     }
@@ -353,6 +371,13 @@ exports.updateOrderStatus = async (req, res) => {
 
     if (next === 'READY') {
       order.readyTime = new Date();
+    }
+    if (next === 'OUT_FOR_DELIVERY') {
+      order.deliveryStartedAt = new Date();
+    }
+    if (next === 'DELIVERED') {
+      order.deliveredAt = new Date();
+      order.completedTime = new Date();
     }
     if (next === 'SERVED' || next === 'COMPLETED') {
       order.completedTime = new Date();
@@ -412,12 +437,13 @@ exports.cancelOrder = async (req, res) => {
     }
 
     const current = effectiveStatus(order);
-    if (['CANCELLED', 'COMPLETED', 'SERVED'].includes(current)) {
+    if (['CANCELLED', 'COMPLETED', 'SERVED', 'DELIVERED'].includes(current)) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
         error: `Order cannot be cancelled (status: ${current})`
       });
     }
+    const FLOW = getFlow(order);
     if (FLOW.indexOf(current) > FLOW.indexOf('PREPARING')) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         success: false,
@@ -526,11 +552,13 @@ exports.getOrderStats = async (req, res) => {
     const preparingOrders = count('PREPARING');
     const readyOrders = count('READY');
     const servedOrders = count('SERVED');
+    const outForDeliveryOrders = count('OUT_FOR_DELIVERY');
+    const deliveredOrders = count('DELIVERED');
     const completedOrders = count('COMPLETED');
     const cancelledOrders = count('CANCELLED');
 
     const completedOrServed = all.filter(
-      (o) => effectiveStatus(o) === 'COMPLETED' || effectiveStatus(o) === 'SERVED'
+      (o) => effectiveStatus(o) === 'COMPLETED' || effectiveStatus(o) === 'SERVED' || effectiveStatus(o) === 'DELIVERED'
     );
     const totalRevenue = completedOrServed.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
 
@@ -549,6 +577,8 @@ exports.getOrderStats = async (req, res) => {
         preparingOrders,
         readyOrders,
         servedOrders,
+        outForDeliveryOrders,
+        deliveredOrders,
         completedOrders,
         cancelledOrders,
         totalRevenue,

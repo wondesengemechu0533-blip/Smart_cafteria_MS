@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Management - Smart Cafeteria</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
+
+    <!-- Admin CSS stylesheet -->
+    <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="../../css/themes/dark-theme.css">
+    <script src="../../js/theme.js"></script>
+</head>
+<body class="admin-body">
+
+    <!-- Layout will be injected by admin-layout.js -->
+    <header class="admin-navbar"></header>
+    <div class="admin-container">
+        <aside class="admin-sidebar" id="adminSidebar"></aside>
+        <main class="admin-main">
+            <div class="page-header">
+                <div>
+                    <h1>Delivery Management</h1>
+                    <p class="subtitle">Assign delivery staff and track delivered orders</p>
+                </div>
+                <div class="page-actions">
+                    <div style="display:inline-flex;align-items:center;gap:8px;">
+                        <select id="deliveryFilter" class="form-control" style="padding:8px 12px;border-radius:8px;border:1px solid #e2e8f0;">
+                            <option value="ALL">All Active</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="PREPARING">Preparing</option>
+                            <option value="READY">Ready for Delivery</option>
+                            <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                        </select>
+                        <button class="btn btn-secondary" id="refreshDeliveriesBtn">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS CARDS -->
+            <div class="metrics-grid mb-4" id="deliveryStatsGrid">
+                <div class="metric-card">
+                    <div class="metric-icon bg-orange">
+                        <i class="fa-solid fa-bell-concierge"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Ready for Delivery</span>
+                        <h2 class="metric-value" id="statReady">0</h2>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon bg-indigo">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Out for Delivery</span>
+                        <h2 class="metric-value" id="statOutForDelivery">0</h2>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon bg-green">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Delivered</span>
+                        <h2 class="metric-value" id="statDelivered">0</h2>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon bg-gray">
+                        <i class="fa-solid fa-user-clock"></i>
+                    </div>
+                    <div class="metric-content">
+                        <span class="metric-label">Unassigned</span>
+                        <h2 class="metric-value" id="statUnassigned">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELIVERY ORDERS TABLE -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h3><i class="fa-solid fa-truck-fast"></i> Delivery Orders</h3>
+                    <span class="badge" id="deliveryCountBadge">0</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" id="deliveriesTable">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Delivery Address</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Delivery Staff</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveriesTableBody">
+                            <tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:24px;">Loading delivery orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COMPLETED DELIVERIES -->
+            <div class="table-card mt-4">
+                <div class="table-card-header">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Completed / Cancelled</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" id="deliveredTable">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Address</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Delivery Staff</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveredTableBody">
+                            <tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px;">No delivered orders yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
+    <script src="../../js/config.js"></script>
+    <script src="../../js/admin-api.js"></script>
+    <script src="../../js/admin-layout.js"></script>
+    <script src="../../js/admin-deliveries.js?v=20260907"></script>
+</body>
+</html>

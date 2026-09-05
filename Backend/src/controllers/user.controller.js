@@ -3,7 +3,7 @@ const User = require('../models/User');
 const { MESSAGES, HTTP_STATUS } = require('../config/constants');
 const { logAction } = require('../utils/audit');
 
-const VALID_ROLES = ['customer', 'kitchen', 'admin'];
+const VALID_ROLES = ['customer', 'kitchen', 'admin', 'delivery'];
 const ADMIN_ROLES = ['admin'];
 
 const normalizeUserRole = (role) => {
@@ -18,7 +18,12 @@ const normalizeUserRole = (role) => {
     'kitchen staff': 'kitchen',
     kitchen_staff: 'kitchen',
     staff: 'kitchen',
-    admin: 'admin'
+    admin: 'admin',
+    delivery: 'delivery',
+    delivery_staff: 'delivery',
+    'delivery staff': 'delivery',
+    driver: 'delivery',
+    rider: 'delivery'
   };
 
   return roleMap[key] || value;

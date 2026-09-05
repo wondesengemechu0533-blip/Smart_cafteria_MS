@@ -304,6 +304,19 @@ function initProfilePage() {
         setTimeout(() => { el.style.display = "none"; }, 5000);
     }
 
+    // Password show/hide toggle
+    document.querySelectorAll(".toggle-password-icon").forEach((icon) => {
+        icon.addEventListener("click", () => {
+            const target = document.getElementById(icon.getAttribute("data-target"));
+            if (!target) return;
+            const isPassword = target.type === "password";
+            target.type = isPassword ? "text" : "password";
+            icon.classList.toggle("fa-eye", !isPassword);
+            icon.classList.toggle("fa-eye-slash", isPassword);
+            icon.title = isPassword ? "Hide password" : "Show password";
+        });
+    });
+
     /* ======================================================================
        4. Global Logout Handler (Clears auth status and redirects)
        ====================================================================== */

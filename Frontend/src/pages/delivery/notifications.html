@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="delivery_notifications_page_title">Notifications - Smart Cafeteria</title>
+
+    <link rel="stylesheet" href="/public/assets/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/admin.css">
+    <link rel="stylesheet" href="/src/css/delivery.css">
+    <link rel="stylesheet" href="../../css/themes/dark-theme.css">
+    <script src="../../js/theme.js"></script>
+</head>
+<body class="admin-body">
+
+    <header class="admin-navbar"></header>
+    <div class="admin-container">
+        <aside class="admin-sidebar delivery-sidebar" id="deliverySidebar"></aside>
+        <main class="admin-main">
+
+            <div class="delivery-header">
+                <h1><i class="fa-solid fa-bell"></i> <span data-i18n="delivery_notifications">Notifications</span></h1>
+                <div class="page-actions">
+                    <button type="button" class="btn btn-secondary" id="mark-all-read-btn"><i class="fa-solid fa-check-double"></i> Mark All Read</button>
+                    <button type="button" class="btn btn-danger" id="clear-notifications-btn"><i class="fa-solid fa-trash"></i> Clear All</button>
+                </div>
+            </div>
+
+            <div id="notifications-container">
+                <div class="empty-state"><i class="fa-solid fa-bell-slash"></i><p>Loading notifications…</p></div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
+    <script src="../../js/config.js"></script>
+    <script type="module" src="../../js/utils/i18n.js"></script>
+    <script src="../../js/delivery-layout.js"></script>
+    <script src="../../js/notification.js"></script>
+    <script type="module" src="../../js/components/unified-header.js"></script>
+
+    <script>
+        function initPageSpecific() {}
+    </script>
+</body>
+</html>

@@ -9,7 +9,10 @@ const ORDER_STATUS = {
 	PENDING: 'pending',
 	PREPARING: 'preparing',
 	READY: 'ready',
+	PICKED_UP: 'picked_up',
 	SERVED: 'served',
+	OUT_FOR_DELIVERY: 'out_for_delivery',
+	DELIVERED: 'delivered',
 	COMPLETED: 'completed',
 	CANCELLED: 'cancelled'
 };
@@ -22,9 +25,11 @@ const ROLES = {
     CUSTOMER: 'customer',
     KITCHEN: 'kitchen',
     ADMIN: 'admin',
+    DELIVERY: 'delivery',
     STAFF: 'kitchen',
     ADMIN_UPPER: 'admin',
-    KITCHEN_STAFF: 'kitchen'
+    KITCHEN_STAFF: 'kitchen',
+    DELIVERY_STAFF: 'delivery'
 };
 const HTTP_STATUS = {
     OK: 200,

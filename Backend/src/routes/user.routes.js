@@ -21,7 +21,7 @@ const {
 } = require("../validators/admin.validator");
 
 router.use(protect);
-router.use(authorize("admin", "ADMIN", "staff", "kitchen_staff", "kitchen", "foodmaker"));
+router.use(authorize("admin", "ADMIN"));
 
 router.get("/", getAllUsers);
 router.get("/stats", getUserStats);

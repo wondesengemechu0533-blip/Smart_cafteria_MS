@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="./src/js/config.js"></script>
+</head>
+<body>waiting...</body>
+<script type="module">
+const body = document.body;
+const r = [];
+try { await import('./src/js/api.js'); r.push('api OK'); } catch (e) { r.push('api FAIL: ' + e.message); }
+try { await import('./src/js/socket.js'); r.push('socket OK'); } catch (e) { r.push('socket FAIL: ' + e.message); }
+try { await import('./src/js/utils/i18n.js'); r.push('i18n OK'); } catch (e) { r.push('i18n FAIL: ' + e.message); }
+try { await import('./src/js/auth.js'); r.push('auth OK'); } catch (e) { r.push('auth FAIL: ' + e.message); }
+try { await import('./src/pages/kitchen/kitchen.js'); r.push('kitchen OK, window.KDS=' + (window.KDS ? 'yes' : 'no')); } catch (e) { r.push('kitchen FAIL: ' + e.message); }
+body.textContent = r.join(' | ');
+</script>
+</html>

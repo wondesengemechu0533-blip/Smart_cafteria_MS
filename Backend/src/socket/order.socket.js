@@ -22,6 +22,23 @@ const registerOrderHandlers = (io, socket) => {
         });
     });
 
+    // Delivery staff joins the 'delivery' room for delivery broadcasts
+    socket.on('join:delivery', () => {
+        socket.join('delivery');
+        logger.info('Socket joined delivery room', {
+            socketId: socket.id,
+            userId: socket.user?.id
+        });
+    });
+    // Leave the delivery room
+    socket.on('leave:delivery', () => {
+        socket.leave('delivery');
+        logger.info('Socket left delivery room', {
+            socketId: socket.id,
+            userId: socket.user?.id
+        });
+    });
+
     // Customer joins their order room to receive real-time updates
     socket.on('order:join', (orderId) => {
         if (!orderId) {

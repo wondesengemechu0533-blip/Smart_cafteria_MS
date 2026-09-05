@@ -161,6 +161,8 @@
     $('paymentCurrency').value = m.currency || 'ETB';
     $('maxDailyOrders').value = m.max_daily_orders || 100;
     $('orderAvailability').checked = m.order_availability !== false;
+    $('deliveryFee').value = m.delivery_fee || 30;
+    $('deliveryEnabled').checked = m.delivery_enabled !== false;
   }
 
   async function saveSystemConfig() {
@@ -174,6 +176,17 @@
       await saveSetting('order_availability', chk('orderAvailability'));
       showAlert('System configuration saved');
     } catch (e) { showAlert('Failed to save config: ' + e.message, 'error'); }
+    finally { setLoading(btn, false); }
+  }
+
+  async function saveDeliveryConfig() {
+    const btn = $('saveDeliveryConfigBtn');
+    setLoading(btn, true);
+    try {
+      await saveSetting('delivery_fee', num('deliveryFee', 30));
+      await saveSetting('delivery_enabled', chk('deliveryEnabled'));
+      showAlert('Delivery settings saved');
+    } catch (e) { showAlert('Failed to save delivery settings: ' + e.message, 'error'); }
     finally { setLoading(btn, false); }
   }
 
@@ -214,6 +227,8 @@
         currency: val('paymentCurrency'),
         max_daily_orders: num('maxDailyOrders', 100),
         order_availability: chk('orderAvailability'),
+        delivery_fee: num('deliveryFee', 30),
+        delivery_enabled: chk('deliveryEnabled'),
         two_factor_enabled: chk('twoFactorEnabled'),
         notify_new_orders: chk('notifyNewOrders'),
         notify_low_stock: chk('notifyLowStock'),
@@ -234,6 +249,7 @@
     $('changePasswordBtn')?.addEventListener('click', changePassword);
     $('twoFactorEnabled')?.addEventListener('change', save2FA);
     $('saveSystemConfigBtn')?.addEventListener('click', saveSystemConfig);
+    $('saveDeliveryConfigBtn')?.addEventListener('click', saveDeliveryConfig);
     $('saveNotificationsBtn')?.addEventListener('click', saveNotifications);
     $('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
 

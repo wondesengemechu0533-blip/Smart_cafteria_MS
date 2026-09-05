@@ -6,7 +6,8 @@
  * ================================================================
  */
 
-import { PAYMENT_STATUS, PAYMENT_METHODS } from './config.js';
+const PAYMENT_STATUS = window.PAYMENT_STATUS || {};
+const PAYMENT_METHODS = window.PAYMENT_METHODS || {};
 import { getCurrentUser } from './auth.js';
 import { getOrderById, updateOrderStatus } from './order-status.js';
 import { showToast } from './main.js';

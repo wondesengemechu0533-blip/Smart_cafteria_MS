@@ -44,8 +44,11 @@ exports.simulatePayment = async (req, res) => {
         paymentDate: new Date()
       });
 
-      // Create a simulated checkout URL that will complete payment
-      const checkoutUrl = `${process.env.FRONTEND_URL || 'http://localhost:5500'}/public/simulation-payment.html?orderId=${encodeURIComponent(orderId)}&paymentId=${payment._id}&method=${method}&txRef=${txRef}`;
+      // Build a simulated checkout URL on the SAME host that served the
+      // customer's request, so the flow works whether the frontend is served
+      // by the backend (port 5000) or by a separate static server (port 5500).
+      const base = `${req.protocol}://${req.get('host')}`;
+      const checkoutUrl = `${base}/public/simulation-payment.html?orderId=${encodeURIComponent(orderId)}&paymentId=${payment._id}&method=${method}&txRef=${txRef}`;
 
       return res.status(HTTP_STATUS.OK).json({
         success: true,
@@ -56,7 +59,7 @@ exports.simulatePayment = async (req, res) => {
       });
     }
 
-    if (order.userId && order.userId.toString() !== req.user.id && req.user.role !== 'admin') {
+    if (order.userId && order.userId.toString() !== String(req.user.id) && req.user.role !== 'admin') {
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         success: false,
         error: 'Unauthorized to pay for this order'

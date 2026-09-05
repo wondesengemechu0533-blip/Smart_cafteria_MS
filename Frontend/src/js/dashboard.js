@@ -70,6 +70,8 @@
       case "PREPARING": cls += " prep"; break;
       case "READY": cls += " rd"; break;
       case "SERVED": cls += " svd"; break;
+      case "OUT_FOR_DELIVERY": cls += " od"; break;
+      case "DELIVERED": cls += " del"; break;
       case "COMPLETED": cls += " cmp"; break;
       case "CANCELLED": cls += " cxl"; break;
       default: cls += " pend"; break;
@@ -79,6 +81,8 @@
       PREPARING: "admin_preparing",
       READY: "admin_ready",
       SERVED: "admin_ready",
+      OUT_FOR_DELIVERY: "Out for Delivery",
+      DELIVERED: "admin_completed",
       COMPLETED: "admin_completed",
       CANCELLED: "admin_cancelled"
     };
@@ -404,6 +408,29 @@
     applyDateRange("custom");
   }
 
+  function resetDashboard() {
+    // Clear custom date inputs
+    var startEl = document.getElementById("startDateInput");
+    var endEl = document.getElementById("endDateInput");
+    if (startEl) startEl.value = "";
+    if (endEl) endEl.value = "";
+
+    // Clear table search boxes and reset any per-row filtering
+    var orderSearch = document.getElementById("orderSearchInput");
+    var paymentSearch = document.getElementById("paymentSearchInput");
+    if (orderSearch) orderSearch.value = "";
+    if (paymentSearch) paymentSearch.value = "";
+    var oBody = document.getElementById("recentOrdersTableBody");
+    var pBody = document.getElementById("recentPaymentsTableBody");
+    if (oBody) oBody.querySelectorAll("tr").forEach(function (row) { row.style.display = ""; });
+    if (pBody) pBody.querySelectorAll("tr").forEach(function (row) { row.style.display = ""; });
+
+    // Reset the date range back to the default (Last 7 Days) and reload
+    applyDateRange("7d");
+
+    if (window.AdminToast) window.AdminToast.show("Dashboard reset to defaults");
+  }
+
   /* ====================================================================
    * AUTO REFRESH
    * ==================================================================== */
@@ -618,6 +645,9 @@
     var refreshBtn = document.getElementById("refreshMetricsBtn");
     if (refreshBtn) refreshBtn.addEventListener("click", loadDashboard);
 
+    var resetBtn = document.getElementById("resetDashboardMetricsBtn");
+    if (resetBtn) resetBtn.addEventListener("click", resetDashboard);
+
     var autoRefreshBtn = document.getElementById("autoRefreshBtn");
     if (autoRefreshBtn) autoRefreshBtn.addEventListener("click", toggleAutoRefresh);
 
@@ -659,7 +689,7 @@
     toggleAutoRefresh: toggleAutoRefresh,
     setRefreshInterval: setRefreshInterval,
     exportDashboardData: exportDashboardData,
-    loadDashboard: loadDashboard
+    resetDashboard: resetDashboard
   };
 
   // Re-render dynamic (data-driven) content in the active language. Static

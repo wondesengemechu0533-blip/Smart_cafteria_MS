@@ -27,15 +27,18 @@
    * HELPERS
    * ---------------------------------------------------------------- */
   var ROLE_LABELS = {
-    customer: { en: "Customer" },
-    kitchen:  { en: "Kitchen Staff" },
-    admin:    { en: "Admin" }
+    customer: { key: "role_customer", en: "Customer" },
+    kitchen:  { key: "role_kitchen", en: "Kitchen Staff" },
+    delivery: { key: "role_delivery", en: "Delivery Staff" },
+    staff:    { key: "role_staff", en: "Staff" },
+    student:  { key: "role_student", en: "Student" },
+    admin:    { key: "role_admin", en: "Admin" }
   };
   var STATUS_LABELS = {
-    ACTIVE:    { en: "Active" },
-    BLOCKED:   { en: "Blocked" },
-    SUSPENDED: { en: "Suspended" },
-    INACTIVE:  { en: "Inactive" }
+    ACTIVE:    { key: "status_active", en: "Active" },
+    BLOCKED:   { key: "status_blocked", en: "Blocked" },
+    SUSPENDED: { key: "status_suspended", en: "Suspended" },
+    INACTIVE:  { key: "status_inactive", en: "Inactive" }
   };
 
   function getLang() {
@@ -46,8 +49,8 @@
     try { if (window.getText) { var v = window.getText(key); if (v !== key) return v; } } catch (e) {}
     return key;
   }
-  function roleLabel(role) { var l = ROLE_LABELS[role]; return l ? (l[getLang()] || l.en) : (role || "—"); }
-  function statusLabel(s) { var l = STATUS_LABELS[s]; return l ? (l[getLang()] || l.en) : (s || "—"); }
+  function roleLabel(role) { var l = ROLE_LABELS[String(role).toLowerCase()]; if (l && l.key) { var v = t(l.key); if (v !== l.key) return v; } return l ? (l[getLang()] || l.en) : (role || "—"); }
+  function statusLabel(s) { var l = STATUS_LABELS[String(s).toUpperCase()]; if (l && l.key) { var v = t(l.key); if (v !== l.key) return v; } return l ? (l[getLang()] || l.en) : (s || "—"); }
   function esc(str) { return window.esc ? window.esc(str) : String(str || ""); }
   function avatarInitial(name) { return (name && name.charAt(0).toUpperCase()) || "U"; }
   function formatDate(v) { return window.AdminAPI ? window.AdminAPI.formatDate(v) : new Date(v).toLocaleDateString(); }
@@ -66,6 +69,7 @@
     var cls = "role-pill";
     if (r === "ADMIN") cls += " role-admin";
     else if (r === "KITCHEN") cls += " role-kitchen";
+    else if (r === "DELIVERY") cls += " role-delivery";
     else cls += " role-customer";
     return '<span class="' + cls + '">' + esc(roleLabel(role)) + "</span>";
   }
@@ -509,10 +513,6 @@
     // Close buttons
     document.querySelectorAll("[data-close-modal]").forEach(function (btn) {
       btn.addEventListener("click", function () { closeModal(btn.getAttribute("data-close-modal")); });
-    });
-    // Backdrop close
-    document.querySelectorAll(".modal-overlay").forEach(function (ov) {
-      ov.addEventListener("click", function (e) { if (e.target === ov) ov.classList.remove("open"); });
     });
 
     // Search

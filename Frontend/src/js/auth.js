@@ -80,10 +80,15 @@ async function handleLogin(event) {
 
         showMessage("Login successful.", "success");
 
-        const redirect =
-            result?.user?.role === "admin"
-                ? "../admin/dashboard.html"
-                : "../customer/menu.html";
+        const redirectRole = String(result?.user?.role || '').toLowerCase();
+        let redirect = "../customer/menu.html";
+        if (redirectRole === "admin") {
+            redirect = "../admin/dashboard.html";
+        } else if (["kitchen", "kitchen_staff", "staff", "foodmaker"].includes(redirectRole)) {
+            redirect = "../kitchen/dashboard.html";
+        } else if (["delivery", "delivery_staff", "delivery staff", "driver", "rider"].includes(redirectRole)) {
+            redirect = "../delivery/deliveries.html";
+        }
 
         setTimeout(() => {
             window.location.href = redirect;

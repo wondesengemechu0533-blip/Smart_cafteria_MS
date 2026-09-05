@@ -5,11 +5,14 @@
  * Central API client.
  */
 
-import { API_BASE_URL } from './config.js';
-
 class ApiClient {
-    constructor(baseURL = API_BASE_URL) {
-        this.baseURL = baseURL;
+    constructor(baseURL) {
+        const configured =
+            (typeof window.__API_URL === "string" && window.__API_URL) ||
+            (typeof window.__API_BASE === "string"
+                ? window.__API_BASE + "/api/v1"
+                : "");
+        this.baseURL = baseURL || configured || window.location.origin + "/api/v1";
         this.defaultTimeout = 15000;
     }
 
@@ -204,4 +207,5 @@ class ApiClient {
 const api = new ApiClient();
 
 export default api;
-export { ApiClient, API_BASE_URL };
+export { ApiClient };
+export const API_BASE_URL = window.__API_URL || (window.__API_BASE + '/api/v1');

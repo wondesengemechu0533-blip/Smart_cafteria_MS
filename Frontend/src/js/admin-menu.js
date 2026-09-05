@@ -85,7 +85,7 @@
   }
 
   function availabilityBadge(item) {
-    var available = item.availability && item.isAvailable;
+    var available = item.availabilityStatus === "AVAILABLE" || (item.availability && item.isAvailable && Number(item.stockQuantity || 0) > 0);
     var cls = available ? "order-badge avail-on" : "order-badge avail-off";
     return '<span class="' + cls + '">' + (available ? "Available" : "Unavailable") + "</span>";
   }
@@ -255,6 +255,16 @@
     document.getElementById("itemImageUrl").value = "";
     document.getElementById("imagePreviewRow").style.display = "none";
     document.getElementById("itemImagePreview").removeAttribute("src");
+    var urlInput = document.getElementById("itemImageUrl");
+    if (urlInput) { urlInput.classList.remove("url-valid"); urlInput.classList.remove("url-invalid"); }
+    var feedback = document.getElementById("urlFeedback");
+    if (feedback) { feedback.textContent = ""; feedback.className = "url-feedback"; }
+    var loading = document.getElementById("imageLoading");
+    var error = document.getElementById("imageError");
+    if (loading) loading.style.display = "none";
+    if (error) error.style.display = "none";
+    var preview = document.getElementById("itemImagePreview");
+    if (preview) { preview.onerror = null; preview.onload = null; }
   }
 
   function openAddItemModal() {
@@ -460,8 +470,13 @@
         var trimmed = value.trim();
         if (!isValidUrl(trimmed)) {
           if (feedback) { feedback.textContent = "Please enter a valid URL (http:// or https://)"; feedback.className = "url-feedback invalid"; }
-          if (urlInput) urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid");
+          if (urlInput) { urlInput.classList.add("url-invalid"); urlInput.classList.remove("url-valid"); }
           pendingImage = null;
+          document.getElementById("imagePreviewRow").style.display = "none";
+          document.getElementById("itemImagePreview").removeAttribute("src");
+          if (loading) loading.style.display = "none";
+          if (error) error.style.display = "none";
+          document.getElementById("itemImageFile").value = "";
           return;
         }
         if (urlInput) { urlInput.classList.remove("url-invalid"); urlInput.classList.add("url-valid"); }
@@ -481,6 +496,7 @@
           if (loading) loading.style.display = "none";
           if (error) error.style.display = "none";
           preview.style.display = "block";
+          if (feedback) { feedback.textContent = "Image preview loaded"; feedback.className = "url-feedback valid"; }
         };
         preview.src = trimmed;
         document.getElementById("imagePreviewRow").style.display = "flex";
@@ -648,12 +664,6 @@
     document.querySelectorAll("[data-close-modal]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         closeModal(btn.getAttribute("data-close-modal"));
-      });
-    });
-
-    document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
-      overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) overlay.classList.remove("open");
       });
     });
 

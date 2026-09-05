@@ -95,6 +95,20 @@
   function bindEvents() {
     const form = document.getElementById('passwordForm');
     if (form) form.addEventListener('submit', changePassword);
+
+    // Password show/hide toggle
+    document.querySelectorAll('.toggle-password-icon').forEach(function (icon) {
+      icon.addEventListener('click', function () {
+        const targetId = icon.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.classList.toggle('fa-eye', !isPassword);
+        icon.classList.toggle('fa-eye-slash', isPassword);
+        icon.title = isPassword ? 'Hide password' : 'Show password';
+      });
+    });
   }
 
   function init() {

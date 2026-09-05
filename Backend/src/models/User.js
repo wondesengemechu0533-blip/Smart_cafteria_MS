@@ -13,7 +13,12 @@ const normalizeUserRole = (role) => {
     'kitchen staff': 'kitchen',
     kitchen_staff: 'kitchen',
     staff: 'kitchen',
-    admin: 'admin'
+    admin: 'admin',
+    delivery: 'delivery',
+    delivery_staff: 'delivery',
+    'delivery staff': 'delivery',
+    driver: 'delivery',
+    rider: 'delivery'
   };
 
   return roleMap[key] || value;
@@ -87,7 +92,8 @@ const UserSchema = new mongoose.Schema(
       enum: [
         "customer",
         "kitchen",
-        "admin"
+        "admin",
+        "delivery"
       ],
       default: "customer",
       lowercase: false,

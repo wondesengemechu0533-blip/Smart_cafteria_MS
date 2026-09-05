@@ -41,7 +41,7 @@ export function createModal(options = {}) {
         cancelLabel = 'Cancel',
         confirmVariant = 'primary',
         showClose = true,
-        closeOnOverlay = true,
+       closeOnOverlay = false,
     } = options;
 
     // ---- Size Classes ----

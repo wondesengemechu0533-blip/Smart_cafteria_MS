@@ -33,8 +33,18 @@ const validateCreateOrder = (data) => {
     if (phoneErr) errors.customerPhone = phoneErr;
 
     if (data.orderType) {
-        const typeErr = validateEnum(data.orderType, ['dine-in', 'takeaway'], 'Order type');
+        const typeErr = validateEnum(data.orderType, ['dine-in', 'takeaway', 'delivery'], 'Order type');
         if (typeErr) errors.orderType = typeErr;
+    }
+
+    if (String(data.orderType || '').toLowerCase() === 'delivery') {
+        const info = data.deliveryInfo || {};
+        if (!info.location || String(info.location).trim() === '') {
+            errors['deliveryInfo.location'] = 'Delivery location is required';
+        }
+        if (!info.subCity || String(info.subCity).trim() === '') {
+            errors['deliveryInfo.subCity'] = 'Delivery sub-city is required';
+        }
     }
 
     if (data.tableNumber !== undefined) {

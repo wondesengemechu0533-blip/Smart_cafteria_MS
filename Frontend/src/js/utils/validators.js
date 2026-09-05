@@ -6,7 +6,7 @@
  * ================================================================
  */
 
-import { PATTERNS } from '../config.js';
+const PATTERNS = window.PATTERNS || {};
 
 /**
  * Validation result object

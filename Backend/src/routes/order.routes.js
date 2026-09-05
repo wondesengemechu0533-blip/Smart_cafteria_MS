@@ -16,13 +16,13 @@ const { validateCreateOrder, validateUpdateOrderStatus, validateCancelOrder } = 
 
 router.post('/', protect, validateBody(validateCreateOrder), createOrder);
 router.get('/my-orders', protect, getMyOrders);
-router.get('/:id', protect, getOrderById);
 router.patch('/:id/cancel', protect, validateBody(validateCancelOrder), cancelOrder);
 router.post('/:id/cancel', protect, validateBody(validateCancelOrder), cancelOrder);
+router.patch('/:id/status', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), validateBody(validateUpdateOrderStatus), updateOrderStatus);
 
 router.get('/', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getAllOrders);
 router.get('/stats', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getOrderStats);
-router.patch('/:id/status', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), validateBody(validateUpdateOrderStatus), updateOrderStatus);
 router.get('/kitchen', protect, authorize('admin', 'ADMIN', 'staff', 'kitchen_staff', 'kitchen', 'foodmaker'), getKitchenOrders);
+router.get('/:id', protect, getOrderById);
 
 module.exports = router;

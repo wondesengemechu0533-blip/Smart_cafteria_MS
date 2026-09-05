@@ -202,6 +202,7 @@
                                 <option value="">All Roles</option>
                                 <option value="customer">Customer</option>
                                 <option value="kitchen">Kitchen Staff</option>
+                                <option value="delivery">Delivery Staff</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
@@ -319,6 +320,7 @@
                             <label for="userRole" class="form-label">Role <span class="required">*</span></label>
                             <select name="role" id="userRole" class="form-select" required>
                                 <option value="kitchen">Kitchen Staff</option>
+                                <option value="delivery">Delivery Staff</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
@@ -331,11 +333,17 @@
                         </div>
                         <div class="form-group">
                             <label for="userPassword" id="passwordLabel" class="form-label">Password <span class="required">*</span></label>
-                            <input type="password" name="password" id="userPassword" class="form-control" autocomplete="new-password">
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="userPassword" class="form-control password-input" autocomplete="new-password">
+                                <i class="fa-solid fa-eye toggle-password-icon" data-target="userPassword" title="Show password"></i>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="userConfirmPassword" class="form-label">Confirm Password <span class="required">*</span></label>
-                            <input type="password" name="confirmPassword" id="userConfirmPassword" class="form-control" autocomplete="new-password">
+                            <div class="input-wrapper">
+                                <input type="password" name="confirmPassword" id="userConfirmPassword" class="form-control password-input" autocomplete="new-password">
+                                <i class="fa-solid fa-eye toggle-password-icon" data-target="userConfirmPassword" title="Show password"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -471,9 +479,10 @@
     </div>
 
     <!-- JavaScript Files -->
-    <script src="../../js/config.js"></script>`n    <script src="../../js/admin-api.js"></script>
+    <script src="../../js/config.js"></script>
+<script src="../../js/admin-api.js"></script>
     <script type="module" src="../../js/utils/i18n.js"></script>
-    <script src="../../js/config.js"></script>`n    <script src="../../js/admin-layout.js"></script>
+    <script src="../../js/admin-layout.js"></script>
     <script src="../../js/admin-ui.js"></script>
     <script src="../../js/users.js"></script>
 

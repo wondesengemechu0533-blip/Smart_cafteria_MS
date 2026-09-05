@@ -7,7 +7,7 @@
  */
 
 import { MOCK_ORDERS } from './mock-orders-data.js';
-import { ORDER_STATUS } from './config.js';
+const ORDER_STATUS = window.ORDER_STATUS || {};
 import { getCurrentUser } from './auth.js';
 import { getCartItems, getCartTotal, clearCart } from './cart.js';
 import { showToast } from './main.js';

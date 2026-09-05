@@ -11,7 +11,6 @@ if (!authToken && localStorage.getItem("isLoggedIn") !== "true") {
 document.addEventListener("DOMContentLoaded", () => {
 
     const CART_KEY = "smart_cafeteria_cart";
-    const SERVICE_FEE_ETB = 20;
 
     const checkoutItemsContainer =
         document.getElementById("checkout-items-list");
@@ -37,11 +36,56 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableNumberInput =
         document.getElementById("table-number");
 
+    const deliveryInfoGroup =
+        document.getElementById("delivery-info-group");
+
+    const deliveryFeeRow =
+        document.getElementById("checkout-delivery-fee-row");
+
+    const deliveryFeeElement =
+        document.getElementById("checkout-delivery-fee");
+
     const paymentCards =
         document.querySelectorAll(".payment-card");
 
     const radioCards =
         document.querySelectorAll(".radio-card");
+
+    const SERVICE_FEE_ETB = 20;
+    let DELIVERY_FEE_ETB = 30;
+    let DELIVERY_ENABLED = true;
+
+    async function loadPublicSettings() {
+        try {
+            const settingsRes = await api.get("/settings/public");
+            const settings = settingsRes.settings || settingsRes || {};
+            if (typeof settings.deliveryFee === "number") {
+                DELIVERY_FEE_ETB = settings.deliveryFee;
+            }
+            DELIVERY_ENABLED = settings.deliveryEnabled !== false;
+        } catch (error) {
+            console.warn("Could not load public settings:", error.message);
+        }
+    }
+
+    function getSelectedOrderType() {
+        const radio = document.querySelector('input[name="orderType"]:checked');
+        return radio ? radio.value : "dine-in";
+    }
+
+    function updateDeliveryUI() {
+        const isDelivery = getSelectedOrderType() === "delivery";
+        if (deliveryInfoGroup) {
+            deliveryInfoGroup.style.display = isDelivery ? "block" : "none";
+        }
+        if (deliveryFeeRow) {
+            deliveryFeeRow.style.display = isDelivery ? "flex" : "none";
+        }
+        if (deliveryFeeElement) {
+            deliveryFeeElement.textContent = (isDelivery ? DELIVERY_FEE_ETB : 0).toFixed(2);
+        }
+        renderOrderReview();
+    }
 
 
     function getCart() {
@@ -154,8 +198,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
+        const isDelivery =
+            getSelectedOrderType() === "delivery";
+
+        const deliveryFee =
+            isDelivery ? DELIVERY_FEE_ETB : 0;
+
         const total =
-            subtotal + SERVICE_FEE_ETB;
+            subtotal + SERVICE_FEE_ETB + deliveryFee;
 
 
         if (subtotalElement) {
@@ -169,6 +219,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
             serviceFeeElement.textContent =
                 SERVICE_FEE_ETB.toFixed(2);
+        }
+
+
+        if (deliveryFeeElement) {
+
+            deliveryFeeElement.textContent =
+                deliveryFee.toFixed(2);
+        }
+
+
+        if (deliveryFeeRow) {
+
+            deliveryFeeRow.style.display =
+                isDelivery ? "flex" : "none";
         }
 
 
@@ -248,6 +312,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
 
+                if (
+                    event.target.value ===
+                    "delivery"
+                ) {
+
+                    if (deliveryInfoGroup) {
+                        deliveryInfoGroup.style.display =
+                            "block";
+                    }
+
+                } else {
+
+                    if (deliveryInfoGroup) {
+                        deliveryInfoGroup.style.display =
+                            "none";
+                    }
+                }
+
+                updateDeliveryUI();
+
             }
         );
 
@@ -301,6 +385,43 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         );
 
+    });
+
+
+    const placeOrderButton =
+        document.getElementById("place-order-btn");
+
+    const mobileOrderButton =
+        document.querySelector(".mobile-only-btn");
+
+    function requestCheckoutSubmit() {
+
+        if (checkoutForm) {
+
+            if (typeof checkoutForm.requestSubmit === "function") {
+
+                checkoutForm.requestSubmit();
+
+            } else {
+
+                checkoutForm.dispatchEvent(
+                    new Event("submit", { cancelable: true })
+                );
+            }
+        }
+    }
+
+    [placeOrderButton, mobileOrderButton].forEach((btn) => {
+
+        if (btn) {
+
+            btn.addEventListener("click", function (event) {
+
+                event.preventDefault();
+
+                requestCheckoutSubmit();
+            });
+        }
     });
 
 
@@ -366,6 +487,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     selectedOrderType.value;
 
 
+                const isDelivery =
+                    orderType === "delivery";
+
+
                 const tableNumber =
                     orderType === "dine-in"
                         ? (
@@ -373,7 +498,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ? tableNumberInput.value.trim()
                                 : ""
                         )
-                        : "N/A (Takeaway)";
+                        : isDelivery
+                            ? "N/A (Delivery)"
+                            : "N/A (Takeaway)";
 
 
                 if (
@@ -433,6 +560,55 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
+                let deliveryInfo = null;
+
+                if (isDelivery) {
+
+                    const deliverySubCityElement =
+                        document.getElementById("delivery-subcity");
+
+                    const deliveryLocationElement =
+                        document.getElementById("delivery-location");
+
+                    const deliveryNoteElement =
+                        document.getElementById("delivery-note");
+
+                    const deliverySubCity =
+                        deliverySubCityElement
+                            ? deliverySubCityElement.value.trim()
+                            : "";
+
+                    const deliveryLocation =
+                        deliveryLocationElement
+                            ? deliveryLocationElement.value.trim()
+                            : "";
+
+                    const deliveryNote =
+                        deliveryNoteElement
+                            ? deliveryNoteElement.value.trim()
+                            : "";
+
+                    if (!deliverySubCity) {
+                        alert("Please select your sub-city for delivery.");
+                        if (deliverySubCityElement) deliverySubCityElement.focus();
+                        return;
+                    }
+
+                    if (!deliveryLocation) {
+                        alert("Please enter your delivery location / house / landmark.");
+                        if (deliveryLocationElement) deliveryLocationElement.focus();
+                        return;
+                    }
+
+                    deliveryInfo = {
+                        subCity: deliverySubCity,
+                        location: deliveryLocation,
+                        note: deliveryNote,
+                        phone: customerPhone || ""
+                    };
+                }
+
+
                 const paymentMethod =
                     selectedPaymentMethod.value;
 
@@ -458,7 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 const totalAmount =
-                    subtotal + SERVICE_FEE_ETB;
+                    subtotal + SERVICE_FEE_ETB + (isDelivery ? DELIVERY_FEE_ETB : 0);
 
                 // Map cart items to backend expected format
                 const orderItems = cart.map(item => ({
@@ -506,6 +682,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     serviceFee:
                         SERVICE_FEE_ETB,
+
+                    deliveryFee:
+                        isDelivery ? DELIVERY_FEE_ETB : 0,
+
+                    deliveryInfo:
+                        deliveryInfo,
 
                     totalAmount:
                         totalAmount,
@@ -631,5 +813,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     renderOrderReview();
+
+    loadPublicSettings().then(() => {
+
+        if (!DELIVERY_ENABLED) {
+
+            const deliveryCard =
+                document.getElementById("delivery-radio-card");
+
+            if (deliveryCard) {
+
+                deliveryCard.style.display = "none";
+            }
+        }
+
+        updateDeliveryUI();
+    });
 
 });

@@ -15,6 +15,7 @@
     { id: 'menu', path: 'menu.html', icon: 'fa-bowl-food', label: 'Menu / Foods', group: 'management' },
     { id: 'categories', path: 'categories.html', icon: 'fa-list', label: 'Categories', group: 'management' },
     { id: 'orders', path: 'orders.html', icon: 'fa-receipt', label: 'Orders', group: 'management' },
+    { id: 'deliveries', path: 'deliveries.html', icon: 'fa-truck-fast', label: 'Deliveries', group: 'management' },
     { id: 'payments', path: 'payments.html', icon: 'fa-wallet', label: 'Payments', group: 'management' },
     { id: 'cancellations', path: 'cancellations.html', icon: 'fa-hand-holding-dollar', label: 'Cancellations', group: 'management' },
     { id: 'feedback', path: 'feedback.html', icon: 'fa-comment-dots', label: 'Feedback', group: 'management' },
@@ -25,7 +26,7 @@
 
   var SIDEBAR_GROUPS = [
     { id: 'main', label: 'MAIN', labelKey: 'admin_main', pages: ['dashboard'] },
-    { id: 'management', label: 'MANAGEMENT', labelKey: 'admin_management', pages: ['users', 'menu', 'categories', 'orders', 'payments', 'cancellations', 'feedback'] },
+    { id: 'management', label: 'MANAGEMENT', labelKey: 'admin_management', pages: ['users', 'menu', 'categories', 'orders', 'deliveries', 'payments', 'cancellations', 'feedback'] },
     { id: 'analytics', label: 'ANALYTICS & REPORTS', labelKey: 'admin_analytics', pages: ['reports', 'activity'] },
     { id: 'system', label: 'SYSTEM', labelKey: 'admin_system', pages: ['settings'] }
   ];
@@ -63,7 +64,7 @@
         var page = ADMIN_PAGES.find(function(p) { return p.id === pageId; });
         if (!page) return;
 
-        var labelKeyMap = { dashboard: 'admin_dashboard', users: 'admin_users', menu: 'admin_menu', categories: 'admin_categories', orders: 'admin_orders', payments: 'admin_payments', cancellations: 'admin_cancellations', reports: 'admin_reports', activity: 'admin_activity', settings: 'admin_settings' };
+        var labelKeyMap = { dashboard: 'admin_dashboard', users: 'admin_users', menu: 'admin_menu', categories: 'admin_categories', orders: 'admin_orders', deliveries: 'admin_deliveries', payments: 'admin_payments', cancellations: 'admin_cancellations', reports: 'admin_reports', activity: 'admin_activity', settings: 'admin_settings' };
         var translatedLabel = t(labelKeyMap[pageId] || pageId, page.label);
         var isActive = pageId === currentPageId;
         html += '<a href="' + page.path + '" class="sidebar-link' + (isActive ? ' active' : '') + '"';
@@ -155,6 +156,7 @@
       + '    <select class="scos-lang-select" aria-label="Language Selector" style="background:transparent;color:#0f172a;border:none;font-weight:700;cursor:pointer;font-size:13px;outline:none;min-width:110px;">'
       + '      <option value="en"' + (curLang==='en'?' selected':'') + '>🇬🇧 English</option>'
       + '      <option value="am"' + (curLang==='am'?' selected':'') + '>🇪🇹 አማርኛ</option>'
+      + '      <option value="om"' + (curLang==='om'?' selected':'') + '>🇪🇹 Afaan Oromoo</option>'
       + '    </select>'
       + '  </div>'
       + '  <div class="nav-item dropdown">'

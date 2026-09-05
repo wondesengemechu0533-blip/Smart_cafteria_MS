@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="/src/css/themes/dark-theme.css">
     
 
-    <script src="../../js/config.js"></script>`n    <script src="../../js/theme.js"></script>
+    <script src="../../js/config.js"></script>
+<script src="../../js/theme.js"></script>
 </head>
 <body>
 
@@ -48,36 +49,10 @@
 
         <!-- Kitchen Status Timeline -->
         <section class="status-card" id="timeline-section">
-            <h3><i class="fa-solid fa-fire-burner"></i> Live Kitchen Tracker</h3>
+            <h3><i class="fa-solid fa-fire-burner"></i> Live Order Tracker</h3>
             
-            <div class="status-timeline">
-                <div class="timeline-step step-received" id="step-1">
-                    <div class="step-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                    <div class="step-label">
-                        <strong>Order Received</strong>
-                        <small>Kitchen notified</small>
-                    </div>
-                </div>
-
-                <div class="timeline-line" id="line-1"></div>
-
-                <div class="timeline-step step-preparing" id="step-2">
-                    <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                    <div class="step-label">
-                        <strong>Preparing</strong>
-                        <small>Chef is cooking</small>
-                    </div>
-                </div>
-
-                <div class="timeline-line" id="line-2"></div>
-
-                <div class="timeline-step step-ready" id="step-3">
-                    <div class="step-icon"><i class="fa-solid fa-bell-concierge"></i></div>
-                    <div class="step-label">
-                        <strong>Ready</strong>
-                        <small>Serving to table</small>
-                    </div>
-                </div>
+            <div class="status-timeline" id="status-timeline">
+                <!-- Steps are rendered dynamically by order-status.js -->
             </div>
         </section>
 
@@ -114,6 +89,13 @@
                 </div>
             </div>
 
+            <!-- Delivery Address (visible only for delivery orders) -->
+            <div id="delivery-address-row" style="display:none; margin-top: 12px; padding: 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px;">
+                <span class="info-label"><i class="fa-solid fa-location-dot"></i> Delivery Address:</span>
+                <strong id="receipt-delivery-address" style="display: block; margin-top: 4px;">-</strong>
+                <small id="receipt-delivery-note" style="color: #9a3412; margin-top: 4px; display: block;"></small>
+            </div>
+
             <hr class="divider">
 
             <!-- Ordered Items List -->
@@ -132,6 +114,10 @@
             <div class="summary-row">
                 <span>Service Fee</span>
                 <span><strong id="receipt-service-fee">20</strong> <small>ETB</small></span>
+            </div>
+            <div class="summary-row" id="receipt-delivery-fee-row" style="display:none;">
+                <span>Delivery Fee</span>
+                <span><strong id="receipt-delivery-fee">0</strong> <small>ETB</small></span>
             </div>
             <hr class="divider">
             <div class="summary-row total-row">
@@ -152,16 +138,16 @@
 
     </main>
 
-    <!-- Connect Scripts -->
-    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/utils/i18n.js"></script>
+<!-- Connect Scripts -->
+<script type="module" src="../../js/utils/i18n.js"></script>
 <script type="module" src="../../js/customer-orders-sync.js"></script>
 <script type="module" src="../../js/order-status.js"></script>
-    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/order-history.js"></script>
+<script type="module" src="../../js/order-history.js"></script>
     <script type="module" src="../../js/chapa-verify.js"></script>
     <script src="/public/assets/vendor/js/socket.io-4.7.5.min.js"></script>
-    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/customer-realtime.js"></script>
+<script type="module" src="../../js/customer-realtime.js"></script>
 
-    <script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/unified-header.js"></script>
-<script src="../../js/config.js"></script>`n    <script type="module" src="../../js/components/customer-sidebar.js"></script>
+<script type="module" src="../../js/components/unified-header.js"></script>
+<script type="module" src="../../js/components/customer-sidebar.js"></script>
 </body>
 </html>

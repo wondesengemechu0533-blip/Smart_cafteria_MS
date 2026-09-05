@@ -2,6 +2,19 @@ const Order = require('../models/Order');
 const Notification = require('../models/Notification');
 const { ORDER_STATUS, MESSAGES, HTTP_STATUS } = require('../config/constants');
 
+const KITCHEN_STATUSES = ['pending', 'preparing', 'ready'];
+const KITCHEN_STATUS_VALUES = [...KITCHEN_STATUSES, 'PENDING', 'PREPARING', 'READY', 'Received', 'RECEIVED'];
+
+function getKitchenStatus(order) {
+const status = String(order.status || '').toLowerCase();
+if (KITCHEN_STATUSES.includes(status)) return status;
+if (status === 'received') return 'pending';
+
+const legacyStatus = String(order.orderStatus || '').toLowerCase();
+if (legacyStatus === 'received') return 'pending';
+return KITCHEN_STATUSES.includes(legacyStatus) ? legacyStatus : status;
+}
+
 /**
 * @desc    Get kitchen dashboard data
 * @route   GET /api/kitchen/dashboard
@@ -12,25 +25,26 @@ const { ORDER_STATUS, MESSAGES, HTTP_STATUS } = require('../config/constants');
 */
 exports.getKitchenDashboard = async (req, res) => {
 try {
-// ✅ Only show orders from the last 24 hours (stale orders get filtered out)
-const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+// ✅ Only show orders created today (past orders are hidden from the board)
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
 
-// ✅ Get all active orders (pending, preparing, ready)
 const activeOrders = await
 
 Order.find({
-status: { $in: ['pending', 'preparing', 'ready'] },
-createdAt: { $gte: cutoff }
+ $or: [
+ { status: { $in: KITCHEN_STATUS_VALUES } },
+ { orderStatus: { $in: ['PENDING', 'PREPARING', 'READY', 'RECEIVED'] } }
+ ],
+createdAt: { $gte: todayStart }
 })
 .populate('userId', 'name phone')
 .sort({ createdAt: 1 });
 
 // ✅ Group by status
-const pendingOrders = activeOrders.filter(o => o.status === 'pending');
-const preparingOrders = activeOrders.filter(o => o.status === 'preparing');
-const readyOrders = activeOrders.filter(o => o.status === 'ready');
-
-// ✅ Get completed orders today
+const pendingOrders = activeOrders.filter(o => getKitchenStatus(o) === 'pending');
+const preparingOrders = activeOrders.filter(o => getKitchenStatus(o) === 'preparing');
+const readyOrders = activeOrders.filter(o => getKitchenStatus(o) === 'ready');
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 const completedToday = await Order.countDocuments({
@@ -84,17 +98,22 @@ exports.getKitchenOrders = async (req, res) => {
 try {
 const { status } = req.query;
 
-// ✅ Only show orders from the last 24 hours (stale orders get filtered out)
-const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-// ✅ Build filter
-let filter = {};
-filter.paymentStatus = 'PAID';
-filter.createdAt = { $gte: cutoff };
+// ✅ Only show orders created today (past orders are hidden from the board)
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
+let filter = { createdAt: { $gte: todayStart } };
 if (status && status !== 'all') {
-filter.status = status;
+const normalizedStatus = String(status).toLowerCase();
+filter.$or = [
+  { status: normalizedStatus },
+  { status: normalizedStatus.toUpperCase() },
+  { orderStatus: normalizedStatus.toUpperCase() }
+];
 } else {
-filter.status = { $in: ['pending', 'preparing', 'ready', 'served'] };
+filter.$or = [
+  { status: { $in: ['pending', 'preparing', 'ready', 'served', 'PENDING', 'PREPARING', 'READY', 'SERVED', 'Received', 'RECEIVED'] } },
+  { orderStatus: { $in: ['PENDING', 'PREPARING', 'READY', 'SERVED', 'RECEIVED'] } }
+];
 }
 
 const orders = await Order.find(filter)
@@ -139,7 +158,7 @@ error: 'Order not found'
 }
 
 // ✅ Check if order can be accepted
-if (order.status !== 'pending') {
+if (getKitchenStatus(order) !== 'pending') {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
 error: `Order cannot be accepted (status: ${order.status})`
@@ -257,6 +276,7 @@ error: `Order cannot be marked ready (status: ${order.status})`
 // ✅ Update status to ready
 order.status = ORDER_STATUS.READY;
 order.readyTime = new Date();
+const isDelivery = String(order.orderType || '').toLowerCase() === 'delivery';
 
 await order.save();
 
@@ -265,12 +285,17 @@ const { emitSocketEvent } = require('../utils/socket');
 const orderSummary = formatKitchenOrder(order);
 emitSocketEvent('kitchen', 'order:status', orderSummary);
 emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
+if (isDelivery) {
+  emitSocketEvent('delivery', 'order:status', orderSummary);
+}
 
 // ✅ Notify customer - saved for offline, emitted for online (only to correct customer)
 const notification = await Notification.create({
 userId: order.userId,
-title: 'Order Ready!',
-message: `Your order #${orderId} is ready for pickup.`,
+title: isDelivery ? 'Order Ready for Delivery!' : 'Order Ready!',
+message: isDelivery
+  ? `Your order #${orderId} is ready for delivery.`
+  : `Your order #${orderId} is ready for pickup.`,
 type: 'ready',
 orderId: orderId,
 link: `/src/pages/customer/order-tracking.html?orderId=${orderId}`,
@@ -292,7 +317,7 @@ emitSocketEvent(`user:${order.userId}`, 'notification:new', {
 res.status(HTTP_STATUS.OK).json({
 success: true,
 
-message: `Order #${orderId} is now ready for pickup`,
+message: isDelivery ? `Order #${orderId} is now ready for delivery` : `Order #${orderId} is now ready for pickup`,
 order: formatKitchenOrder(order)
 });
 
@@ -307,8 +332,224 @@ error: MESSAGES.SERVER_ERROR
 
 
 /**
-* @desc    Mark order as served (Kitchen)
-* @route   PATCH /api/kitchen/orders/:orderId/serve
+* @desc    Send order to delivery staff (Kitchen)
+* @route   POST /api/kitchen/orders/:orderId/send-to-delivery
+* @access  Private/Kitchen/Admin
+*
+* Frontend: kitchen/dashboard.html → Send to Delivery button
+* Notifies ALL active delivery staff in real time (socket + notification)
+* that the order is ready for delivery.
+* Response: { success, message, order, notified }
+*/
+exports.sendOrderToDelivery = async (req, res) => {
+try {
+const { orderId } = req.params;
+
+const order = await Order.findOne({ orderId: orderId });
+if (!order) {
+return res.status(HTTP_STATUS.NOT_FOUND).json({
+success: false,
+error: 'Order not found'
+});
+}
+
+// ✅ Only delivery orders can be sent to delivery
+if (String(order.orderType || '').toLowerCase() !== 'delivery') {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: 'Order is not a delivery order'
+});
+}
+
+// ✅ Must be ready (kitchen has finished preparing)
+if (order.status !== 'ready') {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: `Order can only be sent to delivery when ready (status: ${order.status})`
+});
+}
+
+const { emitSocketEvent } = require('../utils/socket');
+const deliverySummary = formatDeliveryOrder(order);
+
+// ✅ Broadcast to the delivery room so every delivery staff page updates live
+emitSocketEvent('delivery', 'delivery:new', deliverySummary);
+emitSocketEvent('delivery', 'order:status', deliverySummary);
+emitSocketEvent(`order:${order.orderId}`, 'order:status', deliverySummary);
+
+const alreadyNotified = Boolean(order.deliveryNotifiedAt);
+
+// ✅ Notify every active delivery staff member (message to deliver)
+const User = require('../models/User');
+const deliveryStaff = alreadyNotified
+  ? []
+  : await User.find({
+      role: { $in: ['delivery', 'DELIVERY_STAFF', 'delivery_staff', 'driver', 'rider'] },
+      status: 'ACTIVE',
+      isActive: { $ne: false }
+    }).select('_id name');
+
+order.deliveryNotifiedAt = new Date();
+await order.save();
+
+const title = 'Order Ready for Delivery!';
+const message = `Order #${orderId} is ready for delivery. Please arrange pickup and deliver it to the customer.`;
+for (const staff of deliveryStaff) {
+const notification = await Notification.create({
+userId: staff._id,
+title: title,
+message: message,
+type: 'status_update',
+orderId: order.orderId,
+link: '/src/pages/delivery/deliveries.html',
+isRead: false
+});
+
+emitSocketEvent(`user:${staff._id}`, 'notification:new', {
+id: notification._id,
+title: notification.title,
+message: notification.message,
+type: notification.type,
+orderId: notification.orderId,
+link: notification.link,
+isRead: notification.isRead,
+createdAt: notification.createdAt
+});
+}
+
+res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: alreadyNotified
+        ? `Order #${orderId} was already sent to delivery staff (${deliveryStaff.length} new notifications)`
+        : `Delivery staff notified that order #${orderId} is ready for delivery (${deliveryStaff.length} notified)`,
+      order: deliverySummary,
+      notified: deliveryStaff.length,
+      alreadyNotified: alreadyNotified
+    });
+ 
+  } catch (error) {
+    console.error('❌ Send Order To Delivery Error:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: MESSAGES.SERVER_ERROR
+    });
+  }
+};
+ 
+ 
+/**
+ * @desc    Mark order as picked up by driver (Kitchen handoff)
+ * @route   PATCH /api/kitchen/orders/:orderId/picked-up
+ * @access  Private/Kitchen/Admin
+ *
+ * Frontend: kitchen/dashboard.html → Hand to Driver button
+ * Changes status from ready to picked_up, notifies driver & customer
+ */
+exports.markOrderPickedUp = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+ 
+    const order = await Order.findOne({ orderId: orderId });
+    if (!order) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        error: 'Order not found'
+      });
+    }
+ 
+    // ✅ Only delivery orders can be handed to driver
+    if (String(order.orderType || '').toLowerCase() !== 'delivery') {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: 'Order is not a delivery order'
+      });
+    }
+ 
+    // ✅ Must be ready (kitchen has finished preparing)
+    if (order.status !== 'ready') {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        error: `Order can only be handed to driver when ready (status: ${order.status})`
+      });
+    }
+ 
+    // ✅ Update status to picked_up
+    order.status = ORDER_STATUS.PICKED_UP;
+    order.pickedUpTime = new Date();
+    order.pickedUpBy = req.user?.id || req.user?._id;
+    await order.save();
+ 
+    // ✅ Emit socket events
+    const { emitSocketEvent } = require('../utils/socket');
+    const orderSummary = formatKitchenOrder(order);
+    emitSocketEvent('kitchen', 'order:status', orderSummary);
+    emitSocketEvent(`order:${orderId}`, 'order:status', orderSummary);
+    emitSocketEvent('delivery', 'order:status', orderSummary);
+ 
+    // ✅ Notify customer
+    const notification = await Notification.create({
+      userId: order.userId,
+      title: 'Driver Picked Up Order!',
+      message: `Your order #${orderId} has been handed to the driver and is on the way.`,
+      type: 'status_update',
+      orderId: orderId,
+      link: `/src/pages/customer/order-tracking.html?orderId=${orderId}`,
+      isRead: false
+    });
+ 
+    emitSocketEvent(`user:${order.userId}`, 'notification:new', {
+      id: notification._id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      orderId: notification.orderId,
+      link: notification.link,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt
+    });
+ 
+    // ✅ Notify assigned driver (if any)
+    if (order.deliveryStaffAssigned) {
+      const driverNotification = await Notification.create({
+        userId: order.deliveryStaffAssigned,
+        title: 'Order Ready for Pickup!',
+        message: `Order #${orderId} is ready. Please pick it up from the kitchen.`,
+        type: 'status_update',
+        orderId: orderId,
+        link: '/src/pages/delivery/deliveries.html',
+        isRead: false
+      });
+ 
+      emitSocketEvent(`user:${order.deliveryStaffAssigned}`, 'notification:new', {
+        id: driverNotification._id,
+        title: driverNotification.title,
+        message: driverNotification.message,
+        type: driverNotification.type,
+        orderId: driverNotification.orderId,
+        link: driverNotification.link,
+        isRead: driverNotification.isRead,
+        createdAt: driverNotification.createdAt
+      });
+    }
+ 
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: `Order #${orderId} handed to driver`,
+      order: formatKitchenOrder(order)
+    });
+ 
+  } catch (error) {
+    console.error('❌ Mark Order Picked Up Error:', error);
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: MESSAGES.SERVER_ERROR
+    });
+  }
+};
+
+/**
+ * @desc    Mark order as served (Kitchen)
+ * @route   PATCH /api/kitchen/orders/:orderId/serve
 * @access  Private/Kitchen
 *
 * Frontend: kitchen/dashboard.html → Mark served
@@ -327,6 +568,12 @@ error: 'Order not found'
 }
 
 // ✅ Check if order can be marked served
+if (String(order.orderType || '').toLowerCase() === 'delivery') {
+return res.status(HTTP_STATUS.BAD_REQUEST).json({
+success: false,
+error: 'Delivery orders are not served in the kitchen. Use the delivery dashboard to deliver.'
+});
+}
 if (order.status !== 'ready') {
 return res.status(HTTP_STATUS.BAD_REQUEST).json({
 success: false,
@@ -500,8 +747,44 @@ error: MESSAGES.SERVER_ERROR
 };
 
 /**
-* Helper: Format order for kitchen display
-*/
+ * Helper: Format order for delivery display (socket broadcast)
+ */
+function formatDeliveryOrder(order) {
+return {
+id: order._id,
+orderId: order.orderId,
+customerName: order.customerName,
+customerPhone: order.customerPhone,
+orderType: order.orderType,
+items: (order.items || []).map(item => ({
+itemId: item.itemId,
+name: item.name,
+quantity: item.quantity,
+price: item.price,
+notes: item.notes || '',
+subtotal: item.subtotal || (Number(item.price) || 0) * (Number(item.quantity) || 0)
+})),
+itemCount: (order.items || []).reduce((sum, i) => sum + (Number(i.quantity) || 0), 0),
+subtotal: order.subtotal,
+serviceFee: order.serviceFee,
+deliveryFee: order.deliveryFee || 0,
+totalAmount: order.totalAmount,
+status: getKitchenStatus(order),
+deliveryInfo: order.deliveryInfo || null,
+deliveryStaffAssigned: order.deliveryStaffAssigned || null,
+deliveryStartedAt: order.deliveryStartedAt || null,
+deliveredAt: order.deliveredAt || null,
+paymentStatus: order.paymentStatus,
+paymentMethod: order.paymentMethod,
+orderDate: order.orderDate,
+orderTime: order.orderTime,
+createdAt: order.createdAt
+};
+}
+
+/**
+ * Helper: Format order for kitchen display
+ */
 function formatKitchenOrder(order) {
 const elapsed = order.createdAt ?
 

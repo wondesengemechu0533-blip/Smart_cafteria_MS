@@ -283,7 +283,13 @@ exports.updateMenuItem = async (req, res) => {
       icon,
       preparationTime,
       available,
-      isAvailable
+      isAvailable,
+      stockQuantity,
+      lowStockThreshold,
+      isActive,
+      isPopular,
+      isRecommended,
+      showOnHomepage
     } = req.body;
 
     const item = await MenuItem.findById(req.params.id);

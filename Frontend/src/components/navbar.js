@@ -1,6 +1,6 @@
 import authService from "../services/auth.service.js";
 import { Storage } from "../js/utils/storage.js";
-import { STORAGE_KEYS } from "../js/config.js";
+const STORAGE_KEYS = window.STORAGE_KEYS || { cart: 'smart_cafeteria_cart' };
 
 /**
  * Top Navigation Bar Component

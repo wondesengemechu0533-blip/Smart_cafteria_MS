@@ -74,7 +74,15 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        return historyData;
+        // Only show orders created today (past/demo orders are hidden).
+        return historyData.filter(o => {
+            const d = new Date(o.createdAt || o.orderTime || o.orderDate);
+            if (isNaN(d.getTime())) return true;
+            const now = new Date();
+            return d.getFullYear() === now.getFullYear() &&
+                d.getMonth() === now.getMonth() &&
+                d.getDate() === now.getDate();
+        });
     }
 
     function renderOrders(filterStatus = "all") {

@@ -33,6 +33,20 @@ function toggleSwitch(id, label, checked) {
     `;
 }
 
+function passwordControl(id, label, placeholder) {
+    return `
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">${label}</div>
+            </div>
+            <div class="input-wrapper">
+                <input type="password" class="setting-input" id="${id}" placeholder="${placeholder}" autocomplete="new-password">
+                <i class="fa-solid fa-eye toggle-password-icon" data-target="${id}" title="Show password"></i>
+            </div>
+        </div>
+    `;
+}
+
 function renderSettings() {
     settingsContainer.innerHTML = `
         <div class="settings-card">
@@ -77,12 +91,25 @@ function renderSettings() {
             ${toggleSwitch('showCompletedOrders', 'Show Completed Orders', settings.showCompletedOrders)}
         </div>
 
+        <div class="settings-card">
+            <h3><i class="fa-solid fa-key"></i> Change Password</h3>
+            ${passwordControl('currentPassword', 'Current Password', 'Enter current password')}
+            ${passwordControl('newPassword', 'New Password', 'Min 6 characters')}
+            ${passwordControl('confirmPassword', 'Confirm New Password', 'Re-enter new password')}
+            <div class="btn-save-wrap">
+                <button class="btn btn-primary" id="changePasswordBtn" onclick="window.changeKitchenPassword()">
+                    <i class="fa-solid fa-key"></i> Update Password
+                </button>
+            </div>
+        </div>
+
         <div class="btn-save-wrap">
             <button class="btn btn-primary" id="saveBtn" onclick="window.saveSettings()">
                 <i class="fa-solid fa-floppy-disk"></i> Save Settings
             </button>
         </div>
     `;
+    bindPasswordToggles();
 }
 
 function escapeHtml(text) {
@@ -136,6 +163,64 @@ window.saveSettings = async function () {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Settings';
+    }
+};
+
+function bindPasswordToggles() {
+    document.querySelectorAll('.toggle-password-icon').forEach(function (icon) {
+        if (icon.dataset.toggleBound) return;
+        icon.dataset.toggleBound = '1';
+        icon.addEventListener('click', function () {
+            const input = document.getElementById(icon.getAttribute('data-target'));
+            if (!input) return;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !isPassword);
+            icon.classList.toggle('fa-eye-slash', isPassword);
+            icon.title = isPassword ? 'Hide password' : 'Show password';
+        });
+    });
+}
+
+window.changeKitchenPassword = async function () {
+    const cur = document.getElementById('currentPassword');
+    const nw = document.getElementById('newPassword');
+    const cf = document.getElementById('confirmPassword');
+    const btn = document.getElementById('changePasswordBtn');
+    if (!cur || !nw || !cf || !btn) return;
+
+    if (!cur.value || !nw.value || !cf.value) {
+        showToast('All password fields are required', 'error');
+        return;
+    }
+    if (nw.value.length < 6) {
+        showToast('New password must be at least 6 characters', 'error');
+        return;
+    }
+    if (nw.value !== cf.value) {
+        showToast('New passwords do not match', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+    try {
+        const data = await api.put('/auth/password', {
+            currentPassword: cur.value,
+            newPassword: nw.value,
+            confirmPassword: cf.value
+        });
+        if (data && data.token) api.setToken(data.token);
+        cur.value = '';
+        nw.value = '';
+        cf.value = '';
+        showToast('Password updated successfully');
+    } catch (err) {
+        console.error('Change password error:', err);
+        showToast(err.message || 'Failed to update password', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
     }
 };
 

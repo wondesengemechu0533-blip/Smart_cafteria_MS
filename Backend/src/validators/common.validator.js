@@ -1,6 +1,6 @@
 const { ORDER_STATUS, PAYMENT_STATUS } = require('../config/constants');
 
-const VALID_ROLES = ['customer', 'kitchen', 'admin'];
+const VALID_ROLES = ['customer', 'kitchen', 'admin', 'delivery'];
 const normalizeRole = (role) => {
     const value = String(role ?? '').trim();
     if (!value) return '';
@@ -13,15 +13,22 @@ const normalizeRole = (role) => {
         'kitchen staff': 'kitchen',
         kitchen_staff: 'kitchen',
         staff: 'kitchen',
-        admin: 'admin'
+        admin: 'admin',
+        delivery: 'delivery',
+        delivery_staff: 'delivery',
+        'delivery staff': 'delivery',
+        driver: 'delivery',
+        rider: 'delivery'
     };
 
     return roleMap[key] || value;
 };
 
 const VALID_ORDER_STATUSES = [
-    'PENDING', 'PREPARING', 'READY', 'SERVED', 'COMPLETED', 'CANCELLED',
-    'pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'
+    'PENDING', 'PREPARING', 'READY', 'PICKED_UP', 'SERVED', 'COMPLETED', 'CANCELLED',
+    'OUT_FOR_DELIVERY', 'DELIVERED',
+    'pending', 'preparing', 'ready', 'picked_up', 'served', 'completed', 'cancelled',
+    'out_for_delivery', 'delivered'
 ];
 
 const VALID_PAYMENT_STATUSES = ['PENDING', 'PAID', 'FAILED', 'CANCELLED'];

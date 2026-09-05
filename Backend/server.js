@@ -29,6 +29,7 @@ const adminPaymentRoutes = require('./src/routes/admin.payments.routes');
 const adminReportRoutes = require('./src/routes/admin.reports.routes');
 const publicSettingsRoutes = require('./src/routes/public.settings.routes');
 const authRoutes = require('./src/routes/auth.routes');
+const deliveryRoutes = require('./src/routes/delivery.routes');
 const { ensureDefaultSettings } = require('./src/utils/settings');
 const { ensureDefaultCategories } = require('./src/utils/categories');
 const { errorHandler, notFoundHandler } = require('./src/middleware/errorHandler');
@@ -148,6 +149,7 @@ app.use('/api/v1/admin/menu', adminMenuRoutes);
 app.use('/api/v1/admin/orders', adminOrderRoutes);
 app.use('/api/v1/admin/payments', adminPaymentRoutes);
 app.use('/api/v1/admin/reports', adminReportRoutes);
+app.use('/api/v1/deliveries', deliveryRoutes);
 app.use('/api/v1/settings', publicSettingsRoutes);
 
 app.use(notFoundHandler);

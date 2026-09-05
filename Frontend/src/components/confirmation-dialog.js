@@ -128,24 +128,9 @@ export function showConfirmationDialog(options = {}) {
             },
         });
 
-        container.innerHTML = dialogHTML;
+        container.innerHTML = dialogHTML;
 
-        // Attach event listeners for escape and overlay clicks
-        const overlay = document.getElementById(id + '-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    const confirmBtn = overlay.querySelector('.modal-confirm-btn');
-                    if (confirmBtn) {
-                        // Don't close on overlay click, use cancel instead
-                        const cancelBtn = overlay.querySelector('.modal-cancel-btn');
-                        if (cancelBtn) cancelBtn.click();
-                    }
-                }
-            });
-        }
-
-        // Focus on confirm button
+        // Focus on confirm button
         setTimeout(() => {
             const confirmBtn = document.querySelector(#${id}-overlay .modal-confirm-btn);
             if (confirmBtn) confirmBtn.focus();

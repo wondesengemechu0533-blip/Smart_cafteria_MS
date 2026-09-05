@@ -12,19 +12,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const KDS = {
     orders: new Map(), // orderId -> order object
+    sentToDelivery: new Set(), // orderIds already sent to delivery
+    pickedUpToDriver: new Set(), // orderIds handed to driver
     currentFilter: 'all',
     gridContainer: null,
+    tableBody: null,
     pendingCountEl: null,
     preparingCountEl: null,
     readyCountEl: null,
     updateInterval: null,
+    _inflight: new Set(),
+
+    setActionLoading(orderId, loading) {
+        const containers = [this.gridContainer, this.tableBody];
+        containers.forEach(container => {
+            if (!container) return;
+            const buttons = container.querySelectorAll(
+                `.js-action-btn[data-id="${orderId}"], .js-send-delivery-btn[data-id="${orderId}"], .js-handoff-btn[data-id="${orderId}"]`
+            );
+            buttons.forEach(btn => {
+                btn.disabled = loading;
+                btn.classList.toggle('btn-loading', loading);
+            });
+        });
+    },
 
     async init() {
         this.cacheDOM();
         this.bindEvents();
-        await this.loadInitialOrders();
         this.setupSocketListeners();
+        await this.loadInitialOrders();
         this.startTimer();
+        this.startPolling();
         this.render();
     },
 
@@ -62,9 +81,40 @@ const KDS = {
                     this.orders.set(order.orderId, order);
                 });
                 this.updateStats();
+                this.render();
             }
         } catch (error) {
             console.error('Failed to load initial orders:', error);
+        }
+    },
+
+    async refreshOrders() {
+        try {
+            const response = await api.get('/kitchen/dashboard');
+            if (response.success) {
+                const allOrders = [
+                    ...(response.orders.pending || []),
+                    ...(response.orders.preparing || []),
+                    ...(response.orders.ready || [])
+                ];
+                allOrders.forEach(order => {
+                    this.orders.set(order.orderId, order);
+                });
+                // Drop orders that are no longer active (served/cancelled/etc.)
+                const activeIds = new Set(allOrders.map(o => o.orderId));
+                const servedOrCancelled = [];
+                this.orders.forEach((order, orderId) => {
+                    if (!activeIds.has(orderId) &&
+                        ['served', 'cancelled', 'delivered', 'out_for_delivery', 'picked_up'].includes(String(order.status || '').toLowerCase())) {
+                        servedOrCancelled.push(orderId);
+                    }
+                });
+                servedOrCancelled.forEach(id => this.orders.delete(id));
+                this.updateStats();
+                this.render();
+            }
+        } catch (error) {
+            console.error('Failed to refresh orders:', error);
         }
     },
 
@@ -75,11 +125,19 @@ const KDS = {
             return;
         }
 
-        socketClient.connect(token);
+        // Re-fetch orders whenever the socket (re)connects so any orders created
+        // while disconnected are picked up and always displayed.
+        socketClient.on('connect', () => {
+            this.refreshOrders();
+        });
 
         socketClient.on('order:new', (order) => this.handleNewOrder(order));
         socketClient.on('order:status', (order) => this.handleStatusUpdate(order));
         socketClient.on('order:payment', (order) => this.handlePaymentComplete(order));
+
+        // Register listeners before connecting so a fast connection cannot
+        // deliver an order event before the handlers are ready.
+        socketClient.connect(token);
     },
 
     handleNewOrder(order) {
@@ -137,6 +195,10 @@ const KDS = {
     },
 
     async updateOrderStatus(orderId, newStatus) {
+        if (this._inflight.has(orderId)) return;
+        this._inflight.add(orderId);
+        this.setActionLoading(orderId, true);
+
         try {
             const endpoint = newStatus === 'preparing' ? 'accept' : 
                             newStatus === 'ready' ? 'ready' : 
@@ -158,7 +220,16 @@ const KDS = {
             }
         } catch (error) {
             console.error('Failed to update order status:', error);
-            alert('Failed to update order status. Please try again.');
+            const isStatusConflict = error.status === 400 && /status/i.test(error.message || '');
+            if (isStatusConflict) {
+                await this.refreshOrders();
+                const live = this.orders.get(orderId);
+                if (live && live.status?.toLowerCase() === newStatus) return;
+            }
+            alert((error && error.message) || 'Failed to update order status. Please try again.');
+        } finally {
+            this._inflight.delete(orderId);
+            this.setActionLoading(orderId, false);
         }
     },
 
@@ -167,6 +238,7 @@ const KDS = {
             case 'pending': return 'badge-pending';
             case 'preparing': return 'badge-preparing';
             case 'ready': return 'badge-ready';
+            case 'picked_up': return 'badge-picked-up';
             case 'cancelled': return 'badge-cancelled';
             case 'served': return 'badge-served';
             default: return '';
@@ -176,6 +248,7 @@ const KDS = {
     getActionButtonHTML(order) {
         const status = order.status?.toLowerCase();
         const orderId = order.orderId;
+        const isDelivery = String(order.orderType || '').toLowerCase() === 'delivery';
         
         if (status === 'pending') {
             return `<button class="btn btn-advance js-action-btn" data-id="${orderId}" data-next-status="preparing">
@@ -186,11 +259,95 @@ const KDS = {
                         <i class="fa-solid fa-check"></i> Mark Ready
                     </button>`;
         } else if (status === 'ready') {
+            if (isDelivery) {
+                const sent = this.sentToDelivery.has(orderId);
+                const pickedUp = this.pickedUpToDriver.has(orderId);
+                if (pickedUp) {
+                    return `<button class="btn btn-delivery-sent" disabled>
+                        <i class="fa-solid fa-handshake"></i> Handed to Driver
+                    </button>`;
+                }
+                if (sent) {
+                    return `<button class="btn btn-handoff js-handoff-btn" data-id="${orderId}">
+                        <i class="fa-solid fa-handshake"></i> Hand to Driver
+                    </button>`;
+                }
+                return `<button class="btn btn-delivery js-send-delivery-btn" data-id="${orderId}">
+                            <i class="fa-solid fa-truck-pickup"></i> Send to Delivery
+                        </button>`;
+            }
             return `<button class="btn btn-advance js-action-btn" data-id="${orderId}" data-next-status="served">
                         <i class="fa-solid fa-box-archive"></i> Mark Served
                     </button>`;
+        } else if (status === 'picked_up') {
+            if (isDelivery) {
+                return `<button class="btn btn-delivery-sent" disabled>
+                    <i class="fa-solid fa-handshake"></i> Handed to Driver
+                </button>`;
+            }
+            return `<span style="color: var(--text-muted); font-size: 0.85rem;">Done</span>`;
         }
-        return `<span style="color: var(--text-muted); font-size: 0.85rem;">Done</span>`;
+    },
+
+    async sendToDelivery(orderId) {
+        if (this._inflight.has(orderId)) return;
+        this._inflight.add(orderId);
+        this.setActionLoading(orderId, true);
+        try {
+            const response = await api.post(`/kitchen/orders/${orderId}/send-to-delivery`, {});
+            if (response.success) {
+                this.sentToDelivery.add(orderId);
+                alert(response.message || `Delivery staff notified for order #${orderId}`);
+                this.render();
+            }
+        } catch (error) {
+            console.error('Failed to send order to delivery:', error);
+            alert((error && error.message) || 'Failed to send order to delivery. Please try again.');
+        } finally {
+            this._inflight.delete(orderId);
+            this.setActionLoading(orderId, false);
+        }
+    },
+
+    async handoffToDriver(orderId) {
+        if (this._inflight.has(orderId)) return;
+        this._inflight.add(orderId);
+        this.setActionLoading(orderId, true);
+        try {
+            const response = await api.patch(`/kitchen/orders/${orderId}/picked-up`);
+            if (response.success) {
+                this.pickedUpToDriver.add(orderId);
+                alert(response.message || `Order #${orderId} handed to driver`);
+                this.render();
+            }
+        } catch (error) {
+            console.error('Failed to hand order to driver:', error);
+            alert((error && error.message) || 'Failed to hand order to driver. Please try again.');
+        } finally {
+            this._inflight.delete(orderId);
+            this.setActionLoading(orderId, false);
+        }
+    },
+
+    getOrderTypeLabel(order) {
+        const type = String(order.orderType || 'dine-in').toLowerCase();
+        return type;
+    },
+
+    getOrderTypeIcon(order) {
+        const type = String(order.orderType || 'dine-in').toLowerCase();
+        if (type === 'delivery') return 'fa-truck-fast';
+        if (type === 'takeaway') return 'fa-bag-shopping';
+        return 'fa-utensils';
+    },
+
+    capitalize(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    },
+
+    getDeliveryAddress(order) {
+        const info = order.deliveryInfo || {};
+        return [info.subCity, info.location].filter(Boolean).join(', ');
     },
 
     formatItems(order) {
@@ -211,13 +368,17 @@ const KDS = {
                     </div>`;
             } else {
                 this.gridContainer.innerHTML = filtered.map(order => `
-                    <div class="ticket-card ${order.status?.toLowerCase()}" data-order-id="${order.orderId}">
+                    <div class="ticket-card ${order.status?.toLowerCase()} ${this.getOrderTypeLabel(order) === 'delivery' ? 'ticket-delivery' : ''}" data-order-id="${order.orderId}">
                         <div class="ticket-header">
                             <span class="ticket-id">#${order.orderId}</span>
                             <span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span>
                         </div>
                         <div class="ticket-customer">
                             <i class="fa-solid fa-user"></i> ${order.customerName || 'Unknown'}
+                        </div>
+                        <div class="ticket-type">
+                            <i class="fa-solid ${this.getOrderTypeIcon(order)}"></i> ${this.capitalize(this.getOrderTypeLabel(order))}
+                            ${this.getOrderTypeLabel(order) === 'delivery' && this.getDeliveryAddress(order) ? `<span class="ticket-address"> · 📍 ${this.getDeliveryAddress(order)}</span>` : ''}
                         </div>
                         ${order.tableNumber && order.tableNumber !== 'N/A' ?
                             `<div class="ticket-table"><i class="fa-solid fa-table"></i> Table: ${order.tableNumber}</div>` : ''}
@@ -240,6 +401,20 @@ const KDS = {
                         this.updateOrderStatus(orderId, nextStatus);
                     });
                 });
+
+                this.gridContainer.querySelectorAll('.js-send-delivery-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        this.sendToDelivery(orderId);
+                    });
+                });
+
+                this.gridContainer.querySelectorAll('.js-handoff-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        this.handoffToDriver(orderId);
+                    });
+                });
             }
         }
 
@@ -247,11 +422,11 @@ const KDS = {
         if (this.tableBody) {
             if (filtered.length === 0) {
                 this.tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
-                            No <strong>${this.currentFilter}</strong> orders found in queue.
-                        </td>
-                    </tr>`;
+<tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                No <strong>${this.currentFilter}</strong> orders found in queue.
+                            </td>
+                        </tr>`;
             } else {
                 this.tableBody.innerHTML = filtered.map(order => {
                     const elapsed = this.getElapsedTime(order.createdAt || order.orderTime);
@@ -259,6 +434,7 @@ const KDS = {
                         <tr data-order-id="${order.orderId}">
                             <td><strong>#${order.orderId}</strong></td>
                             <td>${order.customerName || 'Unknown'}</td>
+                            <td><span class="badge badge-type"><i class="fa-solid ${this.getOrderTypeIcon(order)}"></i> ${this.capitalize(this.getOrderTypeLabel(order))}</span></td>
                             <td>${this.formatItems(order)}</td>
                             <td><span class="badge ${this.getBadgeClass(order.status)}">${order.status}</span></td>
                             <td>${elapsed}</td>
@@ -271,6 +447,20 @@ const KDS = {
                         const orderId = e.currentTarget.dataset.id;
                         const nextStatus = e.currentTarget.dataset.nextStatus;
                         this.updateOrderStatus(orderId, nextStatus);
+                    });
+                });
+
+                this.tableBody.querySelectorAll('.js-send-delivery-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        this.sendToDelivery(orderId);
+                    });
+                });
+
+                this.tableBody.querySelectorAll('.js-handoff-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const orderId = e.currentTarget.dataset.id;
+                        this.handoffToDriver(orderId);
                     });
                 });
             }
@@ -294,6 +484,14 @@ const KDS = {
                 }
             });
         }, 30000); // Update every 30 seconds
+    },
+
+    startPolling() {
+        // Fallback safety net: periodically re-fetch the kitchen dashboard so
+        // new orders always appear even if a socket message was missed.
+        this.pollInterval = setInterval(() => {
+            this.refreshOrders();
+        }, 30000); // Refresh every 30 seconds
     }
 };
 
